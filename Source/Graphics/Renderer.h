@@ -19,6 +19,7 @@ public:
     void Update(float dt); // Updates camera
     void Render(); // Draws
     void Shutdown();
+    void DrawDemo();
 
     static void Clear(int mask);
     static void ClearColor(glm::vec3 color);

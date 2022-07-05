@@ -22,12 +22,9 @@ int main() {
 
     Renderer renderer(&window);
 
-    float rot = 0.0f;
-    glm::vec4 color(0.2f, 0.3f, 0.3f, 1.0f);
-    glm::vec3 pos(0.0f);
     while (!window.shouldClose()) {
         Renderer::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        Renderer::ClearColor(color);
+        Renderer::ClearColor({ 0.2f, 0.2f, 0.2f });
 
         renderer.DrawDemo();
 

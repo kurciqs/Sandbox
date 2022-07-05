@@ -1,8 +1,6 @@
 #include "Window/Window.h"
 #include "Graphics/Renderer.h"
 
-#include <vector>
-
 int main() {
     if (!glfwInit()) {
         print_error("Failed to initialize GLFW", 0);

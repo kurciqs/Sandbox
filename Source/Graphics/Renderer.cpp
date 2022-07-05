@@ -121,11 +121,11 @@ void Renderer::Shutdown() {
 
 void Renderer::DrawDemo() {
     std::vector<Vertex> vertices =
-            {
-                    {glm::vec3(-0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f)},
-                    {glm::vec3(0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)},
-                    {glm::vec3(0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)}
-            };
+    {
+            {glm::vec3(-0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f)},
+            {glm::vec3(0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)},
+            {glm::vec3(0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)}
+    };
 
     for (auto & vertex : vertices) {
         m_batchVertices.push_back(vertex);

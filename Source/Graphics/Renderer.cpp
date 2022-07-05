@@ -46,10 +46,6 @@ bool Renderer::InitGL() {
     return true;
 }
 
-Renderer::~Renderer() {
-
-}
-
 void Renderer::Flush() {
     m_batchVertices.clear();
     m_batchLineVertices.clear();
@@ -81,7 +77,7 @@ void Renderer::Render() {
     UploadVertices();
 
     // Normal:
-    m_shader.Activate();
+    m_shader.Bind();
 
     m_shader.uploadMat4("model", glm::mat4(1.0f));
     m_camera.Upload(m_shader, "cam");
@@ -89,10 +85,10 @@ void Renderer::Render() {
     m_vao.Bind();
     glDrawArrays(GL_TRIANGLES, 0, m_batchVertices.size());
     m_vao.Unbind();
-    m_shader.Deactivate();
+    m_shader.Unbind();
 
     // Lines:
-    m_line_shader.Activate();
+    m_line_shader.Bind();
     m_line_vao.Bind();
 
     m_line_shader.uploadMat4("model", glm::mat4(1.0f));
@@ -100,14 +96,14 @@ void Renderer::Render() {
 
     glDrawArrays(GL_LINES, 0, m_batchLineVertices.size());
     m_line_vao.Unbind();
-    m_line_shader.Deactivate();
+    m_line_shader.Unbind();
 
     Flush();
 }
 
 void Renderer::Update(float dt) {
     m_camera.Inputs(dt);
-    m_camera.Update();
+    m_camera.UpdateMatrix();
 }
 
 void Renderer::Shutdown() {
@@ -118,6 +114,8 @@ void Renderer::Shutdown() {
     m_shader.Delete();
     m_line_shader.Delete();
 }
+
+// Shapes:
 
 void Renderer::DrawDemo() {
     std::vector<Vertex> vertices =

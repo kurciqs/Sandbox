@@ -13,7 +13,8 @@ std::string get_file_contents(const char* filename)
         in.close();
         return(contents);
     }
-    throw(errno);
+    print_error("Failed to read shader %s", filename);
+    return "";
 }
 
 Shader::Shader(const char *vertexFile, const char *fragmentFile) {
@@ -43,7 +44,7 @@ Shader::Shader(const char *vertexFile, const char *fragmentFile) {
     glDeleteShader(fragmentShader);
 }
 
-void Shader::Activate() {
+void Shader::Bind() {
     m_active = true;
     glUseProgram(ID);
 }
@@ -167,9 +168,7 @@ void Shader::compileErrors(unsigned int shader, const char *type, const char* fi
     }
 }
 
-void Shader::Deactivate() {
+void Shader::Unbind() {
     m_active = false;
     glUseProgram(0);
 }
-
-

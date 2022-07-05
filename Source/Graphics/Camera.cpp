@@ -1,12 +1,8 @@
 #include "Camera.h"
 
-Camera::Camera(Window* window, glm::vec3 position) : m_pos(position), m_window(window)
-{
-    m_vel = glm::vec3(0.0f);
-    m_acc = glm::vec3(0.0f);
-}
+Camera::Camera(Window* window, glm::vec3 position) : m_pos(position), m_window(window) {}
 
-void Camera::Update() {
+void Camera::UpdateMatrix() {
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
     view = glm::lookAt(m_pos, m_pos + m_orientation, up);
@@ -20,7 +16,6 @@ void Camera::Upload(Shader &shader, const char *uniform_name) {
 }
 
 void Camera::Inputs(float dt) {
-
     // Keyboard
 
     auto mvForce = glm::vec3(0.0f);
@@ -47,6 +42,7 @@ void Camera::Inputs(float dt) {
 
     // ~Keyboard
 
+    // Controller
     m_pos += m_vel * dt;
     m_vel += m_acc * dt;
     m_vel *= 0.95f;
@@ -60,8 +56,9 @@ void Camera::Inputs(float dt) {
         printf("Forward: %f %f %f\n", m_orientation.x,m_orientation.y, m_orientation.z);
         printf("-------------------------------------------------------------------\n\n");
     }
+    // ~Controller
 
-    // Handles mouse inputs
+    // Mouse
     if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT))
     {
         m_window->hideCursor();
@@ -94,6 +91,7 @@ void Camera::Inputs(float dt) {
         m_window->showCursor();
         firstClick = true;
     }
+    // ~Mouse
 }
 
 void Camera::ApplyForce(glm::vec3 force) {

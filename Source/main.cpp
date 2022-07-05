@@ -22,7 +22,6 @@ int main() {
 
     Renderer renderer(&window);
 
-
     while (!window.shouldClose()) {
         Renderer::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         Renderer::ClearColor({ 0.2f, 0.2f, 0.2f });

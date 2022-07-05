@@ -14,36 +14,40 @@ struct Vertex
 class EBO
 {
 public:
-    GLuint ID{};
     explicit EBO(std::vector<GLuint>& indices);
 
     void Bind();
     void Unbind();
     void Delete();
+private:
+    GLuint ID{};
 };
 
 class VBO
 {
 public:
-    GLuint ID{};
     VBO();
     void UploadData(std::vector<Vertex>& vertices);
 
     void Bind();
     void Unbind();
     void Delete();
+private:
+    GLuint ID{};
 };
 
 class VAO
 {
 public:
-    GLuint ID{};
     VAO();
 
     void LinkAttrib(VBO& VBO, GLuint layout, GLuint numComponents, GLenum type, GLsizeiptr stride, void* offset);
     void Bind();
     void Unbind();
     void Delete();
+private:
+    GLuint ID{};
+    bool m_active = false;
 };
 
 #endif

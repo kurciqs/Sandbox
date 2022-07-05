@@ -7,15 +7,15 @@ class Camera {
 public:
     Camera(Window* window, glm::vec3 position);
     ~Camera() = default;
-    void Update();
+    void UpdateMatrix();
     void Upload(Shader& shader, const char* uniform_name);
     void Inputs(float dt);
 private:
     void ApplyForce(glm::vec3 force);
     Window* m_window;
     glm::vec3 m_pos;
-    glm::vec3 m_vel;
-    glm::vec3 m_acc;
+    glm::vec3 m_vel{0.0f, 0.0f, 0.0f};
+    glm::vec3 m_acc{0.0f, 0.0f, 0.0f};
     float m_speed = 0.5f;
     float m_fov = 45.0f;
     float m_sensitivity = 225.0f;

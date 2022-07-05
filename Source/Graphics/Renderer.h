@@ -14,7 +14,7 @@ static bool GL_init = false;
 class Renderer {
 public:
     explicit Renderer(Window* window);
-    ~Renderer();
+    ~Renderer() = default;
 
     void Update(float dt); // Updates camera
     void Render(); // Draws
@@ -28,7 +28,6 @@ private:
     void Flush();
     void UploadVertices();
 
-    //TODO: from renderer.c
     Camera m_camera;
 
     VAO m_vao;

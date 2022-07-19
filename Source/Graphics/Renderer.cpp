@@ -182,4 +182,37 @@ void Renderer::DrawCube(glm::vec3 position, glm::vec3 size, glm::vec3 color) {
     m_batchVertices.push_back({position + glm::vec3(0.0f, size.y, size.z), color});
     m_batchVertices.push_back({position + glm::vec3(size.x, size.y, size.z), color});
 
+    m_batchVertices.push_back({position, color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, 0.0f, 0.0f), color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, 0.0f, size.z), color});
+    m_batchVertices.push_back({position, color});
+    m_batchVertices.push_back({position + glm::vec3(0.0f, 0.0f, size.z), color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, 0.0f, size.z), color});
+
+    m_batchVertices.push_back({position + glm::vec3(0.0f, size.y, 0.0f), color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, size.y, 0.0f), color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, size.y, size.z), color});
+    m_batchVertices.push_back({position + glm::vec3(0.0f, size.y, 0.0f), color});
+    m_batchVertices.push_back({position + glm::vec3(0.0f, size.y, size.z), color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, size.y, size.z), color});
+
+    m_batchVertices.push_back({position, color});
+    m_batchVertices.push_back({position + glm::vec3(0.0f, 0.0f, size.z), color});
+    m_batchVertices.push_back({position + glm::vec3(0.0f, size.y, size.z), color});
+    m_batchVertices.push_back({position, color});
+    m_batchVertices.push_back({position + glm::vec3(0.0f, size.y, 0.0f), color});
+    m_batchVertices.push_back({position + glm::vec3(0.0f, size.y, size.z), color});
+
+    m_batchVertices.push_back({position + glm::vec3(size.x, 0.0f, 0.0f), color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, 0.0f, size.z), color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, size.y, size.z), color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, 0.0f, 0.0f), color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, size.y, 0.0f), color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, size.y, size.z), color});
+}
+
+void Renderer::DrawTriangle(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3, glm::vec3 color) {
+    m_batchVertices.push_back({c1, color});
+    m_batchVertices.push_back({c2, color});
+    m_batchVertices.push_back({c3, color});
 }

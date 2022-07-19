@@ -7,14 +7,15 @@
 
 struct Particle {
     void ApplyForce(glm::vec3 force);
-    glm::vec3 pos;
-    glm::vec3 vel;
-    glm::vec3 acc;
-    glm::vec3 color;
-    float radius;
-    float mass;
-    float invMass;
-    bool fixed;
+    glm::vec3 pos{0.0f};
+    glm::vec3 vel{0.0f};
+    glm::vec3 acc{0.0f};
+    glm::vec3 color{1.0f};
+    float radius = 1.0f;
+    float mass = 1.0f;
+    float invMass = 1.0f;
+    bool fixed = true;
+    int phase = 0;
 };
 
 

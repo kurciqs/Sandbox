@@ -29,8 +29,8 @@ public:
     // Shapes:
     void DrawDemo();
     void DrawCube(glm::vec3 position, glm::vec3 size, glm::vec3 color);
-    void DrawTriangle();
-    void DrawLine();
+    void DrawTriangle(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3, glm::vec3 color);
+    void DrawLine(); // TODO
 
 
     static void Clear(int mask);

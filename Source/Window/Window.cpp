@@ -87,7 +87,6 @@ void Window::InstallCallbacks() {
         glfwSetCursorPosCallback(m_window, Input::mouseCallback);
         glfwSetMouseButtonCallback(m_window, Input::mouseButtonCallback);
         glfwSetScrollCallback(m_window, Input::mouseScrollCallback);
-        glViewport(0, 0, m_width, m_height);
     }
 }
 

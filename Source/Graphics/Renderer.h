@@ -9,6 +9,11 @@
 #include "Camera.h"
 #endif
 
+namespace FPSCounter {
+    void Init();
+    void Tick();
+    void Print();
+}
 
 static bool GL_init = false;
 
@@ -20,11 +25,17 @@ public:
     void Update(float dt); // Updates camera
     void Render(); // Draws
     void Shutdown();
+
+    // Shapes:
     void DrawDemo();
+    void DrawCube(glm::vec3 position, glm::vec3 size, glm::vec3 color);
+    void DrawTriangle();
+    void DrawLine();
+
 
     static void Clear(int mask);
     static void ClearColor(glm::vec3 color);
-    static bool InitGL();
+    static bool InitGlad();
 private:
     void Flush();
     void UploadVertices();

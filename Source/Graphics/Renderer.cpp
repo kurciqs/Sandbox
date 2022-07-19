@@ -1,5 +1,36 @@
 #include "Renderer.h"
 
+namespace FPSCounter {
+    static int frames = 0;
+    static double t, t0, fps;
+    static float printdb = 1.0f;
+
+    void Init() {
+        t0 = glfwGetTime();
+    }
+
+    void Tick() {
+        t = glfwGetTime();
+
+        if((t - t0) > 1.0 || frames == 0)
+        {
+            fps = (double)frames / (t - t0);
+            fps = round(fps);
+            t0 = t;
+            frames = 0;
+        }
+        frames++;
+        printdb -= 0.01f;
+    }
+
+    void Print() {
+        if (printdb <= 0.0f) {
+            printf("FPS: %.1f\n", fps);
+            printdb = 1.0f;
+        }
+    }
+}
+
 static void GLAPIENTRY messageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
     if (type == GL_DEBUG_TYPE_ERROR)
@@ -16,7 +47,7 @@ static void GLAPIENTRY messageCallback(GLenum source, GLenum type, GLuint id, GL
 
 Renderer::Renderer(Window *window)
 :
-m_camera(window, glm::vec3(0.0f, 0.0f, -2.0f)),
+m_camera(window, glm::vec3(0.0f, 0.0f, 2.0f)),
 m_shader("Resources/Shaders/defaultVert.glsl", "Resources/Shaders/defaultFrag.glsl"),
 m_line_shader("Resources/Shaders/lineVert.glsl", "Resources/Shaders/lineFrag.glsl")
 {
@@ -37,7 +68,7 @@ m_line_shader("Resources/Shaders/lineVert.glsl", "Resources/Shaders/lineFrag.gls
     m_line_vbo = VBO();
 }
 
-bool Renderer::InitGL() {
+bool Renderer::InitGlad() {
     if (!gladLoadGL()) {
         print_error("Failed to initialize GLAD!", 0);
         return false;
@@ -94,7 +125,9 @@ void Renderer::Render() {
     m_line_shader.uploadMat4("model", glm::mat4(1.0f));
     m_camera.Upload(m_line_shader, "cam");
 
+    glLineWidth(4.0f);
     glDrawArrays(GL_LINES, 0, (GLsizei)m_batchLineVertices.size());
+    glLineWidth(1.0f);
     m_line_vao.Unbind();
     m_line_shader.Unbind();
 
@@ -122,10 +155,31 @@ void Renderer::DrawDemo() {
     {
             {glm::vec3(-0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f)},
             {glm::vec3(0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)},
+            {glm::vec3(0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)},
+            {glm::vec3(0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)},
+            {glm::vec3(-0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f)},
             {glm::vec3(0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)}
+
     };
 
     for (auto & vertex : vertices) {
-        m_batchVertices.push_back(vertex);
+        m_batchLineVertices.push_back(vertex);
     }
+}
+
+void Renderer::DrawCube(glm::vec3 position, glm::vec3 size, glm::vec3 color) {
+    m_batchVertices.push_back({position, color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, 0.0f, 0.0f), color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, size.y, 0.0f), color});
+    m_batchVertices.push_back({position, color});
+    m_batchVertices.push_back({position + glm::vec3(0.0f, size.y, 0.0f), color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, size.y, 0.0f), color});
+
+    m_batchVertices.push_back({position + glm::vec3(0.0f, 0.0f, size.z), color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, 0.0f, size.z), color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, size.y, size.z), color});
+    m_batchVertices.push_back({position + glm::vec3(0.0f, 0.0f, size.z), color});
+    m_batchVertices.push_back({position + glm::vec3(0.0f, size.y, size.z), color});
+    m_batchVertices.push_back({position + glm::vec3(size.x, size.y, size.z), color});
+
 }

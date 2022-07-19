@@ -142,34 +142,40 @@ void Window::Destroy() {
 }
 
 void Window::EnterFullscreen() {
-    m_fullscreen = true;
-    m_lastWidth = m_width;
-    m_lastHeight = m_height;
-    glfwGetWindowPos(m_window, &m_posX, &m_posY);
-    glfwSetWindowMonitor(m_window, glfwGetPrimaryMonitor(), maxWidth / 2, maxHeight / 2, maxWidth, maxHeight, maxRefreshRate);
-    m_width = maxWidth;
-    m_height = maxHeight;
-    glfwSwapInterval(0);
-    glfwSwapInterval(1);
+    if (m_window) {
+        m_fullscreen = true;
+        m_lastWidth = m_width;
+        m_lastHeight = m_height;
+        glfwGetWindowPos(m_window, &m_posX, &m_posY);
+        glfwSetWindowMonitor(m_window, glfwGetPrimaryMonitor(), maxWidth / 2, maxHeight / 2, maxWidth, maxHeight, maxRefreshRate);
+        m_width = maxWidth;
+        m_height = maxHeight;
+        glfwSwapInterval(0);
+        glfwSwapInterval(1);
+    }
 }
 
 void Window::ExitFullscreen() {
-    m_fullscreen = false;
-    glfwSetWindowMonitor(m_window, nullptr, m_posX, m_posY, m_lastWidth, m_lastHeight, maxRefreshRate);
-    m_width = m_lastWidth;
-    m_height = m_lastHeight;
-    glfwSwapInterval(0);
-    glfwSwapInterval(1);
+    if (m_window) {
+        m_fullscreen = false;
+        glfwSetWindowMonitor(m_window, nullptr, m_posX, m_posY, m_lastWidth, m_lastHeight, maxRefreshRate);
+        m_width = m_lastWidth;
+        m_height = m_lastHeight;
+        glfwSwapInterval(0);
+        glfwSwapInterval(1);
+    }
 }
 
 void Window::SetIcon(const std::string& path) {
-    GLFWimage image;
-    image.pixels = stbi_load(path.c_str(), &image.width, &image.height, nullptr, STBI_rgb_alpha);
-    if (!image.pixels) {
-        print_error("Failed to load icon %s. Reason: %s\n", path.c_str(), stbi_failure_reason());
+    if (m_window) {
+        GLFWimage image;
+        image.pixels = stbi_load(path.c_str(), &image.width, &image.height, nullptr, STBI_rgb_alpha);
+        if (!image.pixels) {
+            print_error("Failed to load icon %s. Reason: %s\n", path.c_str(), stbi_failure_reason());
+        }
+        glfwSetWindowIcon(m_window, 1, &image);
+        stbi_image_free(image.pixels);
     }
-    glfwSetWindowIcon(m_window, 1, &image);
-    stbi_image_free(image.pixels);
 }
 
 GLFWwindow *Window::GetNativeWindow() const {
@@ -187,4 +193,18 @@ bool Window::InitGlfw() {
     }
     glfwInitialized = true;
     return true;
+}
+
+void Window::ShutdownGlfw() {
+    if (glfwInitialized) {
+        glfwTerminate();
+        glfwInitialized = false;
+    }
+}
+
+void Window::SetTitle(const std::string& title) {
+    m_title = title;
+    if (m_window) {
+        glfwSetWindowTitle(m_window, title.c_str());
+    }
 }

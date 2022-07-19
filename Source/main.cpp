@@ -14,23 +14,27 @@ int main() {
     window.MakeContextCurrent();
     window.SetIcon("Resources/Images/Icon.png");
 
-    if (!Renderer::InitGL()) {
-        print_error("Failed to initialize GL!", 0);
+    if (!Renderer::InitGlad()) {
         return -1;
     }
+
     window.InstallCallbacks();
 
     Renderer renderer(&window);
 
+    FPSCounter::Init();
     while (!window.ShouldClose()) {
+        FPSCounter::Tick();
+
         Renderer::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         Renderer::ClearColor({ 0.2f, 0.2f, 0.2f });
 
-        renderer.DrawDemo();
+        renderer.DrawCube(glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(1.0f));
 
         renderer.Update(0.02f);
         renderer.Render();
 
+        if (Input::isKeyDown(GLFW_KEY_F5)) FPSCounter::Print();
         window.CheckBasicInput();
         window.PollEvents();
         window.SwapBuffers();
@@ -38,7 +42,7 @@ int main() {
 
     renderer.Shutdown();
     window.Destroy();
-    glfwTerminate();
+    Window::ShutdownGlfw();
 
     return 0;
 }

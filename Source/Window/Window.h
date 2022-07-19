@@ -17,6 +17,7 @@ class Window {
 public:
     // Management
     static bool InitGlfw();
+    static void ShutdownGlfw();
     Window(int width_, int height_, const std::string& title_);
     Window(const Window &) = delete;
     Window &operator=(const Window &) = delete;
@@ -26,10 +27,11 @@ public:
     void ExitFullscreen();
     void CheckBasicInput();
     void InstallCallbacks();
-    void SetIcon(const std::string& path);
 
     // Functions
     void HideCursor();
+    void SetIcon(const std::string& path);\
+    void SetTitle(const std::string& title);
     void ShowCursor();
     void SetCursorPos(const glm::ivec2 &pos);
     glm::ivec2 GetCursorPos();

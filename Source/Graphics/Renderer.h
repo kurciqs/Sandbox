@@ -9,6 +9,7 @@
 #include "Camera.h"
 #endif
 
+
 static bool GL_init = false;
 
 class Renderer {

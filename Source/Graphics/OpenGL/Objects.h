@@ -16,8 +16,8 @@ class EBO
 public:
     explicit EBO(std::vector<GLuint>& indices);
 
-    void Bind();
-    void Unbind();
+    void Bind() const;
+    static void Unbind();
     void Delete();
 private:
     GLuint ID{};
@@ -27,9 +27,8 @@ class VBO
 {
 public:
     VBO();
-    void UploadData(std::vector<Vertex>& vertices);
-
-    void Bind();
+    void UploadData(std::vector<Vertex>& vertices) const;
+    void Bind() const;
     void Unbind();
     void Delete();
 private:
@@ -40,8 +39,7 @@ class VAO
 {
 public:
     VAO();
-
-    void LinkAttrib(VBO& VBO, GLuint layout, GLuint numComponents, GLenum type, GLsizeiptr stride, void* offset);
+    void LinkAttrib(VBO& VBO, GLuint layout, GLint numComponents, GLenum type, GLsizei stride, void* offset) const;
     void Bind();
     void Unbind();
     void Delete();

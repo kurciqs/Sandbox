@@ -83,7 +83,7 @@ void Renderer::Render() {
     m_camera.Upload(m_shader, "cam");
 
     m_vao.Bind();
-    glDrawArrays(GL_TRIANGLES, 0, m_batchVertices.size());
+    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)m_batchVertices.size());
     m_vao.Unbind();
     m_shader.Unbind();
 
@@ -94,7 +94,7 @@ void Renderer::Render() {
     m_line_shader.uploadMat4("model", glm::mat4(1.0f));
     m_camera.Upload(m_line_shader, "cam");
 
-    glDrawArrays(GL_LINES, 0, m_batchLineVertices.size());
+    glDrawArrays(GL_LINES, 0, (GLsizei)m_batchLineVertices.size());
     m_line_vao.Unbind();
     m_line_shader.Unbind();
 

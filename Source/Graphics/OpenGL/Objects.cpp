@@ -9,7 +9,7 @@ EBO::EBO(std::vector<GLuint>& indices)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr) (indices.size() * sizeof(GLuint)), indices.data(), GL_STATIC_DRAW);
 }
 
-void EBO::Bind()
+void EBO::Bind() const
 {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ID);
 }
@@ -32,7 +32,7 @@ VAO::VAO()
     glGenVertexArrays(1, &ID);
 }
 
-void VAO::LinkAttrib(VBO& VBO, GLuint layout, GLuint numComponents, GLenum type, GLsizeiptr stride, void* offset) {
+void VAO::LinkAttrib(VBO& VBO, GLuint layout, GLint numComponents, GLenum type, GLsizei stride, void* offset) const {
     if (!m_active)
     {
         print_error("VAO not active!", 0);
@@ -64,7 +64,7 @@ void VAO::Delete()
 // ~VAO
 
 // VBO
-void VBO::Bind()
+void VBO::Bind() const
 {
     glBindBuffer(GL_ARRAY_BUFFER, ID);
 }
@@ -83,9 +83,9 @@ VBO::VBO() {
     glGenBuffers(1, &ID);
 }
 
-void VBO::UploadData(std::vector<Vertex> &vertices) {
+void VBO::UploadData(std::vector<Vertex> &vertices) const {
     glBindBuffer(GL_ARRAY_BUFFER, ID);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, (GLsizei)(vertices.size() * sizeof(Vertex)), vertices.data(), GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 // ~VBO

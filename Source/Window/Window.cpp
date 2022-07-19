@@ -13,11 +13,13 @@ void resizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-Window::~Window() {}
-
 Window::Window(int width, int height, const std::string& title)
 : m_width(width), m_height(height), m_title(title), m_fullscreen(false)
 {
+    if (!glfwInitialized) {
+        print_error("GLFW not initialized, failed to create window.\n", 0);
+        return;
+    }
     if (!maxWidth && !maxHeight) {
         GLFWmonitor *monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode *mode = glfwGetVideoMode(monitor);
@@ -46,38 +48,38 @@ Window::Window(int width, int height, const std::string& title)
     glfwSwapInterval(1);
 }
 
-void Window::makeContextCurrent() {
+void Window::MakeContextCurrent() {
     if (m_window) {
         glfwMakeContextCurrent(m_window);
     }
 }
 
-void Window::pollEvents() {
+void Window::PollEvents() {
     if (m_window) {
         glfwPollEvents();
     }
 }
 
-void Window::swapBuffers() {
+void Window::SwapBuffers() {
     if (m_window) {
         glfwSwapBuffers(m_window);
     }
 }
 
-void Window::close() {
+void Window::Close() {
     if (m_window) {
         glfwSetWindowShouldClose(m_window, GLFW_TRUE);
     }
 }
 
-bool Window::shouldClose() {
+bool Window::ShouldClose() {
     if (m_window) {
         return glfwWindowShouldClose(m_window);
     }
     return true;
 }
 
-void Window::installCallbacks() {
+void Window::InstallCallbacks() {
     if (m_window) {
         glfwSetErrorCallback(errorCallback);
         glfwSetWindowSizeCallback(m_window, resizeCallback);
@@ -89,35 +91,35 @@ void Window::installCallbacks() {
     }
 }
 
-void Window::checkBasicInput() {
+void Window::CheckBasicInput() {
     if (m_window) {
         m_fullscreenKeyDebounce -= 0.02f;
         if (Input::isKeyDown(GLFW_KEY_ESCAPE)) {
-            close();
+            Close();
         }
         if (Input::isKeyDown(GLFW_KEY_F11) && m_fullscreenKeyDebounce < 0.0f) {
             if (m_fullscreen)
-                exitFullscreen();
+                ExitFullscreen();
             else
-                enterFullscreen();
+                EnterFullscreen();
             m_fullscreenKeyDebounce = 0.5f;
         }
     }
 }
 
-void Window::showCursor() {
+void Window::ShowCursor() {
     if (m_window) {
         glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 }
 
-void Window::hideCursor() {
+void Window::HideCursor() {
     if (m_window) {
         glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     }
 }
 
-glm::ivec2 Window::getCursorPos() {
+glm::ivec2 Window::GetCursorPos() {
     if (m_window) {
         double x, y;
         glfwGetCursorPos(m_window, &x, &y);
@@ -126,20 +128,20 @@ glm::ivec2 Window::getCursorPos() {
     return {0, 0};
 }
 
-void Window::setCursorPos(const glm::ivec2 &pos) {
+void Window::SetCursorPos(const glm::ivec2 &pos) {
     if (m_window) {
         glfwSetCursorPos(m_window, pos.x, pos.y);
     }
 }
 
-void Window::destroy() {
+void Window::Destroy() {
     if (m_window) {
         glfwDestroyWindow(m_window);
         m_window = nullptr;
     }
 }
 
-void Window::enterFullscreen() {
+void Window::EnterFullscreen() {
     m_fullscreen = true;
     m_lastWidth = m_width;
     m_lastHeight = m_height;
@@ -151,7 +153,7 @@ void Window::enterFullscreen() {
     glfwSwapInterval(1);
 }
 
-void Window::exitFullscreen() {
+void Window::ExitFullscreen() {
     m_fullscreen = false;
     glfwSetWindowMonitor(m_window, nullptr, m_posX, m_posY, m_lastWidth, m_lastHeight, maxRefreshRate);
     m_width = m_lastWidth;
@@ -160,7 +162,7 @@ void Window::exitFullscreen() {
     glfwSwapInterval(1);
 }
 
-void Window::setIcon(const std::string& path) {
+void Window::SetIcon(const std::string& path) {
     GLFWimage image;
     image.pixels = stbi_load(path.c_str(), &image.width, &image.height, nullptr, STBI_rgb_alpha);
     if (!image.pixels) {
@@ -170,10 +172,19 @@ void Window::setIcon(const std::string& path) {
     stbi_image_free(image.pixels);
 }
 
-GLFWwindow *Window::getNativeWindow() const {
+GLFWwindow *Window::GetNativeWindow() const {
     return m_window;
 }
 
-float Window::getAspectRatio() {
+float Window::GetAspectRatio() {
     return (float)(m_width) / (float)(m_height);
+}
+
+bool Window::InitGlfw() {
+    if (!glfwInit()) {
+        print_error("Failed to initialize GLFW.\n", 0);
+        return false;
+    }
+    glfwInitialized = true;
+    return true;
 }

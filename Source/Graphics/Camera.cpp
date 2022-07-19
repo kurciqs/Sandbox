@@ -7,7 +7,7 @@ void Camera::UpdateMatrix() {
     glm::mat4 projection = glm::mat4(1.0f);
     view = glm::lookAt(m_pos, m_pos + m_orientation, up);
 
-    projection = glm::perspective(glm::radians(m_fov), m_window->getAspectRatio(), 0.05f, 1000.0f);
+    projection = glm::perspective(glm::radians(m_fov), m_window->GetAspectRatio(), 0.05f, 1000.0f);
     m_cameraMatrix = projection * view;
 }
 
@@ -61,15 +61,15 @@ void Camera::Inputs(float dt) {
     // Mouse
     if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT))
     {
-        m_window->hideCursor();
+        m_window->HideCursor();
 
         if (firstClick)
         {
-            m_window->setCursorPos( {m_window->m_width / 2, m_window->m_height / 2} );
+            m_window->SetCursorPos( {m_window->m_width / 2, m_window->m_height / 2} );
             firstClick = false;
         }
 
-        glm::ivec2 mouse = m_window->getCursorPos();
+        glm::ivec2 mouse = m_window->GetCursorPos();
 
         float rotX = m_sensitivity * (float)((float)mouse.y - (float)m_window->m_height / 2.0f) / (float)m_window->m_height;
         float rotY = m_sensitivity * (float)((float)mouse.x - (float)m_window->m_width / 2.0f) / (float)m_window->m_width;
@@ -83,12 +83,12 @@ void Camera::Inputs(float dt) {
 
         m_orientation = glm::rotate(m_orientation, glm::radians(-rotY), up);
 
-        m_window->setCursorPos( {m_window->m_width / 2, m_window->m_height / 2} );
+        m_window->SetCursorPos( {m_window->m_width / 2, m_window->m_height / 2} );
     }
 
     else if (Input::isMouseButtonUp(GLFW_MOUSE_BUTTON_LEFT))
     {
-        m_window->showCursor();
+        m_window->ShowCursor();
         firstClick = true;
     }
     // ~Mouse

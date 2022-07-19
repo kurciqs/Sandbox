@@ -30,3 +30,9 @@ void _print_log(const char *file, int line, const char *format, ...) {
 
     printf("\n");
 }
+
+template <typename T1, typename T2>
+size_t offset_of(T1 T2::*member) {
+    static T2 obj;
+    return size_t(&(obj.*member)) - size_t(&obj);
+}

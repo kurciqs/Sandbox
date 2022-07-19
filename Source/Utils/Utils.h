@@ -10,6 +10,10 @@
 
 #define print_log(format, ...) _print_log(__FILE__, __LINE__, format, __VA_ARGS__)
 #define print_error(format, ...) _print_error(__FILE__, __LINE__, format, __VA_ARGS__)
+#define offsetofi(s,m) ((::size_t)&reinterpret_cast<char const volatile&>((((s*)0)->m)))
+
+template <typename T1, typename T2>
+inline size_t offset_of(T1 T2::*member);
 
 const char* load_file(const char* path);
 

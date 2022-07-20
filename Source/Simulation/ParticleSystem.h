@@ -2,8 +2,8 @@
 #define SANDBOX_PARTICLESYSTEM_H
 
 #include <vector>
-#include "Particle.h"
-#include "Constraint.h"
+#include "Simulation/Particle.h"
+#include "Simulation/Constraints/DistanceConstraint.h"
 #include "Graphics/Renderer.h"
 
 using ConstraintGroup = std::vector<Constraint*>;

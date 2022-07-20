@@ -3083,8 +3083,8 @@ Breaking Changes:
     ImVec4 ConvertTitleBgCol(const ImVec4& win_bg_col, const ImVec4& title_bg_col)
     {
        float new_a = 1.0f - ((1.0f - win_bg_col.w) * (1.0f - title_bg_col.w));
-       float k = title_bg_col.w / new_a;
-       return ImVec4((win_bg_col.x * win_bg_col.w + title_bg_col.x) * k, (win_bg_col.y * win_bg_col.w + title_bg_col.y) * k, (win_bg_col.z * win_bg_col.w + title_bg_col.z) * k, new_a);
+       float m_stiffness = title_bg_col.w / new_a;
+       return ImVec4((win_bg_col.x * win_bg_col.w + title_bg_col.x) * m_stiffness, (win_bg_col.y * win_bg_col.w + title_bg_col.y) * m_stiffness, (win_bg_col.z * win_bg_col.w + title_bg_col.z) * m_stiffness, new_a);
     }
 
 Other changes:

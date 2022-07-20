@@ -1,9 +1,26 @@
 #ifndef SANDBOX_CONSTRAINT_H
 #define SANDBOX_CONSTRAINT_H
 
+#include <vector>
+#include "Particle.h"
+#define SOLVER_ITERATIONS 5
+
+enum ConstraintType {
+    equality,
+    inequality
+};
 
 class Constraint {
-    // TODO: .
+public:
+    virtual void Project() = 0;
+    // For debug purposes
+    virtual void Draw() = 0;
+    virtual ~Constraint() = default; // WARNING: might be leaky tisms
+protected:
+    float m_stiffness;
+    int m_cardinality; // cardinality
+    ConstraintType m_type;
+    std::vector<Particle*> m_particles;
 };
 
 

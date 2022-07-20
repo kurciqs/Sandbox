@@ -30,7 +30,7 @@ public:
     void DrawDemo();
     void DrawCube(glm::vec3 position, glm::vec3 size, glm::vec3 color);
     void DrawTriangle(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3, glm::vec3 color);
-    void DrawLine(); // TODO
+    void DrawLine(glm::vec3 p1, glm::vec3 p2, glm::vec3 color);
 
 
     static void Clear(int mask);

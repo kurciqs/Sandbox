@@ -15,10 +15,9 @@ public:
     virtual void Project() = 0;
     // For debug purposes
     virtual void Draw() = 0;
-    virtual ~Constraint() = default; // WARNING: might be leaky tisms
+    virtual ~Constraint() {}; // WARNING: might be leaky tisms
 protected:
     float m_stiffness;
-    int m_cardinality; // cardinality
     ConstraintType m_type;
     std::vector<Particle*> m_particles;
 };

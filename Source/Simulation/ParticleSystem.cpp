@@ -4,11 +4,13 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type) {
     for (int i = 0; i < numParticles; i++) {
         m_particles.push_back(new Particle{.pos = glm::vec3{rand() % 10, rand() % 10, rand() % 10}});
     }
-    // NOTE: for now 100 empty constraints and 1 constraint group
-    m_constraints.reserve(1);
-    for (int i = 0; i < 100; i++) {
-        m_constraints[0].push_back(new DistanceConstraint(m_particles[0], m_particles[1], 1.0f, 1.0f));
+    // NOTE: for now 10 empty constraints and 1 constraint group
+    ConstraintGroup g;
+    for (int i = 0; i < 10; i++) {
+        Constraint* c = new DistanceConstraint(m_particles[0], m_particles[1], 1.0f, 1.0f);
+        g.push_back(c);
     }
+    m_constraints.push_back(g);
 }
 
 void ParticleSystem::Clear() {
@@ -17,11 +19,11 @@ void ParticleSystem::Clear() {
     }
     m_particles.clear();
 
-    for (ConstraintGroup& group : m_constraints) {
-        for (auto *c: group) {
+    for (auto& g: m_constraints) {
+        for (auto *c: g) {
             delete c;
         }
-        group.clear();
+        g.clear();
     }
     m_constraints.clear();
 }

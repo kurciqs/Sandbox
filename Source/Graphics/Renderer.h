@@ -54,8 +54,9 @@ private:
     std::vector<Vertex> m_batchLineVertices;
     bool m_drawLineBatch;
 
-    VBO m_particleVBO;
     VAO m_particleVAO;
+    VBO m_quadVBO;      //
+    VBO m_particleVBO;  // +
     Shader m_particleShader;
     bool m_drawParticles;
 };

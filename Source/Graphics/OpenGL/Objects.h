@@ -11,6 +11,11 @@ struct Vertex
     glm::vec3 color;
 };
 
+struct Position
+{
+    glm::vec3 position;
+};
+
 class EBO
 {
 public:
@@ -27,7 +32,8 @@ class VBO
 {
 public:
     VBO();
-    void UploadData(std::vector<Vertex>& vertices) const;
+    void SetData(std::vector<Vertex>& vertices) const;
+    void SetData(std::vector<Position>& positions) const;
     // TODO: implement UploadData() for different VBO types, mainly the instancing (overloaded)
     void Bind() const;
     void Unbind();

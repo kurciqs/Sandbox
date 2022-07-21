@@ -3,16 +3,21 @@
 Camera::Camera(Window* window, glm::vec3 position, float speed) : m_pos(position), m_window(window), m_speed(speed) {}
 
 void Camera::UpdateMatrix() {
-    glm::mat4 view = glm::mat4(1.0f);
-    glm::mat4 projection = glm::mat4(1.0f);
-    view = glm::lookAt(m_pos, m_pos + m_orientation, up);
-
-    projection = glm::perspective(glm::radians(m_fov), m_window->GetAspectRatio(), 0.05f, 1000.0f);
-    m_cameraMatrix = projection * view;
+    m_viewMatrix = glm::lookAt(m_pos, m_pos + m_orientation, up);
+    m_projectionMatrix = glm::perspective(glm::radians(m_fov), m_window->GetAspectRatio(), 0.05f, 1000.0f);
+    m_cameraMatrix = m_projectionMatrix * m_viewMatrix;
 }
 
-void Camera::Upload(Shader &shader, const char *uniform_name) {
+void Camera::UploadCameraMatrix(Shader &shader, const char *uniform_name) {
     shader.uploadMat4(uniform_name, m_cameraMatrix);
+}
+
+void Camera::UploadProjectionMatrix(Shader &shader, const char *uniform_name) {
+    shader.uploadMat4(uniform_name, m_projectionMatrix);
+}
+
+void Camera::UploadViewMatrix(Shader &shader, const char *uniform_name) {
+    shader.uploadMat4(uniform_name, m_viewMatrix);
 }
 
 void Camera::Inputs(float dt) {

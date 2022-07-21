@@ -16,7 +16,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type) {
                 if (i + 1 >= m_particles.size()) {
                     continue;
                 }
-                Constraint *c = new DistanceConstraint(m_particles[i], m_particles[i + 1], 1.0f, 1.0f);
+                Constraint *c = new DistanceConstraint(m_particles[i], m_particles[i + 1], k_distance, 1.0f);
                 g.push_back(c);
             }
             m_constraints.push_back(g);

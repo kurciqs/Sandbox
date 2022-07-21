@@ -71,10 +71,26 @@ Renderer::Renderer(Window *window)
     m_lineVBO = VBO();
     m_drawLineBatch = false;
 
-    // Instancing
+    // Particles
     m_particleVBO = VBO();
     m_particleVAO = VAO();
     m_drawParticles = false;
+
+    m_quadVBO = VBO();
+    std::vector<Position> quadPositions = {
+            {glm::vec3(-0.5f, -0.5f, 0.0f)},
+            {glm::vec3(0.5f, -0.5f, 0.0f)},
+            {glm::vec3(0.5f, 0.5f, 0.0f)},
+
+            {glm::vec3(-0.5, -0.5f, 0.0f)},
+            {glm::vec3(0.5, 0.5f, 0.0f)},
+            {glm::vec3(-0.5, 0.5f, 0.0f)}
+    };
+    m_quadVBO.SetData(quadPositions);
+
+    m_particleVAO.Bind();
+    m_particleVAO.LinkAttrib(m_quadVBO, 0, 3, GL_FLOAT, sizeof(Position), (void*)0);
+    m_particleVAO.Unbind();
 }
 
 bool Renderer::InitGlad() {
@@ -92,13 +108,13 @@ void Renderer::Flush() {
 }
 
 void Renderer::UploadVertices() {
-    m_VBO.UploadData(m_batchVertices);
+    m_VBO.SetData(m_batchVertices);
     m_VAO.Bind();
     m_VAO.LinkAttrib(m_VBO, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
     m_VAO.LinkAttrib(m_VBO, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, color));
     m_VAO.Unbind();
 
-    m_lineVBO.UploadData(m_batchLineVertices);
+    m_lineVBO.SetData(m_batchLineVertices);
     m_lineVAO.Bind();
     m_lineVAO.LinkAttrib(m_lineVBO, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
     m_lineVAO.LinkAttrib(m_lineVBO, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, color));
@@ -121,7 +137,7 @@ void Renderer::Render() {
         m_shader.Bind();
 
         m_shader.uploadMat4("model", glm::mat4(1.0f));
-        m_camera.Upload(m_shader, "cam");
+        m_camera.UploadCameraMatrix(m_shader, "cam");
 
         m_VAO.Bind();
         glDrawArrays(GL_TRIANGLES, 0, (GLsizei) m_batchVertices.size());
@@ -135,7 +151,7 @@ void Renderer::Render() {
         m_lineVAO.Bind();
 
         m_lineShader.uploadMat4("model", glm::mat4(1.0f));
-        m_camera.Upload(m_lineShader, "cam");
+        m_camera.UploadCameraMatrix(m_lineShader, "cam");
 
         glLineWidth(4.0f);
         glDrawArrays(GL_LINES, 0, (GLsizei) m_batchLineVertices.size());
@@ -147,7 +163,20 @@ void Renderer::Render() {
     Flush();
 
     if (m_drawParticles) {
-        // TODO: .
+        m_particleVAO.Bind();
+        m_particleShader.Bind();
+
+        m_particleShader.uploadMat4("model", glm::mat4(1.0f));
+//        m_particleShader.uploadMat4("projection", glm::mat4(1.0f));
+//        m_particleShader.uploadMat4("view", glm::mat4(1.0f));
+//        m_camera.UploadProjectionMatrix(m_particleShader, "projection");
+//        m_camera.UploadViewMatrix(m_particleShader, "view");
+        m_camera.UploadCameraMatrix(m_particleShader, "cam");
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        m_particleShader.Unbind();
+        m_particleVAO.Unbind();
     }
 
     m_drawBatch = false;
@@ -254,7 +283,7 @@ void Renderer::DrawParticles(std::vector<Particle*>& particles) {
     m_particleVBO.Unbind(); // ~VBO
     m_particleShader.Bind(); // Shader
 
-    m_camera.Upload(m_particleShader, "cam");
+    m_camera.UploadCameraMatrix(m_particleShader, "cam");
     m_particleShader.uploadMat4("model", glm::mat4(1.0f));
 
     // essentially makes it be called during Draw()

@@ -167,13 +167,10 @@ void Renderer::Render() {
         m_particleShader.Bind();
 
         m_particleShader.uploadMat4("model", glm::mat4(1.0f));
-//        m_particleShader.uploadMat4("projection", glm::mat4(1.0f));
-//        m_particleShader.uploadMat4("view", glm::mat4(1.0f));
-//        m_camera.UploadProjectionMatrix(m_particleShader, "projection");
-//        m_camera.UploadViewMatrix(m_particleShader, "view");
-        m_camera.UploadCameraMatrix(m_particleShader, "cam");
+        m_camera.UploadProjectionMatrix(m_particleShader, "proj");
+        m_camera.UploadViewMatrix(m_particleShader, "view");
 
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 10);
 
         m_particleShader.Unbind();
         m_particleVAO.Unbind();
@@ -260,12 +257,12 @@ void Renderer::DrawLine(glm::vec3 p1, glm::vec3 p2, glm::vec3 color) {
 }
 
 void Renderer::DrawParticles(std::vector<Particle*>& particles) {
-    // TODO: also add a quadlike VBO to the particleVAO, otherwise f
     m_particleVBO.Bind(); // VBO
     // m_particleVBO.SetData(particles);
 
     m_particleVAO.Bind(); // VAO
 
+    // TODO :
     /*
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(vec3) + sizeof(float), (void*)0); // aOffset

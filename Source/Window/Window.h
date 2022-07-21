@@ -19,8 +19,6 @@ public:
     static bool InitGlfw();
     static void ShutdownGlfw();
     Window(int width_, int height_, const std::string& title_);
-    Window(const Window &) = delete;
-    Window &operator=(const Window &) = delete;
     ~Window() = default;
     void Destroy();
     void EnterFullscreen();

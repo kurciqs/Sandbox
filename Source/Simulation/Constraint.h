@@ -3,22 +3,17 @@
 
 #include <vector>
 #include "Particle.h"
+#include "Graphics/Renderer.h"
 #define SOLVER_ITERATIONS 5
-
-enum ConstraintType {
-    equality,
-    inequality
-};
 
 class Constraint {
 public:
+    virtual ~Constraint() {};
+
     virtual void Project() = 0;
-    // For debug purposes
-    virtual void Draw() = 0;
-    virtual ~Constraint() {}; // WARNING: might be leaky tisms
+    virtual void Draw(Renderer& renderer) = 0;
 protected:
     float m_stiffness;
-    ConstraintType m_type;
     std::vector<Particle*> m_particles;
 };
 

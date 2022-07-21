@@ -47,9 +47,10 @@ static void GLAPIENTRY messageCallback(GLenum source, GLenum type, GLuint id, GL
 
 Renderer::Renderer(Window *window)
 :
-m_camera(window, glm::vec3(0.0f, 0.0f, 2.0f)),
-m_shader("Resources/Shaders/defaultVert.glsl", "Resources/Shaders/defaultFrag.glsl"),
-m_line_shader("Resources/Shaders/lineVert.glsl", "Resources/Shaders/lineFrag.glsl")
+        m_camera(window, glm::vec3(0.0f, 0.0f, 10.0f), 10.0f),
+        m_shader("Resources/Shaders/defaultVert.glsl", "Resources/Shaders/defaultFrag.glsl"),
+        m_lineShader("Resources/Shaders/lineVert.glsl", "Resources/Shaders/lineFrag.glsl"),
+        m_particleShader("Resources/Shaders/particleVert.glsl", "Resources/Shaders/particleFrag.glsl")
 {
     if (!GL_init) {
         print_error("GL not initialized!", 0);
@@ -62,10 +63,18 @@ m_line_shader("Resources/Shaders/lineVert.glsl", "Resources/Shaders/lineFrag.gls
 
     // Batching
 
-    m_vao = VAO();
-    m_vbo = VBO();
-    m_line_vao = VAO();
-    m_line_vbo = VBO();
+    m_VAO = VAO();
+    m_VBO = VBO();
+    m_drawBatch = false;
+
+    m_lineVAO = VAO();
+    m_lineVBO = VBO();
+    m_drawLineBatch = false;
+
+    // Instancing
+    m_particleVBO = VBO();
+    m_particleVAO = VAO();
+    m_drawParticles = false;
 }
 
 bool Renderer::InitGlad() {
@@ -83,17 +92,17 @@ void Renderer::Flush() {
 }
 
 void Renderer::UploadVertices() {
-    m_vbo.UploadData(m_batchVertices);
-    m_vao.Bind();
-    m_vao.LinkAttrib(m_vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
-    m_vao.LinkAttrib(m_vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, color));
-    m_vao.Unbind();
+    m_VBO.UploadData(m_batchVertices);
+    m_VAO.Bind();
+    m_VAO.LinkAttrib(m_VBO, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
+    m_VAO.LinkAttrib(m_VBO, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, color));
+    m_VAO.Unbind();
 
-    m_line_vbo.UploadData(m_batchLineVertices);
-    m_line_vao.Bind();
-    m_line_vao.LinkAttrib(m_line_vbo, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
-    m_line_vao.LinkAttrib(m_line_vbo, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, color));
-    m_line_vao.Unbind();
+    m_lineVBO.UploadData(m_batchLineVertices);
+    m_lineVAO.Bind();
+    m_lineVAO.LinkAttrib(m_lineVBO, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
+    m_lineVAO.LinkAttrib(m_lineVBO, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, color));
+    m_lineVAO.Unbind();
 }
 
 void Renderer::ClearColor(glm::vec3 color) {
@@ -108,30 +117,42 @@ void Renderer::Render() {
     UploadVertices();
 
     // Normal:
-    m_shader.Bind();
+    if (m_drawBatch) {
+        m_shader.Bind();
 
-    m_shader.uploadMat4("model", glm::mat4(1.0f));
-    m_camera.Upload(m_shader, "cam");
+        m_shader.uploadMat4("model", glm::mat4(1.0f));
+        m_camera.Upload(m_shader, "cam");
 
-    m_vao.Bind();
-    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)m_batchVertices.size());
-    m_vao.Unbind();
-    m_shader.Unbind();
+        m_VAO.Bind();
+        glDrawArrays(GL_TRIANGLES, 0, (GLsizei) m_batchVertices.size());
+        m_VAO.Unbind();
+        m_shader.Unbind();
+    }
 
     // Lines:
-    m_line_shader.Bind();
-    m_line_vao.Bind();
+    if (m_drawLineBatch) {
+        m_lineShader.Bind();
+        m_lineVAO.Bind();
 
-    m_line_shader.uploadMat4("model", glm::mat4(1.0f));
-    m_camera.Upload(m_line_shader, "cam");
+        m_lineShader.uploadMat4("model", glm::mat4(1.0f));
+        m_camera.Upload(m_lineShader, "cam");
 
-    glLineWidth(4.0f);
-    glDrawArrays(GL_LINES, 0, (GLsizei)m_batchLineVertices.size());
-    glLineWidth(1.0f);
-    m_line_vao.Unbind();
-    m_line_shader.Unbind();
+        glLineWidth(4.0f);
+        glDrawArrays(GL_LINES, 0, (GLsizei) m_batchLineVertices.size());
+        glLineWidth(1.0f);
+        m_lineVAO.Unbind();
+        m_lineShader.Unbind();
+    }
 
     Flush();
+
+    if (m_drawParticles) {
+        // TODO: .
+    }
+
+    m_drawBatch = false;
+    m_drawLineBatch = false;
+    m_drawParticles = false;
 }
 
 void Renderer::Update(float dt) {
@@ -140,34 +161,18 @@ void Renderer::Update(float dt) {
 }
 
 void Renderer::Shutdown() {
-    m_vao.Delete();
-    m_vbo.Delete();
-    m_line_vao.Delete();
-    m_line_vbo.Delete();
+    m_VAO.Delete();
+    m_VBO.Delete();
+    m_lineVAO.Delete();
+    m_lineVBO.Delete();
     m_shader.Delete();
-    m_line_shader.Delete();
+    m_lineShader.Delete();
 }
 
 // Shapes:
 
-void Renderer::DrawDemo() {
-    std::vector<Vertex> vertices =
-    {
-            {glm::vec3(-0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f)},
-            {glm::vec3(0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)},
-            {glm::vec3(0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)},
-            {glm::vec3(0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)},
-            {glm::vec3(-0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f)},
-            {glm::vec3(0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)}
-
-    };
-
-    for (auto & vertex : vertices) {
-        m_batchLineVertices.push_back(vertex);
-    }
-}
-
 void Renderer::DrawCube(glm::vec3 position, glm::vec3 size, glm::vec3 color) {
+    m_drawBatch = true;
     m_batchVertices.push_back({position, color});
     m_batchVertices.push_back({position + glm::vec3(size.x, 0.0f, 0.0f), color});
     m_batchVertices.push_back({position + glm::vec3(size.x, size.y, 0.0f), color});
@@ -212,12 +217,49 @@ void Renderer::DrawCube(glm::vec3 position, glm::vec3 size, glm::vec3 color) {
 }
 
 void Renderer::DrawTriangle(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3, glm::vec3 color) {
+    m_drawBatch = true;
     m_batchVertices.push_back({c1, color});
     m_batchVertices.push_back({c2, color});
     m_batchVertices.push_back({c3, color});
 }
 
 void Renderer::DrawLine(glm::vec3 p1, glm::vec3 p2, glm::vec3 color) {
+    m_drawLineBatch = true;
+
     m_batchLineVertices.push_back({p1, color});
     m_batchLineVertices.push_back({p2, color});
+}
+
+void Renderer::DrawParticles(std::vector<Particle*>& particles) {
+    // TODO: also add a quadlike VBO to the particleVAO, otherwise f
+    m_particleVBO.Bind(); // VBO
+    // m_particleVBO.SetData(particles);
+
+    m_particleVAO.Bind(); // VAO
+
+    /*
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(vec3) + sizeof(float), (void*)0); // aOffset
+    glVertexAttribDivisor(1, 1);
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(vec3) + sizeof(float), (void*)sizeof(vec3)); // aColor
+    glVertexAttribDivisor(2, 1);
+
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(vec3) + sizeof(float), (void*)(sizeof(vec3) * 2)); // aColor
+    glVertexAttribDivisor(3, 1);
+    */
+
+    m_particleVBO.Unbind(); // ~VBO
+    m_particleShader.Bind(); // Shader
+
+    m_camera.Upload(m_particleShader, "cam");
+    m_particleShader.uploadMat4("model", glm::mat4(1.0f));
+
+    // essentially makes it be called during Draw()
+    m_drawParticles = true;
+
+    m_particleShader.Unbind(); // ~Shader
+    m_particleVAO.Unbind(); // ~VAO
 }

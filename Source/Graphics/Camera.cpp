@@ -1,6 +1,6 @@
 #include "Camera.h"
 
-Camera::Camera(Window* window, glm::vec3 position) : m_pos(position), m_window(window) {}
+Camera::Camera(Window* window, glm::vec3 position, float speed) : m_pos(position), m_window(window), m_speed(speed) {}
 
 void Camera::UpdateMatrix() {
     glm::mat4 view = glm::mat4(1.0f);

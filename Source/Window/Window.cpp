@@ -8,9 +8,12 @@ static void errorCallback(int error, const char* description) {
 
 void resizeCallback(GLFWwindow* window, int width, int height) {
     auto* win = (Window*)glfwGetWindowUserPointer(window);
-    win->m_width = width;
-    win->m_height = height;
-    glViewport(0, 0, width, height);
+
+    if (width != 0 && height != 0) {
+        win->m_width = width;
+        win->m_height = height;
+        glViewport(0, 0, width, height);
+    }
 }
 
 Window::Window(int width, int height, const std::string& title)

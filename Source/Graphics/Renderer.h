@@ -7,6 +7,7 @@
 #include "OpenGL/Objects.h"
 #include "OpenGL/Shader.h"
 #include "Camera.h"
+#include "Simulation/Particle.h"
 #endif
 
 namespace FPSCounter {
@@ -27,11 +28,10 @@ public:
     void Shutdown();
 
     // Shapes:
-    void DrawDemo();
     void DrawCube(glm::vec3 position, glm::vec3 size, glm::vec3 color);
     void DrawTriangle(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3, glm::vec3 color);
     void DrawLine(glm::vec3 p1, glm::vec3 p2, glm::vec3 color);
-
+    void DrawParticles(std::vector<Particle*>& particles);
 
     static void Clear(int mask);
     static void ClearColor(glm::vec3 color);
@@ -42,15 +42,22 @@ private:
 
     Camera m_camera;
 
-    VAO m_vao;
-    VBO m_vbo;
+    VAO m_VAO;
+    VBO m_VBO;
     Shader m_shader;
     std::vector<Vertex> m_batchVertices;
+    bool m_drawBatch;
 
-    VAO m_line_vao;
-    VBO m_line_vbo;
-    Shader m_line_shader;
+    VAO m_lineVAO;
+    VBO m_lineVBO;
+    Shader m_lineShader;
     std::vector<Vertex> m_batchLineVertices;
+    bool m_drawLineBatch;
+
+    VBO m_particleVBO;
+    VAO m_particleVAO;
+    Shader m_particleShader;
+    bool m_drawParticles;
 };
 
 #endif //SANDBOX_RENDERER_H

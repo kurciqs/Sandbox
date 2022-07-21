@@ -5,7 +5,7 @@
 
 class Camera {
 public:
-    Camera(Window* window, glm::vec3 position);
+    Camera(Window* window, glm::vec3 position, float speed);
     ~Camera() = default;
     void UpdateMatrix();
     void Upload(Shader& shader, const char* uniform_name);

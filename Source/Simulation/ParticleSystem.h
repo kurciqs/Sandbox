@@ -15,14 +15,15 @@ enum ParticleSystemType {
 class ParticleSystem {
 public:
     ParticleSystem(int numParticles, ParticleSystemType type);
+
     void Update(float dt);
-    void Draw();
+    void Draw(Renderer& renderer);
     void Clear();
     void Destroy();
 private:
     std::vector<Particle*> m_particles;
     std::vector<ConstraintGroup> m_constraints;
-    glm::vec3 m_globalForce{0.0f};
+    glm::vec3 m_globalForce{0.0f, -5.0f, 0.0f}; // gravity
 };
 
 

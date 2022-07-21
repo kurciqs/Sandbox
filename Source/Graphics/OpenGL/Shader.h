@@ -28,6 +28,7 @@ public:
     void Unbind();
     void Delete() const;
 
+    // TODO: make all caps
     void uploadVec4(const char* varName, const glm::vec4& vec4) const;
     void uploadVec3(const char* varName, const glm::vec3& vec3) const;
     void uploadVec2(const char* varName, const glm::vec2& vec2) const;

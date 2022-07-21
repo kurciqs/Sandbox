@@ -2,14 +2,14 @@
 #define SANDBOX_DISTANCECONSTRAINT_H
 
 #include "Simulation/Constraint.h"
-#include "Graphics/Renderer.h"
 
 class DistanceConstraint : public Constraint {
 public:
     DistanceConstraint(Particle* p1, Particle* p2, float k, float d);
-    void Project() override;
-    void Draw() override;
     virtual ~DistanceConstraint() {};
+
+    void Project() override;
+    void Draw(Renderer& renderer) override;
 private:
     float m_restDistance; // rest distance
 };

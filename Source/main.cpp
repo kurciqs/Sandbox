@@ -25,12 +25,11 @@ int main() {
     FPSCounter::Init();
     while (!window.ShouldClose()) {
         Renderer::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        Renderer::ClearColor({ 0.2f, 0.2f, 0.2f });
+        Renderer::ClearColor({ 0.2f, 0.3f, 0.3f });
 
         particleSystem.Update(DELTA_TIME);
-        particleSystem.Draw();
+        particleSystem.Draw(renderer);
 
-        renderer.DrawTriangle(glm::vec3(-0.5f, 0.0f, 0.1f), glm::vec3(0.85f, -0.2f, 0.0f), glm::vec3(1.0f, 1.0f, 0.8f), glm::vec3(0.3f, 0.5f, 0.1f));
         renderer.DrawCube(glm::vec3(-0.25f), glm::vec3(0.5f), glm::vec3(1.0f));
 
         renderer.Update(DELTA_TIME);

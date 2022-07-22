@@ -6,7 +6,8 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type) {
         {
 
             for (int i = 0; i < numParticles; i++) {
-                auto* p = new Particle( !i ? glm::vec3((float)i) : glm::vec3(rand() % 5, rand() % 5, rand() % 5), glm::vec3(0.2f, 0.4f, 0.1f) );
+                auto* p = new Particle( !i ? glm::vec3((float)i, 5.0f, (float)i) : glm::vec3(rand() % 5, rand() % 5, rand() % 5), glm::vec3(rand() % 255) / 255.0f );
+                p->radius = 0.5f;
                 m_particles.push_back(p);
             }
             m_particles[0]->fixed = true;
@@ -83,7 +84,6 @@ void ParticleSystem::Draw(Renderer& renderer) {
         if (drawp) {
             renderer.DrawLine(p->pos, glm::vec3(0.0f), glm::vec3(1.0f));
         }
-        renderer.DrawCube(p->pos - glm::vec3(0.25f), glm::vec3(0.5f), glm::vec3(0.2f, 0.4f, 0.7f));
     }
      renderer.DrawParticles(m_particles);
 

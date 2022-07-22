@@ -20,7 +20,7 @@ int main() {
     }
     Renderer renderer(&window);
 
-    ParticleSystem particleSystem(10, ParticleSystemType::Testing);
+    ParticleSystem particleSystem(10000, ParticleSystemType::Testing);
 
     FPSCounter::Init();
     while (!window.ShouldClose()) {

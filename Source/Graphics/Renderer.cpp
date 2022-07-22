@@ -170,12 +170,13 @@ void Renderer::Render() {
         m_camera.UploadProjectionMatrix(m_particleShader, "proj");
         m_camera.UploadViewMatrix(m_particleShader, "view");
 
-        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 10);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, (GLsizei) m_numParticles);
 
         m_particleShader.Unbind();
         m_particleVAO.Unbind();
     }
 
+    m_numParticles = 0;
     m_drawBatch = false;
     m_drawLineBatch = false;
     m_drawParticles = false;
@@ -264,6 +265,7 @@ void Renderer::DrawParticles(std::vector<Particle*>& particles) {
         vertices[i].color = particles[i]->color;
         vertices[i].radius = particles[i]->radius;
     }
+    m_numParticles = vertices.size();
 
     m_particleVBO.Bind(); // VBO
     m_particleVBO.SetData<ParticleVertex>(vertices);
@@ -280,7 +282,6 @@ void Renderer::DrawParticles(std::vector<Particle*>& particles) {
     m_particleShader.Bind(); // Shader
 
     m_camera.UploadCameraMatrix(m_particleShader, "cam");
-    m_particleShader.uploadMat4("model", glm::mat4(1.0f));
 
     // essentially makes it be called during Draw()
     m_drawParticles = true;

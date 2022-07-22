@@ -10,6 +10,7 @@ DistanceConstraint::DistanceConstraint(Particle *p1, Particle *p2, float k, floa
 }
 
 void DistanceConstraint::Project() {
+    // NOTE: right here I'd send stuff to GPU or somthing and use the results
     Particle* p1 = m_particles[0];
     Particle* p2 = m_particles[1];
 

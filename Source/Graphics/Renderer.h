@@ -59,6 +59,7 @@ private:
     VBO m_particleVBO;  // +
     Shader m_particleShader;
     bool m_drawParticles;
+    GLuint m_numParticles;
 };
 
 #endif //SANDBOX_RENDERER_H

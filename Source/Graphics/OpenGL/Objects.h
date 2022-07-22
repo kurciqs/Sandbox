@@ -16,6 +16,12 @@ struct Position
     glm::vec3 position;
 };
 
+struct ParticleVertex {
+    glm::vec3 position;
+    glm::vec3 color;
+    float radius;
+};
+
 class EBO
 {
 public:
@@ -32,9 +38,14 @@ class VBO
 {
 public:
     VBO();
-    void SetData(std::vector<Vertex>& vertices) const;
-    void SetData(std::vector<Position>& positions) const;
-    // TODO: implement UploadData() for different VBO types, mainly the instancing (overloaded)
+
+    template<typename T>
+    void SetData(std::vector<T> &ts) const {
+        glBindBuffer(GL_ARRAY_BUFFER, ID);
+        glBufferData(GL_ARRAY_BUFFER, (GLsizei)(ts.size() * sizeof(T)), ts.data(), GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
     void Bind() const;
     void Unbind();
     void Delete();
@@ -47,6 +58,7 @@ class VAO
 public:
     VAO();
     void LinkAttrib(VBO& VBO, GLuint layout, GLint numComponents, GLenum type, GLsizei stride, void* offset) const;
+    void DivideAttrib(GLuint n, GLuint m) const;
     void Bind();
     void Unbind();
     void Delete();

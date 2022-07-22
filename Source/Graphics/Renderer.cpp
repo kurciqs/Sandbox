@@ -86,7 +86,7 @@ Renderer::Renderer(Window *window)
             {glm::vec3(0.5, 0.5f, 0.0f)},
             {glm::vec3(-0.5, 0.5f, 0.0f)}
     };
-    m_quadVBO.SetData(quadPositions);
+    m_quadVBO.SetData<Position>(quadPositions);
 
     m_particleVAO.Bind();
     m_particleVAO.LinkAttrib(m_quadVBO, 0, 3, GL_FLOAT, sizeof(Position), (void*)0);
@@ -108,13 +108,13 @@ void Renderer::Flush() {
 }
 
 void Renderer::UploadVertices() {
-    m_VBO.SetData(m_batchVertices);
+    m_VBO.SetData<Vertex>(m_batchVertices);
     m_VAO.Bind();
     m_VAO.LinkAttrib(m_VBO, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
     m_VAO.LinkAttrib(m_VBO, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, color));
     m_VAO.Unbind();
 
-    m_lineVBO.SetData(m_batchLineVertices);
+    m_lineVBO.SetData<Vertex>(m_batchLineVertices);
     m_lineVAO.Bind();
     m_lineVAO.LinkAttrib(m_lineVBO, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
     m_lineVAO.LinkAttrib(m_lineVBO, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, color));
@@ -257,25 +257,24 @@ void Renderer::DrawLine(glm::vec3 p1, glm::vec3 p2, glm::vec3 color) {
 }
 
 void Renderer::DrawParticles(std::vector<Particle*>& particles) {
-    m_particleVBO.Bind(); // VBO
-    // m_particleVBO.SetData(particles);
 
+    std::vector<ParticleVertex> vertices(particles.size());
+    for (int i = 0; i < vertices.size(); i++) {
+        vertices[i].position = particles[i]->pos;
+        vertices[i].color = particles[i]->color;
+        vertices[i].radius = particles[i]->radius;
+    }
+
+    m_particleVBO.Bind(); // VBO
+    m_particleVBO.SetData<ParticleVertex>(vertices);
     m_particleVAO.Bind(); // VAO
 
-    // TODO :
-    /*
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(vec3) + sizeof(float), (void*)0); // aOffset
-    glVertexAttribDivisor(1, 1);
-
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(vec3) + sizeof(float), (void*)sizeof(vec3)); // aColor
-    glVertexAttribDivisor(2, 1);
-
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(vec3) + sizeof(float), (void*)(sizeof(vec3) * 2)); // aColor
-    glVertexAttribDivisor(3, 1);
-    */
+    m_particleVAO.LinkAttrib(m_particleVBO, 1, 3, GL_FLOAT, 2 * sizeof(glm::vec3) + sizeof(float), (void*)0);
+    m_particleVAO.DivideAttrib(1, 1);
+    m_particleVAO.LinkAttrib(m_particleVBO, 2, 3, GL_FLOAT, 2 * sizeof(glm::vec3) + sizeof(float), (void*)sizeof(glm::vec3));
+    m_particleVAO.DivideAttrib(2, 1);
+    m_particleVAO.LinkAttrib(m_particleVBO, 3, 1, GL_FLOAT, 2 * sizeof(glm::vec3) + sizeof(float), (void*)(sizeof(glm::vec3) * 2));
+    m_particleVAO.DivideAttrib(3, 1);
 
     m_particleVBO.Unbind(); // ~VBO
     m_particleShader.Bind(); // Shader

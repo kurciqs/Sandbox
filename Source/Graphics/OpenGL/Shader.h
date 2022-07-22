@@ -29,19 +29,19 @@ public:
     void Delete() const;
 
     // TODO: make all caps
-    void uploadVec4(const char* varName, const glm::vec4& vec4) const;
-    void uploadVec3(const char* varName, const glm::vec3& vec3) const;
-    void uploadVec2(const char* varName, const glm::vec2& vec2) const;
-    void uploadIVec4(const char* varName, const glm::ivec4& vec4) const;
-    void uploadIVec3(const char* varName, const glm::ivec3& vec3) const;
-    void uploadIVec2(const char* varName, const glm::ivec2& vec2) const;
-    void uploadFloat(const char* varName, float value) const;
-    void uploadInt(const char* varName, int value) const;
-    void uploadIntArray(const char* varName, int length, const int* array) const;
-    void uploadUInt(const char* varName, unsigned int value) const;
-    void uploadBool(const char* varName, bool value) const;
-    void uploadMat4(const char* varName, const glm::mat4& mat4) const;
-    void uploadMat3(const char* varName, const glm::mat3& mat3) const;
+    void UploadVec4(const char* varName, const glm::vec4& vec4) const;
+    void UploadVec3(const char* varName, const glm::vec3& vec3) const;
+    void UploadVec2(const char* varName, const glm::vec2& vec2) const;
+    void UploadIVec4(const char* varName, const glm::ivec4& vec4) const;
+    void UploadIVec3(const char* varName, const glm::ivec3& vec3) const;
+    void UploadIVec2(const char* varName, const glm::ivec2& vec2) const;
+    void UploadFloat(const char* varName, float value) const;
+    void UploadInt(const char* varName, int value) const;
+    void UploadIntArray(const char* varName, int length, const int* array) const;
+    void UploadUInt(const char* varName, unsigned int value) const;
+    void UploadBool(const char* varName, bool value) const;
+    void UploadMat4(const char* varName, const glm::mat4& mat4) const;
+    void UploadMat3(const char* varName, const glm::mat3& mat3) const;
 
 private:
     GLuint ID;

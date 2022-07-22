@@ -22,7 +22,7 @@ void main() {
                       0.0, 0.0, 1.0, 0.0,
                       iOffset.x, iOffset.y, iOffset.z, 1.0);
 
-    mat4 newView = view * model;
+    mat4 newView = view * model; // GEPE3d inspired
     newView[0][0] = 1;   newView[1][0] = 0;   newView[2][0] = 0;
     newView[0][1] = 0;   newView[1][1] = 1;   newView[2][1] = 0;
     newView[0][2] = 0;   newView[1][2] = 0;   newView[2][2] = 1;

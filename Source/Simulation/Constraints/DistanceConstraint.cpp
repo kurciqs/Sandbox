@@ -18,14 +18,12 @@ void DistanceConstraint::Project() {
     glm::vec3 diff = p1->cpos - p2->cpos;
     // |p1 − p2|
     float distance = glm::length(diff);
-    // (|p1 −p2| −d)
-    float c = distance - m_restDistance;
 
     //  ((|p1 −p2| −d)/w1+w2)* ((p1 - p2)/(|p1 − p2|))
-    glm::vec3 correction = (c / (p1->invMass + p2->invMass)) * (diff / distance) * m_stiffness;
+    glm::vec3 correction = ((distance - m_restDistance) / (p1->invMass + p2->invMass)) * (diff / distance) * m_stiffness;
 
-    if (!p1->fixed) p1->cpos -=  correction * p1->invMass;
-    if (!p2->fixed) p2->cpos +=  correction * p2->invMass;
+    if (!p1->fixed) p1->cpos -= correction * p1->invMass;
+    if (!p2->fixed) p2->cpos += correction * p2->invMass;
 }
 
 void DistanceConstraint::Draw(Renderer& renderer) {

@@ -136,7 +136,7 @@ void Renderer::Render() {
     if (m_drawBatch) {
         m_shader.Bind();
 
-        m_shader.uploadMat4("model", glm::mat4(1.0f));
+        m_shader.UploadMat4("model", glm::mat4(1.0f));
         m_camera.UploadCameraMatrix(m_shader, "cam");
 
         m_VAO.Bind();
@@ -150,7 +150,7 @@ void Renderer::Render() {
         m_lineShader.Bind();
         m_lineVAO.Bind();
 
-        m_lineShader.uploadMat4("model", glm::mat4(1.0f));
+        m_lineShader.UploadMat4("model", glm::mat4(1.0f));
         m_camera.UploadCameraMatrix(m_lineShader, "cam");
 
         glLineWidth(4.0f);
@@ -166,7 +166,7 @@ void Renderer::Render() {
         m_particleVAO.Bind();
         m_particleShader.Bind();
 
-        m_particleShader.uploadMat4("model", glm::mat4(1.0f));
+        m_particleShader.UploadMat4("model", glm::mat4(1.0f));
         m_camera.UploadProjectionMatrix(m_particleShader, "proj");
         m_camera.UploadViewMatrix(m_particleShader, "view");
 

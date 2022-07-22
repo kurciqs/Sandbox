@@ -9,15 +9,15 @@ void Camera::UpdateMatrix() {
 }
 
 void Camera::UploadCameraMatrix(Shader &shader, const char *uniform_name) {
-    shader.uploadMat4(uniform_name, m_cameraMatrix);
+    shader.UploadMat4(uniform_name, m_cameraMatrix);
 }
 
 void Camera::UploadProjectionMatrix(Shader &shader, const char *uniform_name) {
-    shader.uploadMat4(uniform_name, m_projectionMatrix);
+    shader.UploadMat4(uniform_name, m_projectionMatrix);
 }
 
 void Camera::UploadViewMatrix(Shader &shader, const char *uniform_name) {
-    shader.uploadMat4(uniform_name, m_viewMatrix);
+    shader.UploadMat4(uniform_name, m_viewMatrix);
 }
 
 void Camera::Inputs(float dt) {

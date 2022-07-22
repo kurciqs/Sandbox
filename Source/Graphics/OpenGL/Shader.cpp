@@ -54,91 +54,91 @@ void Shader::Delete() const{
     glDeleteProgram(ID);
 }
 
-void Shader::uploadVec4(const char* varName, const glm::vec4& vec4) const
+void Shader::UploadVec4(const char* varName, const glm::vec4& vec4) const
 {
     if (!m_active)
         print_error("Shader can't upload %s, because it isn't bound!", varName);
     glUniform4f(glGetUniformLocation(ID,  varName), vec4.x, vec4.y, vec4.z, vec4.w);
 }
 
-void Shader::uploadVec3(const char* varName, const glm::vec3& vec3) const
+void Shader::UploadVec3(const char* varName, const glm::vec3& vec3) const
 {
     if (!m_active)
         print_error("Shader can't upload %s, because it isn't bound!", varName);
     glUniform3f(glGetUniformLocation(ID,  varName), vec3.x, vec3.y, vec3.z);
 }
 
-void Shader::uploadVec2(const char* varName, const glm::vec2& vec2) const
+void Shader::UploadVec2(const char* varName, const glm::vec2& vec2) const
 {
     if (!m_active)
         print_error("Shader can't upload %s, because it isn't bound!", varName);
     glUniform2f(glGetUniformLocation(ID,  varName), vec2.x, vec2.y);
 }
 
-void Shader::uploadIVec4(const char* varName, const glm::ivec4& vec4) const
+void Shader::UploadIVec4(const char* varName, const glm::ivec4& vec4) const
 {
     if (!m_active)
         print_error("Shader can't upload %s, because it isn't bound!", varName);
     glUniform4i(glGetUniformLocation(ID,  varName), vec4.x, vec4.y, vec4.z, vec4.w);
 }
 
-void Shader::uploadIVec3(const char* varName, const glm::ivec3& vec3) const
+void Shader::UploadIVec3(const char* varName, const glm::ivec3& vec3) const
 {
     if (!m_active)
         print_error("Shader can't upload %s, because it isn't bound!", varName);
     glUniform3i(glGetUniformLocation(ID,  varName), vec3.x, vec3.y, vec3.z);
 }
 
-void Shader::uploadIVec2(const char* varName, const glm::ivec2& vec2) const
+void Shader::UploadIVec2(const char* varName, const glm::ivec2& vec2) const
 {
     if (!m_active)
         print_error("Shader can't upload %s, because it isn't bound!", varName);
     glUniform2i(glGetUniformLocation(ID,  varName), vec2.x, vec2.y);
 }
 
-void Shader::uploadFloat(const char* varName, float value) const
+void Shader::UploadFloat(const char* varName, float value) const
 {
     if (!m_active)
         print_error("Shader can't upload %s, because it isn't bound!", varName);
     glUniform1f(glGetUniformLocation(ID,  varName), value);
 }
 
-void Shader::uploadInt(const char* varName, int value) const
+void Shader::UploadInt(const char* varName, int value) const
 {
     if (!m_active)
         print_error("Shader can't upload %s, because it isn't bound!", varName);
     glUniform1i(glGetUniformLocation(ID,  varName), value);
 }
 
-void Shader::uploadUInt(const char* varName, unsigned int value) const
+void Shader::UploadUInt(const char* varName, unsigned int value) const
 {
     if (!m_active)
         print_error("Shader can't upload %s, because it isn't bound!", varName);
     glUniform1ui(glGetUniformLocation(ID,  varName), value);
 }
 
-void Shader::uploadIntArray(const char* varName, int length, const int* array) const
+void Shader::UploadIntArray(const char* varName, int length, const int* array) const
 {
     if (!m_active)
         print_error("Shader can't upload %s, because it isn't bound!", varName);
     glUniform1iv(glGetUniformLocation(ID,  varName), length, array);
 }
 
-void Shader::uploadBool(const char* varName, bool value) const
+void Shader::UploadBool(const char* varName, bool value) const
 {
     if (!m_active)
         print_error("Shader can't upload %s, because it isn't bound!", varName);
     glUniform1i(glGetUniformLocation(ID,  varName), value ? 1 : 0);
 }
 
-void Shader::uploadMat4(const char* varName, const glm::mat4& mat4) const
+void Shader::UploadMat4(const char* varName, const glm::mat4& mat4) const
 {
     if (!m_active)
         print_error("Shader can't upload %s, because it isn't bound!", varName);
     glUniformMatrix4fv(glGetUniformLocation(ID,  varName), 1, GL_FALSE, glm::value_ptr(mat4));
 }
 
-void Shader::uploadMat3(const char* varName, const glm::mat3& mat3) const
+void Shader::UploadMat3(const char* varName, const glm::mat3& mat3) const
 {
     if (!m_active)
         print_error("Shader can't upload %s, because it isn't bound!", varName);

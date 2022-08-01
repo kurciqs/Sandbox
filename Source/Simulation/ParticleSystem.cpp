@@ -78,12 +78,15 @@ void ParticleSystem::Update(float dt) {
                 continue;
             if (dist < p1->radius + p2->radius) {
                 // TODo: push a contact constraint here depending on the phase
-                Constraint *c = new DistanceConstraint(p1, p2, k_distance, 10.0f);
+                Constraint *c = new DistanceConstraint(p1, p2, k_distance, 1.0f);
                 m_constraints[1].push_back(c);
             }
         }
 
     }
+
+    if (Input::isKeyDown(GLFW_KEY_E))
+        print_log("%d", m_constraints[1].size() + m_constraints[0].size());
     // (9)
 
 
@@ -113,10 +116,6 @@ void ParticleSystem::Update(float dt) {
         p->force = glm::vec3(0.0f);
     }
     // (28)
-
-
-    // temp:
-
 }
 
 void ParticleSystem::Draw(Renderer& renderer) {

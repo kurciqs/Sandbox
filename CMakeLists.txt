@@ -3,7 +3,10 @@ project(Sandbox)
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(SOURCE_FILES Source/main.cpp Source/Window/Window.cpp Source/Window/Window.h Source/Utils/Utils.cpp Source/Utils/Utils.h Source/Window/Input.cpp Source/Window/Input.h Source/Graphics/Camera.cpp Source/Graphics/Camera.h Source/Graphics/OpenGL/Objects.cpp Source/Graphics/OpenGL/Objects.h Source/Graphics/OpenGL/Shader.cpp Source/Graphics/OpenGL/Shader.h Source/Graphics/Renderer.cpp Source/Graphics/Renderer.h Source/Simulation/Particle.cpp Source/Simulation/Particle.h Source/Simulation/ParticleSystem.cpp Source/Simulation/ParticleSystem.h Source/Simulation/Constraint.h Source/Simulation/Constraints/DistanceConstraint.cpp Source/Simulation/Constraints/DistanceConstraint.h)
+set(SOURCE_FILES Source/main.cpp Source/Window/Window.cpp Source/Window/Window.h Source/Utils/Utils.cpp Source/Utils/Utils.h Source/Window/Input.cpp Source/Window/Input.h
+        Source/Graphics/Camera.cpp Source/Graphics/Camera.h Source/Graphics/OpenGL/Objects.cpp Source/Graphics/OpenGL/Objects.h Source/Graphics/OpenGL/Shader.cpp Source/Graphics/OpenGL/Shader.h
+        Source/Graphics/Renderer.cpp Source/Graphics/Renderer.h Source/Simulation/Particle.cpp Source/Simulation/Particle.h Source/Simulation/ParticleSystem.cpp Source/Simulation/ParticleSystem.h
+        Source/Simulation/Constraint.h Source/Simulation/Constraints/DistanceConstraint.cpp Source/Simulation/Constraints/DistanceConstraint.h Source/Simulation/Constraints/ContactConstraint.cpp Source/Simulation/Constraints/ContactConstraint.h)
 
 include_directories(
         ${PROJECT_SOURCE_DIR}/Source

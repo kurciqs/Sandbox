@@ -1,6 +1,6 @@
 #include "Window/Window.h"
 #include "Simulation/ParticleSystem.h"
-#define DELTA_TIME 0.02f
+float DELTA_TIME = 0.02f;
 
 int main() {
 
@@ -20,7 +20,7 @@ int main() {
     }
     Renderer renderer(&window);
 
-    ParticleSystem particleSystem(7, ParticleSystemType::Testing);
+    ParticleSystem particleSystem(10, ParticleSystemType::Testing);
 
     FPSCounter::Init();
     while (!window.ShouldClose()) {

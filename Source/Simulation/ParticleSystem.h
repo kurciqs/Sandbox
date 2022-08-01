@@ -6,7 +6,7 @@
 #include "Simulation/Constraints/DistanceConstraint.h"
 #include "Graphics/Renderer.h"
 
-#define k_distance 1.0f
+#define k_distance 0.1f
 using ConstraintGroup = std::vector<Constraint*>;
 
 enum ParticleSystemType {

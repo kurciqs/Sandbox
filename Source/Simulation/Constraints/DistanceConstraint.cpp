@@ -7,10 +7,12 @@ DistanceConstraint::DistanceConstraint(Particle *p1, Particle *p2, float k, floa
     m_particles.reserve(2);
     m_particles[0] = p1;
     m_particles[1] = p2;
+    m_particles[0]->num_constraints++;
+    m_particles[1]->num_constraints++;
 }
 
 void DistanceConstraint::Project() {
-    // NOTE: right here I'd send stuff to GPU or somthing and use the results
+    // NOTE: right here I'd send stuff to GPU or somthing and use the resulting correction
     Particle* p1 = m_particles[0];
     Particle* p2 = m_particles[1];
 
@@ -22,10 +24,15 @@ void DistanceConstraint::Project() {
     //  ((|p1 −p2| −d)/w1+w2)* ((p1 - p2)/(|p1 − p2|))
     glm::vec3 correction = ((distance - m_restDistance) / (p1->invMass + p2->invMass)) * (diff / distance) * m_stiffness;
 
-    if (!p1->fixed) p1->cpos -= correction * p1->invMass;
-    if (!p2->fixed) p2->cpos += correction * p2->invMass;
+    if (!p1->fixed) p1->cpos -= correction * p1->invMass / (float)p1->num_constraints;
+    if (!p2->fixed) p2->cpos += correction * p2->invMass / (float)p2->num_constraints;
 }
 
 void DistanceConstraint::Draw(Renderer& renderer) {
     renderer.DrawLine(m_particles[0]->cpos, m_particles[1]->cpos, glm::vec3(0.1f, 0.9f, 0.1f));
+}
+
+DistanceConstraint::~DistanceConstraint()  {
+    m_particles[0]->num_constraints--;
+    m_particles[1]->num_constraints--;
 }

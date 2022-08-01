@@ -19,6 +19,7 @@ struct Particle {
     float invMass = 1.0f;
     bool fixed = false;
     int phase = 0;
+    int num_constraints;
 };
 
 

@@ -12,7 +12,7 @@ int main() {
     }
     Window window(1200, 800, "Sandbox");
     window.MakeContextCurrent();
-    window.SetIcon("Resources/Images/Icon.png");
+    window.SetIcon("Assets/Images/Icon.png");
     window.InstallCallbacks();
 
     if (!Renderer::InitGlad()) {
@@ -20,7 +20,7 @@ int main() {
     }
     Renderer renderer(&window);
 
-    ParticleSystem particleSystem(10, ParticleSystemType::Testing);
+    ParticleSystem particleSystem(7, ParticleSystemType::Testing);
 
     FPSCounter::Init();
     while (!window.ShouldClose()) {

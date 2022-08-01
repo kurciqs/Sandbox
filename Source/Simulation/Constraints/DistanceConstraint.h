@@ -6,7 +6,7 @@
 class DistanceConstraint : public Constraint {
 public:
     DistanceConstraint(Particle* p1, Particle* p2, float k, float d);
-    virtual ~DistanceConstraint() {};
+    virtual ~DistanceConstraint();
 
     void Project() override;
     void Draw(Renderer& renderer) override;

@@ -48,9 +48,9 @@ static void GLAPIENTRY messageCallback(GLenum source, GLenum type, GLuint id, GL
 Renderer::Renderer(Window *window)
 :
         m_camera(window, glm::vec3(0.0f, 0.0f, 10.0f), 10.0f),
-        m_shader("Resources/Shaders/defaultVert.glsl", "Resources/Shaders/defaultFrag.glsl"),
-        m_lineShader("Resources/Shaders/lineVert.glsl", "Resources/Shaders/lineFrag.glsl"),
-        m_particleShader("Resources/Shaders/particleVert.glsl", "Resources/Shaders/particleFrag.glsl")
+        m_shader("Assets/Shaders/defaultVert.glsl", "Assets/Shaders/defaultFrag.glsl"),
+        m_lineShader("Assets/Shaders/lineVert.glsl", "Assets/Shaders/lineFrag.glsl"),
+        m_particleShader("Assets/Shaders/particleVert.glsl", "Assets/Shaders/particleFrag.glsl")
 {
     if (!GL_init) {
         print_error("GL not initialized!", 0);
@@ -280,8 +280,6 @@ void Renderer::DrawParticles(std::vector<Particle*>& particles) {
 
     m_particleVBO.Unbind(); // ~VBO
     m_particleShader.Bind(); // Shader
-
-    m_camera.UploadCameraMatrix(m_particleShader, "cam");
 
     // essentially makes it be called during Draw()
     m_drawParticles = true;

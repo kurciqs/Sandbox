@@ -7,7 +7,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type) {
 
             for (int i = 0; i < numParticles; i++) {
                 auto* p = new Particle( !i ? glm::vec3((float)i, 5.0f, (float)i) : glm::vec3(rand() % 5, rand() % 5, rand() % 5), glm::vec3(rand() % 255) / 255.0f );
-                p->radius = 0.5f;
+                p->radius = 1.0f;
                 m_particles.push_back(p);
             }
             m_particles[0]->fixed = true;
@@ -21,7 +21,8 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type) {
                 g.push_back(c);
             }
             m_constraints.push_back(g);
-
+            // for collision / constact constraints
+            m_constraints.push_back(ConstraintGroup());
         }
             break;
         default:
@@ -48,7 +49,10 @@ void ParticleSystem::Destroy() {
     Clear();
 }
 
+// TODO: skip stuff if mass is 0
+// TODO: counts for particles, they are how many constraints a particle is projected by
 void ParticleSystem::Update(float dt) {
+    // (1)
     for (Particle* p : m_particles) {
         if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT) && !p->fixed)
             p->ApplyForce(glm::vec3( (rand() % 100 - rand() % 100), (rand() % 100 - rand() % 100), (rand() % 100 - rand() % 100) ));
@@ -58,23 +62,61 @@ void ParticleSystem::Update(float dt) {
         p->vel += dt * (p->invMass * p->force);
         p->vel *= 0.98f;
         p->cpos = p->pos + (dt * p->vel);
+        // TODO: (4) mass scaling
     }
+    // (5)
 
-    for (int i = 0; i < SOLVER_ITERATIONS; i++) {
 
-        for (const ConstraintGroup& g : m_constraints) {
-            for (Constraint* c : g) {
-                c->Project();
+    // (6)
+    // TODO
+    for (Particle* p1 : m_particles) {
+
+        // (7) dumb, I know
+        for (Particle* p2 : m_particles) {
+            float dist = glm::distance(p1->cpos, p2->cpos);
+            if (p1->cpos == p2->cpos)
+                continue;
+            if (dist < p1->radius + p2->radius) {
+                // TODo: push a contact constraint here depending on the phase
+                Constraint *c = new DistanceConstraint(p1, p2, k_distance, 10.0f);
+                m_constraints[1].push_back(c);
             }
         }
 
     }
+    // (9)
 
+
+    // (10)
+    // TODO
+    // (15)
+
+
+    // (16)
+    for (int i = 0; i < SOLVER_ITERATIONS; i++) {
+
+        for (const ConstraintGroup& g : m_constraints) {
+            for (Constraint* c : g) {
+                c->Project(); // NOTE: also the counts are implemented careful
+            }
+        }
+
+    }
+    // (17)
+
+
+    // (22)
     for (Particle* p : m_particles) {
         p->vel = (p->cpos - p->pos) / dt;
-        p->pos = p->cpos;
+        // TODO: (25, 26)
+        p->pos = p->cpos; // or apply sleeping
         p->force = glm::vec3(0.0f);
     }
+    // (28)
+
+
+    // temp:
+
 }
 
 void ParticleSystem::Draw(Renderer& renderer) {

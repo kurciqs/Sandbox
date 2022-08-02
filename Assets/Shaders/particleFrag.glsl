@@ -9,11 +9,9 @@ in vec3 vCenter; // don't care
 in vec2 vPosOnQuad;
 
 void main() {
-    vec3 lightPos = vec3(0.0, 0.0, 0.0);
-
     float dist = length(vPosOnQuad);
     if (dist > vRadius) {
         discard;
     }
-    FragColor = vec4(vColor * (1.0 / exp(dist)), 1.0f);
+    FragColor = vec4(vColor * (cos(dist)), 1.0f);
 }

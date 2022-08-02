@@ -6,19 +6,20 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type) {
         {
 
             for (int i = 0; i < numParticles; i++) {
-                auto* p = new Particle( !i ? glm::vec3((float)i, 5.0f, (float)i) : glm::vec3(rand() % 5, rand() % 5, rand() % 5), glm::vec3(rand() % 255) / 255.0f );
-                p->radius = 1.0f;
+                auto* p = new Particle( glm::vec3(rand() % 5, rand() % 5, rand() % 5), glm::vec3(rand() % 255, rand() % 255, rand() % 255) / 255.0f );
+
+                p->radius = 0.5f;
                 m_particles.push_back(p);
             }
             m_particles[0]->fixed = true;
+            m_particles[0]->pos = glm::vec3(0.0f);
 
             ConstraintGroup g;
             for (int i = 0; i < m_particles.size(); i++) {
-                if (i + 1 >= m_particles.size()) {
-                    continue;
-                }
-                Constraint *c = new DistanceConstraint(m_particles[i], m_particles[i + 1], k_distance, 1.0f);
-                g.push_back(c);
+//                if (i + 1 >= m_particles.size()) {
+//                    continue;
+//                }
+                g.push_back(new DistanceConstraint(m_particles[i], m_particles[0], k_distance, 3.0f));
             }
             m_constraints.push_back(g);
             // for collision / constact constraints
@@ -31,11 +32,6 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type) {
 }
 
 void ParticleSystem::Clear() {
-    for (auto* p : m_particles) {
-        delete p;
-    }
-    m_particles.clear();
-
     for (auto& g: m_constraints) {
         for (auto *c: g) {
             delete c;
@@ -43,6 +39,12 @@ void ParticleSystem::Clear() {
         g.clear();
     }
     m_constraints.clear();
+
+    // DELETE CONSTRAINTS FIRST, OTHERWISE SEGFAULTS, IDIOT
+    for (auto* p : m_particles) {
+        delete p;
+    }
+    m_particles.clear();
 }
 
 void ParticleSystem::Destroy() {
@@ -57,7 +59,7 @@ void ParticleSystem::Update(float dt) {
         if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT) && !p->fixed)
             p->ApplyForce(glm::vec3( (rand() % 100 - rand() % 100), (rand() % 100 - rand() % 100), (rand() % 100 - rand() % 100) ));
 
-        if (!p->fixed) p->ApplyForce(m_globalForce * p->mass);
+//        if (!p->fixed) p->ApplyForce(m_globalForce * p->mass);
 
         p->vel += dt * (p->invMass * p->force);
         p->vel *= 0.98f;
@@ -69,24 +71,23 @@ void ParticleSystem::Update(float dt) {
 
     // (6)
     // TODO
-    for (Particle* p1 : m_particles) {
+    for (int i = 0; i < m_particles.size(); i++) {
+        Particle* p1 = m_particles[i];
 
         // (7) dumb, I know
-        for (Particle* p2 : m_particles) {
-            float dist = glm::distance(p1->cpos, p2->cpos);
-            if (p1->cpos == p2->cpos)
+        for (int j = 0; j < m_particles.size(); j++) {
+            if (i == j)
                 continue;
+
+            Particle* p2 = m_particles[j];
+            float dist = glm::distance(p1->cpos, p2->cpos);
             if (dist < p1->radius + p2->radius) {
                 // TODo: push a contact constraint here depending on the phase
-                Constraint *c = new DistanceConstraint(p1, p2, k_distance, 1.0f);
-                m_constraints[1].push_back(c);
+                // (8)
+                m_constraints[1].push_back(new ContactConstraint(p1, p2, k_contact));
             }
         }
-
     }
-
-    if (Input::isKeyDown(GLFW_KEY_E))
-        print_log("%d", m_constraints[1].size() + m_constraints[0].size());
     // (9)
 
 
@@ -97,13 +98,11 @@ void ParticleSystem::Update(float dt) {
 
     // (16)
     for (int i = 0; i < SOLVER_ITERATIONS; i++) {
-
         for (const ConstraintGroup& g : m_constraints) {
             for (Constraint* c : g) {
                 c->Project(); // NOTE: also the counts are implemented careful
             }
         }
-
     }
     // (17)
 
@@ -137,6 +136,12 @@ void ParticleSystem::Draw(Renderer& renderer) {
         }
     }
 
+    // not cool:
+    for (Constraint* c: m_constraints[1]) {
+        c->Draw(renderer);
+        delete c;
+    }
+    m_constraints[1].clear();
 }
 
 

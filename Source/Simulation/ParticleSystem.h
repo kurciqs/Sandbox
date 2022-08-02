@@ -4,9 +4,11 @@
 #include <vector>
 #include "Simulation/Particle.h"
 #include "Simulation/Constraints/DistanceConstraint.h"
+#include "Simulation/Constraints/ContactConstraint.h"
 #include "Graphics/Renderer.h"
 
 #define k_distance 0.1f
+#define k_contact 1.0f
 using ConstraintGroup = std::vector<Constraint*>;
 
 enum ParticleSystemType {

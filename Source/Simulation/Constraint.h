@@ -5,6 +5,7 @@
 #include "Particle.h"
 #include "Graphics/Renderer.h"
 #define SOLVER_ITERATIONS 5
+#include <glm/gtx/fast_square_root.hpp>
 
 class Constraint {
 public:

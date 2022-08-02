@@ -14,11 +14,11 @@ struct Particle {
     glm::vec3 vel{0.0f};
     glm::vec3 color{1.0f};
     glm::vec3 force{0.0f};
-    float radius = 1.0f;
-    float mass = 1.0f;
-    float invMass = 1.0f;
-    bool fixed = false;
-    int phase = 0;
+    float radius;
+    float mass;
+    float invMass;
+    bool fixed;
+    int phase;
     int num_constraints;
 };
 

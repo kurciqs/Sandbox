@@ -13,6 +13,14 @@ public:
 
     virtual void Project() = 0;
     virtual void Draw(Renderer& renderer) = 0;
+
+    float GetInvMassSum() {
+        float r = 0.0f;
+        for (Particle* p: m_particles) {
+            r += p->invMass;
+        }
+        return r;
+    }
 protected:
     float m_stiffness;
     std::vector<Particle*> m_particles;

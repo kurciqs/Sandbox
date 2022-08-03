@@ -19,7 +19,8 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type) {
 //                if (i + 1 >= m_particles.size()) {
 //                    continue;
 //                }
-                g.push_back(new DistanceConstraint(m_particles[i], m_particles[0], k_distance, 3.0f));
+//                g.push_back(new DistanceConstraint(m_particles[i], m_particles[0], k_distance, 3.0f));
+                g.push_back(new BoxBoundaryConstraint(m_particles[i], glm::vec3(-5.0f), glm::vec3(5.0f), 1.0f));
             }
             m_constraints.push_back(g);
             // for collision / constact constraints
@@ -52,7 +53,6 @@ void ParticleSystem::Destroy() {
 }
 
 // TODO: skip stuff if mass is 0
-// TODO: counts for particles, they are how many constraints a particle is projected by
 void ParticleSystem::Update(float dt) {
     // (1)
     for (Particle* p : m_particles) {
@@ -115,6 +115,14 @@ void ParticleSystem::Update(float dt) {
         p->force = glm::vec3(0.0f);
     }
     // (28)
+
+
+#ifdef NDEBUG
+    for (Constraint* c: m_constraints[1]) {
+        delete c;
+    }
+    m_constraints[1].clear();
+#endif
 }
 
 void ParticleSystem::Draw(Renderer& renderer) {
@@ -125,8 +133,9 @@ void ParticleSystem::Draw(Renderer& renderer) {
             renderer.DrawLine(p->pos, glm::vec3(0.0f), glm::vec3(1.0f));
         }
     }
-     renderer.DrawParticles(m_particles);
+    renderer.DrawParticles(m_particles);
 
+#ifndef NDEBUG
     bool drawc = Input::isKeyDown(GLFW_KEY_C);
     for (const ConstraintGroup& g : m_constraints) {
         for (Constraint* c : g) {
@@ -138,10 +147,10 @@ void ParticleSystem::Draw(Renderer& renderer) {
 
     // not cool:
     for (Constraint* c: m_constraints[1]) {
-        c->Draw(renderer);
         delete c;
     }
     m_constraints[1].clear();
+#endif
 }
 
 

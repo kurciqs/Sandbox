@@ -1,7 +1,7 @@
 #include "ContactConstraint.h"
 
 ContactConstraint::ContactConstraint(Particle *p1, Particle *p2, float k) {
-    m_stiffness = k;
+    m_stiffness = 1.0f - powf((1.0f - k), 1.0f / SOLVER_ITERATIONS);
     m_particles.reserve(2);
     m_particles.push_back(p1);
     m_particles.push_back(p2);
@@ -29,6 +29,8 @@ void ContactConstraint::Project() { // is just like the distance constraint but 
     glm::vec3 delta = (mag / GetInvMassSum()) * (normal / dist) * m_stiffness;
     if (!p1->fixed) p1->cpos += p1->invMass * delta / (float)p1->num_constraints;
     if (!p2->fixed) p2->cpos -= p2->invMass * delta / (float)p2->num_constraints;
+
+    //TODO: friction
 }
 
 void ContactConstraint::Draw(Renderer &renderer) {

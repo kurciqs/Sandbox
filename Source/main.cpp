@@ -20,13 +20,18 @@ int main() {
     }
     Renderer renderer(&window);
 
-    ParticleSystem particleSystem(10, ParticleSystemType::Testing);
+    ParticleSystem particleSystem(50, ParticleSystemType::Testing);
+    float particleSpawnDebounce = 0.1f;
 
     FPSCounter::Init();
     while (!window.ShouldClose()) {
         Renderer::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         Renderer::ClearColor({ 0.2f, 0.3f, 0.3f });
 
+        if (Input::isKeyDown(GLFW_KEY_F) && particleSpawnDebounce < 0.0f) {
+            particleSystem.AddParticle(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, RANDOM_COLOR);
+            particleSpawnDebounce = 0.1f;
+        }
         particleSystem.Update(DELTA_TIME);
         particleSystem.Draw(renderer);
 
@@ -40,6 +45,8 @@ int main() {
         window.CheckBasicInput();
         window.PollEvents();
         window.SwapBuffers();
+
+        particleSpawnDebounce -= DELTA_TIME;
     }
 
     window.Destroy();

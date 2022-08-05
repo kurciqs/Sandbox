@@ -12,6 +12,8 @@ public:
     void UploadProjectionMatrix(Shader& shader, const char* uniform_name);
     void UploadViewMatrix(Shader& shader, const char* uniform_name);
     void Inputs(float dt);
+    glm::vec3 GetPos() { return m_pos; };
+    glm::vec3 GetOrientation() { return m_orientation; };
 private:
     void ApplyForce(glm::vec3 force);
     Window* m_window;

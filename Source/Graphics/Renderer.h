@@ -29,6 +29,7 @@ public:
 
     // Shapes:
     void DrawCube(glm::vec3 position, glm::vec3 size, glm::vec3 color);
+    void DrawLineCube(glm::vec3 position, glm::vec3 size, glm::vec3 color);
     void DrawTriangle(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3, glm::vec3 color);
     void DrawLine(glm::vec3 p1, glm::vec3 p2, glm::vec3 color);
     void DrawParticles(std::vector<Particle*>& particles);
@@ -36,6 +37,9 @@ public:
     static void Clear(int mask);
     static void ClearColor(glm::vec3 color);
     static bool InitGlad();
+
+    glm::vec3 GetCameraPosition() { return m_camera.GetPos(); };
+    glm::vec3 GetCameraOrientation() { return m_camera.GetOrientation(); };
 private:
     void Flush();
     void UploadVertices();

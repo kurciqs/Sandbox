@@ -20,7 +20,7 @@ int main() {
     }
     Renderer renderer(&window);
 
-    ParticleSystem particleSystem(50, ParticleSystemType::Testing);
+    ParticleSystem particleSystem(10, ParticleSystemType::Testing);
     float particleSpawnDebounce = 0.1f;
     bool runSimulation = true;
     float runSimulationDebounce = 0.1f;
@@ -36,7 +36,7 @@ int main() {
         }
 
         if (Input::isKeyDown(GLFW_KEY_F) && particleSpawnDebounce < 0.0f) {
-            particleSystem.AddParticle(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, RANDOM_COLOR);
+            particleSystem.AddParticle(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, RANDOM_COLOR, 0.5f);
             particleSpawnDebounce = 0.1f;
         }
 

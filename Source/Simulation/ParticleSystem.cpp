@@ -9,14 +9,13 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type) {
             m_constraints.emplace_back();
 
             for (int i = 0; i < numParticles; i++) {
-                float radius = (rand() % 20) / 20.0f;
-                auto* p = new Particle( glm::vec3(rand() % 5, rand() % 5, rand() % 5), RANDOM_COLOR, radius /2.0f, radius );
+                auto* p = new Particle( glm::vec3(rand() % 10 - rand() % 10, 5, rand() % 10 - rand() % 10), RANDOM_COLOR );
 
                 m_particles.push_back(p);
 
                 m_constraints[STANDARD].push_back(new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 0.45f));
             }
-            m_constraints[STANDARD].push_back(new PositionConstraint(m_particles[0], glm::vec3(0.0f), 0.02f));
+//            m_constraints[STANDARD].push_back(new PositionConstraint(m_particles[0], glm::vec3(0.0f), 0.02f));
         }
             break;
         default:
@@ -53,7 +52,7 @@ void ParticleSystem::Update(float dt) {
         if (!p->fixed) p->ApplyForce(m_globalForce * p->mass);
 
         p->vel += dt * (p->invMass * p->force);
-        p->vel *= 0.975f;
+        p->vel *= 0.99f;
         p->cpos = p->pos + (dt * p->vel);
         // TODO: (4) mass scaling (only for stiff stacks)
     }
@@ -66,12 +65,9 @@ void ParticleSystem::Update(float dt) {
         Particle* p1 = m_particles[i];
 
         // (7) dumb, I know
-        for (int j = 0; j < m_particles.size(); j++) {
-            if (i == j)
-                continue;
-
+        for (int j = i + 1; j < m_particles.size(); j++) {
             Particle* p2 = m_particles[j];
-            float dist = glm::distance(p1->cpos, p2->cpos);
+            float dist = glm::fastDistance(p1->cpos, p2->cpos);
             if (dist < p1->radius + p2->radius) {
                 // TODo: push a contact constraint here depending on the phase
                 // (8)
@@ -150,9 +146,10 @@ void ParticleSystem::Draw(Renderer& renderer) {
 #endif
 }
 
-void ParticleSystem::AddParticle(glm::vec3 pos, glm::vec3 vel, glm::vec3 color) {
+void ParticleSystem::AddParticle(glm::vec3 pos, glm::vec3 vel, glm::vec3 color, float r) {
     auto* p = new Particle(pos, color);
     p->vel = vel;
+    p->radius = r;
     m_particles.push_back(p);
     m_constraints[STANDARD].push_back(new BoxBoundaryConstraint(p, upperBoundary, lowerBoundary, 0.45f));
 }

@@ -2,6 +2,7 @@
 #define SANDBOX_PARTICLESYSTEM_H
 
 #include <vector>
+#include <unordered_set>
 #include "Simulation/Particle.h"
 #include "Simulation/Constraints/DistanceConstraint.h"
 #include "Simulation/Constraints/ContactConstraint.h"
@@ -22,9 +23,9 @@ enum ParticleSystemType {
 };
 
 enum ConstraintGroupEnum {
-    CONTACT,
-    STANDARD,
-    SHAPE
+    CONTACT = 0,
+    STANDARD = 1,
+    SHAPE = 2
 };
 
 class ParticleSystem {
@@ -35,11 +36,11 @@ public:
     void Draw(Renderer& renderer);
     void Clear();
     void Destroy();
-    void AddParticle(glm::vec3 pos, glm::vec3 vel, glm::vec3 color);
+    void AddParticle(glm::vec3 pos, glm::vec3 vel, glm::vec3 color, float r);
 private:
     std::vector<Particle*> m_particles;
     std::vector<ConstraintGroup> m_constraints;
-    glm::vec3 m_globalForce{0.0f, -5.0f, 0.0f}; // gravity
+    glm::vec3 m_globalForce{0.0f, -9.8f, 0.0f}; // gravity
 };
 
 

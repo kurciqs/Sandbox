@@ -6,6 +6,7 @@
 #include "Simulation/Constraints/DistanceConstraint.h"
 #include "Simulation/Constraints/ContactConstraint.h"
 #include "Simulation/Constraints/BoxBoundaryConstraint.h"
+#include "Simulation/Constraints/PositionConstraint.h"
 #include "Graphics/Renderer.h"
 
 #define k_distance 0.1f

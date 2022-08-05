@@ -22,18 +22,28 @@ int main() {
 
     ParticleSystem particleSystem(50, ParticleSystemType::Testing);
     float particleSpawnDebounce = 0.1f;
+    bool runSimulation = true;
+    float runSimulationDebounce = 0.1f;
 
     FPSCounter::Init();
     while (!window.ShouldClose()) {
         Renderer::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         Renderer::ClearColor({ 0.2f, 0.3f, 0.3f });
 
+        if (Input::isKeyDown(GLFW_KEY_T) && runSimulationDebounce < 0.0f) {
+            runSimulation = !runSimulation;
+            runSimulationDebounce = 0.5f;
+        }
+
         if (Input::isKeyDown(GLFW_KEY_F) && particleSpawnDebounce < 0.0f) {
             particleSystem.AddParticle(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, RANDOM_COLOR);
             particleSpawnDebounce = 0.1f;
         }
-        particleSystem.Update(DELTA_TIME);
+
+        if (runSimulation)
+            particleSystem.Update(DELTA_TIME);
         particleSystem.Draw(renderer);
+        renderer.DrawLineCube(lowerBoundary, upperBoundary - lowerBoundary, glm::vec3(0.5f, 0.6f, 0.7f));
 
         renderer.DrawCube(glm::vec3(-0.25f), glm::vec3(0.5f), glm::vec3(1.0f));
 
@@ -47,6 +57,7 @@ int main() {
         window.SwapBuffers();
 
         particleSpawnDebounce -= DELTA_TIME;
+        runSimulationDebounce -= DELTA_TIME;
     }
 
     window.Destroy();

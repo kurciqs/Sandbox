@@ -6,7 +6,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(SOURCE_FILES Source/main.cpp Source/Window/Window.cpp Source/Window/Window.h Source/Utils/Utils.cpp Source/Utils/Utils.h Source/Window/Input.cpp Source/Window/Input.h
         Source/Graphics/Camera.cpp Source/Graphics/Camera.h Source/Graphics/OpenGL/Objects.cpp Source/Graphics/OpenGL/Objects.h Source/Graphics/OpenGL/Shader.cpp Source/Graphics/OpenGL/Shader.h
         Source/Graphics/Renderer.cpp Source/Graphics/Renderer.h Source/Simulation/Particle.cpp Source/Simulation/Particle.h Source/Simulation/ParticleSystem.cpp Source/Simulation/ParticleSystem.h
-        Source/Simulation/Constraint.h Source/Simulation/Constraints/DistanceConstraint.cpp Source/Simulation/Constraints/DistanceConstraint.h Source/Simulation/Constraints/ContactConstraint.cpp Source/Simulation/Constraints/ContactConstraint.h Source/Simulation/Constraints/BoxBoundaryConstraint.cpp Source/Simulation/Constraints/BoxBoundaryConstraint.h Source/Simulation/RigidBody.cpp Source/Simulation/RigidBody.h Source/Simulation/Constraints/PositionConstraint.cpp Source/Simulation/Constraints/PositionConstraint.h)
+        Source/Simulation/Constraint.h Source/Simulation/Constraints/DistanceConstraint.cpp Source/Simulation/Constraints/DistanceConstraint.h
+        Source/Simulation/Constraints/ContactConstraint.cpp Source/Simulation/Constraints/ContactConstraint.h
+        Source/Simulation/Constraints/BoxBoundaryConstraint.cpp Source/Simulation/Constraints/BoxBoundaryConstraint.h
+        Source/Simulation/RigidBody.cpp Source/Simulation/RigidBody.h
+        Source/Simulation/Constraints/PositionConstraint.cpp Source/Simulation/Constraints/PositionConstraint.h Source/Simulation/Constraints/RigidShapeConstraint.cpp Source/Simulation/Constraints/RigidShapeConstraint.h)
 
 include_directories(
         ${PROJECT_SOURCE_DIR}/Source

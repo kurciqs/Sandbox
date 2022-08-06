@@ -13,5 +13,5 @@ void main() {
     if (dist > vRadius) {
         discard;
     }
-    FragColor = vec4(vColor * (cos(dist)), 1.0f);
+    FragColor = vec4(vColor * (cos((0.5 / vRadius) * dist)), 1.0f);
 }

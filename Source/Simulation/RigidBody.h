@@ -6,6 +6,7 @@
 #include <glm/gtx/fast_square_root.hpp>
 #include <vector>
 #include "Simulation/Particle.h"
+#include "Graphics/Renderer.h"
 
 struct SDFData {
     glm::vec3 grad;
@@ -14,15 +15,20 @@ struct SDFData {
 
 class RigidBody {
 public:
-    RigidBody(int begin, int end, const std::vector<Particle*>& particles);
+    RigidBody(int begin, int end, const std::vector<Particle*>& particles); // use all particles from particles[being] to particles[end]
+
+    void AddVertex(const std::vector<Particle*>& particles, int index); // push extra ones
     void RecalculateCOM(const std::vector<Particle*>& particles);
-    float DistanceToCOM(glm::vec3 point, int index = -1);
-    float GetRestConfigDistanceToCOM(int index);
+    void Draw(const std::vector<Particle*>& particles, Renderer& renderer);
+
+    glm::vec3 GetRestConfigOffsetToCOM(int index);    // index has to start at 0
+    glm::vec3 GetCOM() { return m_centerOfMass; };
+    friend class RigidShapeConstraint;
 private:
+    std::vector<int> m_indices; // index in the main particle array
     glm::vec3 m_centerOfMass;
     std::vector<SDFData> m_sdfMap; // map<int - m_begin, ..
-    std::vector<glm::vec3> m_offsets; // map<int - m_begin, ..
-    int m_beginIndex, m_lastIndex;
+    std::vector<glm::vec3> m_offsets; // map<int - m_begin, .. (r-s)
 };
 
 #endif //SANDBOX_RIGIDBODY_H

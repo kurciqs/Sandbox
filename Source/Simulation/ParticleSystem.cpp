@@ -1,6 +1,7 @@
 #include "ParticleSystem.h"
 
-ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type) {
+ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
+{
     switch (type) {
         case ParticleSystemType::Testing:
         {
@@ -10,12 +11,14 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type) {
 
             for (int i = 0; i < numParticles; i++) {
                 auto* p = new Particle( glm::vec3(rand() % 10 - rand() % 10, 5, rand() % 10 - rand() % 10), RANDOM_COLOR );
-
+//                p->fixed = true;
                 m_particles.push_back(p);
 
                 m_constraints[STANDARD].push_back(new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 0.45f));
             }
-//            m_constraints[STANDARD].push_back(new PositionConstraint(m_particles[0], glm::vec3(0.0f), 0.02f));
+            rb = new RigidBody(1, 5, m_particles);
+            m_constraints[SHAPE].push_back(new RigidShapeConstraint(rb, m_particles, 1.0f));
+
         }
             break;
         default:
@@ -48,11 +51,11 @@ void ParticleSystem::Update(float dt) {
     for (Particle* p : m_particles) {
         if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT) && !p->fixed)
             p->ApplyForce(glm::vec3( (rand() % 100 - rand() % 100), (rand() % 100 - rand() % 100), (rand() % 100 - rand() % 100) ));
-
+#ifdef GRAVITY
         if (!p->fixed) p->ApplyForce(m_globalForce * p->mass);
-
+#endif
         p->vel += dt * (p->invMass * p->force);
-        p->vel *= 0.99f;
+        p->vel *= 0.98f;
         p->cpos = p->pos + (dt * p->vel);
         // TODO: (4) mass scaling (only for stiff stacks)
     }
@@ -122,6 +125,10 @@ void ParticleSystem::Draw(Renderer& renderer) {
     renderer.DrawParticles(m_particles);
 
 #ifndef NDEBUG
+    renderer.DrawCube(rb->GetCOM() - glm::vec3(0.25), glm::vec3(0.5), glm::vec3(1.0f));
+    rb->RecalculateCOM(m_particles);
+    rb->Draw(m_particles, renderer);
+
     bool drawp = Input::isKeyDown(GLFW_KEY_R);
     for (Particle* p : m_particles) {
         if (drawp) {

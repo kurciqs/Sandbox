@@ -1,33 +1,48 @@
 #include "Simulation/RigidBody.h"
 
 void RigidBody::RecalculateCOM(const std::vector<Particle*>& particles) {
-
+    m_centerOfMass = glm::vec3(0.0f);
+    float totalMass = 0.0f;
+    for (int i: m_indices) {
+        Particle* p = particles[i];
+        m_centerOfMass += p->pos * p->mass;
+        totalMass += p->mass;
+    }
+    m_centerOfMass /= totalMass;
 }
 
-// TODO:
 RigidBody::RigidBody(int begin, int end, const std::vector<Particle *>& particles) {
-    for (int i = begin; i < end; i++) {
-        m_offsets.push_back(glm::vec3());
+    m_centerOfMass = glm::vec3(0.0f);
+    float totalMass = 0.0f;
+    for (int i = begin; i <= end; i++) {
+        Particle* p = particles[i];
+        m_indices.push_back(i);
+        m_centerOfMass += p->pos * p->mass;
+        totalMass += p->mass;
     }
+    m_centerOfMass /= totalMass;
+    for (int i: m_indices) {
+        m_offsets.push_back(m_centerOfMass - particles[i]->pos); // NOTE: cpos or pos ??
+    }
+
 }
 
-float RigidBody::DistanceToCOM(glm::vec3 point, int index) { // index for checking
-    if (index < 0) {
-        return 0.0f;
-    }
-    else if (index < m_beginIndex || index >= m_lastIndex) {
-        print_error("Index %d is out of bounds(%d, %d)", index, m_beginIndex, m_lastIndex);
-        return 0.0f;
-    }
-    return glm::fastDistance(m_centerOfMass, point);
+glm::vec3 RigidBody::GetRestConfigOffsetToCOM(int index) {
+    return m_offsets[index];
+
 }
 
-float RigidBody::GetRestConfigDistanceToCOM(int index) {
-    if (index < 0) {
-        return 0.0f;
+void RigidBody::AddVertex(const std::vector<Particle*>& particles, int index) {
+    m_indices.push_back(index);
+    RecalculateCOM(particles);
+    m_offsets.push_back(m_centerOfMass - particles[index]->pos);
+}
+
+void RigidBody::Draw(const std::vector<Particle*>& particles, Renderer &renderer) {
+    for (glm::vec3 off: m_offsets) {
+        renderer.DrawLine(m_centerOfMass, m_centerOfMass - off, glm::vec3(0.0f, 0.7f, 0.1f));
     }
-    else if (index < m_beginIndex || index >= m_lastIndex) {
-        print_error("Index %d is out of bounds(%d, %d)", index, m_beginIndex, m_lastIndex);
-        return 0.0f;
+    for (int i: m_indices) {
+        renderer.DrawLine(particles[i]->pos, m_centerOfMass, glm::vec3(0.6f, 0.7f, 0.1f));
     }
 }

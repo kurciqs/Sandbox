@@ -6,7 +6,7 @@
 
 class RigidShapeConstraint : public Constraint {
 public:
-    RigidShapeConstraint(RigidBody* rb, const std::vector<Particle*> particles, float k);
+    RigidShapeConstraint(RigidBody* rb, const std::vector<Particle*>& particles, float k);
     ~RigidShapeConstraint() override;
 
     void Project() override;

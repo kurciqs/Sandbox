@@ -9,15 +9,16 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             m_constraints.emplace_back();
             m_constraints.emplace_back();
 
+            AddCube(glm::vec3(5.0f), 4, 4, 4);
+
             for (int i = 0; i < numParticles; i++) {
                 auto* p = new Particle( glm::vec3(rand() % 10 - rand() % 10, 5, rand() % 10 - rand() % 10), RANDOM_COLOR );
-//                p->fixed = true;
                 m_particles.push_back(p);
 
+            }
+            for (Particle* p: m_particles) {
                 m_constraints[STANDARD].push_back(new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 0.45f));
             }
-            rb = new RigidBody(1, 5, m_particles);
-            m_constraints[SHAPE].push_back(new RigidShapeConstraint(rb, m_particles, 1.0f));
 
         }
             break;
@@ -72,9 +73,9 @@ void ParticleSystem::Update(float dt) {
             Particle* p2 = m_particles[j];
             float dist = glm::fastDistance(p1->cpos, p2->cpos);
             if (dist < p1->radius + p2->radius) {
-                // TODo: push a contact constraint here depending on the phase
-                // (8)
-                m_constraints[CONTACT].push_back(new ContactConstraint(p1, p2, k_contact));
+                // (8) disable collision between same phase (phase 0 collides with everyone)
+                if ((!p1->phase || !p2->phase) || (p1->phase != p2->phase))
+                    m_constraints[CONTACT].push_back(new ContactConstraint(p1, p2, k_contact));
             }
         }
     }
@@ -125,9 +126,9 @@ void ParticleSystem::Draw(Renderer& renderer) {
     renderer.DrawParticles(m_particles);
 
 #ifndef NDEBUG
-    renderer.DrawCube(rb->GetCOM() - glm::vec3(0.25), glm::vec3(0.5), glm::vec3(1.0f));
-    rb->RecalculateCOM(m_particles);
-    rb->Draw(m_particles, renderer);
+    for (RigidBody* rb: m_rigidBodies) {
+        rb->Draw(m_particles, renderer);
+    }
 
     bool drawp = Input::isKeyDown(GLFW_KEY_R);
     for (Particle* p : m_particles) {
@@ -159,6 +160,23 @@ void ParticleSystem::AddParticle(glm::vec3 pos, glm::vec3 vel, glm::vec3 color, 
     p->radius = r;
     m_particles.push_back(p);
     m_constraints[STANDARD].push_back(new BoxBoundaryConstraint(p, upperBoundary, lowerBoundary, 0.45f));
+}
+
+void ParticleSystem::AddCube(glm::vec3 pos, int width, int height, int depth) {
+    int lastIndex = 0;
+    for (int i = -width / 2; i < width / 2; i++) {
+        for (int j = -height / 2; j < height / 2; j++) {
+            for (int k = -depth / 2; k < depth / 2; k++) {
+                auto *p = new Particle(glm::vec3(i, j, k) + pos, glm::vec3(0.4f, 0.5f, 0.8f));
+                p->phase = 1;
+                m_particles.push_back(p);
+
+                lastIndex++;
+            }
+        }
+    }
+    m_rigidBodies.push_back( new RigidBody(0, lastIndex - 1, m_particles) ); // TODO: offset for each new body
+    m_constraints[SHAPE].push_back(new RigidShapeConstraint(m_rigidBodies[0], m_particles, 0.1f));
 }
 
 

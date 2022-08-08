@@ -39,8 +39,9 @@ public:
     void Clear();
     void Destroy();
     void AddParticle(glm::vec3 pos, glm::vec3 vel, glm::vec3 color, float r);
+    void AddCube(glm::vec3 pos, int width, int height, int depth);
 private:
-    RigidBody* rb;
+    std::vector<RigidBody*> m_rigidBodies;
     std::vector<Particle*> m_particles;
     std::vector<ConstraintGroup> m_constraints;
     glm::vec3 m_globalForce{0.0f, -9.8f, 0.0f}; // gravity

@@ -18,15 +18,16 @@ public:
     RigidBody(int begin, int end, const std::vector<Particle*>& particles); // use all particles from particles[being] to particles[end]
 
     void AddVertex(const std::vector<Particle*>& particles, int index); // push extra ones
-    void RecalculateCOM(const std::vector<Particle*>& particles);
+    void RecalculateCOM(const std::vector<Particle*>& particles, bool particlesOrdered);
     void Draw(const std::vector<Particle*>& particles, Renderer& renderer);
 
-    glm::vec3 GetRestConfigOffsetToCOM(int index);    // index has to start at 0
+    glm::vec3 GetRestConfigOffsetToCOM(int index);   // index has to start at 0
     glm::vec3 GetCOM() { return m_centerOfMass; };
     friend class RigidShapeConstraint;
 private:
+    float m_totalMass;
     std::vector<int> m_indices; // index in the main particle array
-    glm::vec3 m_centerOfMass;
+    glm::vec3 m_centerOfMass{};
     std::vector<SDFData> m_sdfMap; // map<int - m_begin, ..
     std::vector<glm::vec3> m_offsets; // map<int - m_begin, .. (r-s)
 };

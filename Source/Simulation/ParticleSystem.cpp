@@ -10,16 +10,17 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             m_constraints.emplace_back();
 
             AddCube(glm::vec3(5.0f), 4, 4, 4);
+            AddBall(glm::vec3(0.0f), 3.0f);
 
             for (int i = 0; i < numParticles; i++) {
                 auto* p = new Particle( glm::vec3(rand() % 10 - rand() % 10, 5, rand() % 10 - rand() % 10), RANDOM_COLOR );
                 m_particles.push_back(p);
 
             }
+
             for (Particle* p: m_particles) {
                 m_constraints[STANDARD].push_back(new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 0.45f));
             }
-
         }
             break;
         default:
@@ -168,15 +169,33 @@ void ParticleSystem::AddCube(glm::vec3 pos, int width, int height, int depth) {
         for (int j = -height / 2; j < height / 2; j++) {
             for (int k = -depth / 2; k < depth / 2; k++) {
                 auto *p = new Particle(glm::vec3(i, j, k) + pos, glm::vec3(0.4f, 0.5f, 0.8f));
-                p->phase = 1;
+                p->phase = (int)m_rigidBodies.size() + 1;
                 m_particles.push_back(p);
 
                 lastIndex++;
             }
         }
     }
-    m_rigidBodies.push_back( new RigidBody(0, lastIndex - 1, m_particles) ); // TODO: offset for each new body
-    m_constraints[SHAPE].push_back(new RigidShapeConstraint(m_rigidBodies[0], m_particles, 0.1f));
+    m_rigidBodies.push_back( new RigidBody((int)m_particles.size() - lastIndex, (int)m_particles.size() - 1, m_particles) );
+    m_constraints[SHAPE].push_back( new RigidShapeConstraint(m_rigidBodies[m_rigidBodies.size() - 1], m_particles, 0.5f) );
 }
 
+void ParticleSystem::AddBall(glm::vec3 pos, float radius) {
+    int lastIndex = 0;
+    for (int i = -(int)round(radius) - 1; i < (int)round(radius) + 1; i++) {
+        for (int j = -(int)round(radius) - 1; j < (int)round(radius) + 1; j++) {
+            for (int k = -(int)round(radius) - 1; k < (int)round(radius) + 1; k++) {
 
+                if (glm::length2(glm::vec3(i, j, k)) + 2 < radius * radius) {
+                    auto *p = new Particle(glm::vec3(i, j, k) + pos, glm::vec3(0.4f, 0.5f, 0.8f));
+                    p->phase = (int) m_rigidBodies.size() + 1;
+                    m_particles.push_back(p);
+
+                    lastIndex++;
+                }
+            }
+        }
+    }
+    m_rigidBodies.push_back( new RigidBody((int)m_particles.size() - lastIndex, (int)m_particles.size() - 1, m_particles) );
+    m_constraints[SHAPE].push_back( new RigidShapeConstraint(m_rigidBodies[m_rigidBodies.size() - 1], m_particles, 0.1f) );
+}

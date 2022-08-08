@@ -40,6 +40,7 @@ public:
     void Destroy();
     void AddParticle(glm::vec3 pos, glm::vec3 vel, glm::vec3 color, float r);
     void AddCube(glm::vec3 pos, int width, int height, int depth);
+    void AddBall(glm::vec3 pos, float radius) ;
 private:
     std::vector<RigidBody*> m_rigidBodies;
     std::vector<Particle*> m_particles;

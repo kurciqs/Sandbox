@@ -4,6 +4,7 @@
 #include "Simulation/Constraint.h"
 #include "Simulation/RigidBody.h"
 
+
 class RigidShapeConstraint : public Constraint {
 public:
     RigidShapeConstraint(RigidBody* rb, const std::vector<Particle*>& particles, float k);

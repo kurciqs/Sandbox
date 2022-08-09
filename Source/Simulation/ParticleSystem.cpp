@@ -1,5 +1,7 @@
 #include "ParticleSystem.h"
 
+#include <cmath>
+
 ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
 {
     switch (type) {
@@ -19,7 +21,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             }
 
             for (Particle* p: m_particles) {
-                m_constraints[STANDARD].push_back(new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 0.45f));
+                m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
             }
         }
             break;
@@ -127,23 +129,24 @@ void ParticleSystem::Draw(Renderer& renderer) {
     renderer.DrawParticles(m_particles);
 
 #ifndef NDEBUG
-    for (RigidBody* rb: m_rigidBodies) {
-        rb->Draw(m_particles, renderer);
-    }
+
 
     bool drawp = Input::isKeyDown(GLFW_KEY_R);
-    for (Particle* p : m_particles) {
-        if (drawp) {
+    if (drawp) {
+        for (Particle* p : m_particles) {
             renderer.DrawLine(p->pos, glm::vec3(0.0f), glm::vec3(1.0f));
         }
     }
 
     bool drawc = Input::isKeyDown(GLFW_KEY_C);
-    for (const ConstraintGroup& g : m_constraints) {
-        for (Constraint* c : g) {
-            if (drawc) {
+    if (drawc) {
+        for (const ConstraintGroup &g: m_constraints) {
+            for (Constraint *c: g) {
                 c->Draw(renderer);
             }
+        }
+        for (RigidBody *rb: m_rigidBodies) {
+            rb->Draw(m_particles, renderer);
         }
     }
 
@@ -182,10 +185,9 @@ void ParticleSystem::AddCube(glm::vec3 pos, int width, int height, int depth) {
 
 void ParticleSystem::AddBall(glm::vec3 pos, float radius) {
     int lastIndex = 0;
-    for (int i = -(int)round(radius) - 1; i < (int)round(radius) + 1; i++) {
-        for (int j = -(int)round(radius) - 1; j < (int)round(radius) + 1; j++) {
-            for (int k = -(int)round(radius) - 1; k < (int)round(radius) + 1; k++) {
-
+    for (int i = -(int)glm::round(radius) - 1; i < (int)glm::round(radius) + 1; i++) {
+        for (int j = -(int)glm::round(radius) - 1; j < (int)glm::round(radius) + 1; j++) {
+            for (int k = -(int)glm::round(radius) - 1; k < (int)glm::round(radius) + 1; k++) {
                 if (glm::length2(glm::vec3(i, j, k)) + 2 < radius * radius) {
                     auto *p = new Particle(glm::vec3(i, j, k) + pos, glm::vec3(0.4f, 0.5f, 0.8f));
                     p->phase = (int) m_rigidBodies.size() + 1;
@@ -197,5 +199,5 @@ void ParticleSystem::AddBall(glm::vec3 pos, float radius) {
         }
     }
     m_rigidBodies.push_back( new RigidBody((int)m_particles.size() - lastIndex, (int)m_particles.size() - 1, m_particles) );
-    m_constraints[SHAPE].push_back( new RigidShapeConstraint(m_rigidBodies[m_rigidBodies.size() - 1], m_particles, 0.1f) );
+    m_constraints[SHAPE].push_back( new RigidShapeConstraint(m_rigidBodies[m_rigidBodies.size() - 1], m_particles, 0.5f) );
 }

@@ -1,5 +1,9 @@
 #include "Utils.h"
 
+void printMat3(glm::mat3 m) {
+    printf("\n%f %f %f\n%f %f %f\n%f %f %f\n\n", m[0][0], m[0][1], m[0][2], m[1][0], m[1][1], m[1][2], m[2][0], m[2][1], m[2][2]);
+}
+
 void _print_error(const char *file, int line, const char *format, ...) {
 #ifdef WIN32
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4);

@@ -51,8 +51,11 @@ int main() {
             runSimulation = !runSimulation;
             runSimulationDebounce = 0.5f;
         }
-        if (Input::isKeyDown(GLFW_KEY_F) && particleSpawnDebounce < 0.0f) {
-            particleSystem.AddParticle(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, RANDOM_COLOR, 0.5f);
+        if (particleSpawnDebounce < 0.0f) {
+            if (Input::isKeyDown(GLFW_KEY_F))
+                particleSystem.AddParticle(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, RANDOM_COLOR, 0.5f);
+            else if (Input::isKeyDown(GLFW_KEY_G))
+                particleSystem.AddBall(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 2.5f, RANDOM_COLOR);
             particleSpawnDebounce = 0.1f;
         }
         particleSpawnDebounce -= DELTA_TIME;

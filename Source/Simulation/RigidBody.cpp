@@ -29,10 +29,10 @@ RigidBody::RigidBody(int begin, int end, const std::vector<Particle *>& particle
         totalMass += p->mass;
     }
     m_centerOfMass /= totalMass;
+    m_originalCenterOfMass = m_centerOfMass;
     for (int i: m_indices) {
-        m_offsets.push_back(m_centerOfMass - particles[i]->cpos); // NOTE: cpos or pos ??
+        m_offsets.push_back(particles[i]->cpos - m_originalCenterOfMass); // NOTE: cpos or pos ??
     }
-
 }
 
 glm::vec3 RigidBody::GetRestConfigOffsetToCOM(int index) {
@@ -40,9 +40,9 @@ glm::vec3 RigidBody::GetRestConfigOffsetToCOM(int index) {
 }
 
 void RigidBody::AddVertex(const std::vector<Particle*>& particles, int index) {
-    m_indices.push_back(index);
-    RecalculateCOM(particles, false);
-    m_offsets.push_back(m_centerOfMass - particles[index]->cpos);
+//    m_indices.push_back(index);
+//    RecalculateCOM(particles, false);
+//    m_offsets.push_back(m_centerOfMass - particles[index]->cpos);
 }
 
 void RigidBody::Draw(const std::vector<Particle*>& particles, Renderer &renderer) {
@@ -51,5 +51,11 @@ void RigidBody::Draw(const std::vector<Particle*>& particles, Renderer &renderer
     }
     for (int i: m_indices) {
         renderer.DrawLine(particles[i]->cpos, m_centerOfMass, glm::vec3(0.6f, 0.7f, 0.1f));
+    }
+}
+
+void RigidBody::RecalculateRestConfigOffsetToCOM(const std::vector<Particle*>& particles) {
+    for (int i = 0; i < particles.size(); i++) {
+        m_offsets[i] = (particles[i]->cpos - m_centerOfMass); // NOTE: cpos or pos ??
     }
 }

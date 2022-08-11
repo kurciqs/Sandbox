@@ -11,9 +11,6 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             m_constraints.emplace_back();
             m_constraints.emplace_back();
 
-            AddCube(glm::vec3(5.0f), 4, 4, 4);
-            AddBall(glm::vec3(0.0f), 3.0f);
-
             for (int i = 0; i < numParticles; i++) {
                 auto* p = new Particle( glm::vec3(rand() % 10 - rand() % 10, 5, rand() % 10 - rand() % 10), RANDOM_COLOR );
                 m_particles.push_back(p);
@@ -23,6 +20,9 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             for (Particle* p: m_particles) {
                 m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
             }
+
+            AddCube(glm::vec3(5.0f), glm::vec3(0.0f), 4, 4, 4, RANDOM_COLOR);
+            AddBall(glm::vec3(0.0f), glm::vec3(0.0f), 3.0f, RANDOM_COLOR);
         }
             break;
         default:
@@ -166,16 +166,20 @@ void ParticleSystem::AddParticle(glm::vec3 pos, glm::vec3 vel, glm::vec3 color, 
     m_constraints[STANDARD].push_back(new BoxBoundaryConstraint(p, upperBoundary, lowerBoundary, 0.45f));
 }
 
-void ParticleSystem::AddCube(glm::vec3 pos, int width, int height, int depth) {
+void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height, int depth, glm::vec3 color) {
     int lastIndex = 0;
+    glm::mat3 rot = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.4f, 0.6f, 0.7f));
     for (int i = -width / 2; i < width / 2; i++) {
         for (int j = -height / 2; j < height / 2; j++) {
             for (int k = -depth / 2; k < depth / 2; k++) {
-                auto *p = new Particle(glm::vec3(i, j, k) + pos, glm::vec3(0.4f, 0.5f, 0.8f));
+                auto *p = new Particle(rot * (glm::vec3(i, j, k) + pos), color);
                 p->phase = (int)m_rigidBodies.size() + 1;
+                p->vel = vel;
                 m_particles.push_back(p);
 
                 lastIndex++;
+                m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
+
             }
         }
     }
@@ -183,17 +187,20 @@ void ParticleSystem::AddCube(glm::vec3 pos, int width, int height, int depth) {
     m_constraints[SHAPE].push_back( new RigidShapeConstraint(m_rigidBodies[m_rigidBodies.size() - 1], m_particles, 0.5f) );
 }
 
-void ParticleSystem::AddBall(glm::vec3 pos, float radius) {
+void ParticleSystem::AddBall(glm::vec3 pos, glm::vec3 vel, float radius, glm::vec3 color) {
     int lastIndex = 0;
     for (int i = -(int)glm::round(radius) - 1; i < (int)glm::round(radius) + 1; i++) {
         for (int j = -(int)glm::round(radius) - 1; j < (int)glm::round(radius) + 1; j++) {
             for (int k = -(int)glm::round(radius) - 1; k < (int)glm::round(radius) + 1; k++) {
                 if (glm::length2(glm::vec3(i, j, k)) + 2 < radius * radius) {
-                    auto *p = new Particle(glm::vec3(i, j, k) + pos, glm::vec3(0.4f, 0.5f, 0.8f));
+                    auto *p = new Particle(glm::vec3(i, j, k) + pos, color);
                     p->phase = (int) m_rigidBodies.size() + 1;
+                    p->vel = vel;
                     m_particles.push_back(p);
 
                     lastIndex++;
+                    m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
+
                 }
             }
         }

@@ -2,7 +2,6 @@
 #define SANDBOX_PARTICLESYSTEM_H
 
 #include <vector>
-#include <unordered_set>
 #include "Simulation/Particle.h"
 #include "Simulation/Constraints/DistanceConstraint.h"
 #include "Simulation/Constraints/ContactConstraint.h"
@@ -13,11 +12,13 @@
 
 #define k_distance 0.1f
 #define k_contact 1.0f
+#define k_shape 1.0f
+
 #define GRAVITY
 #define PARTICLE_SLEEPING_EPSILON 0.0001f
-#define RANDOM_COLOR glm::vec3(rand() % 255, rand() % 255, rand() % 255) / 255.0f
-static glm::vec3 lowerBoundary(-10.0f);
-static glm::vec3 upperBoundary(10.0f);
+
+static glm::vec3 lowerBoundary(-15.0f);
+static glm::vec3 upperBoundary( 15.0f);
 using ConstraintGroup = std::vector<Constraint*>;
 
 enum ParticleSystemType {
@@ -47,6 +48,5 @@ private:
     std::vector<ConstraintGroup> m_constraints;
     glm::vec3 m_globalForce{0.0f, -9.8f, 0.0f}; // gravity
 };
-
 
 #endif //SANDBOX_PARTICLESYSTEM_H

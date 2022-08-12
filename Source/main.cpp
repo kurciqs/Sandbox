@@ -4,8 +4,7 @@
 
 int main() {
 
-    // TODO: figure pwd out
-    chdir("../..");
+    std::filesystem::current_path(getexepath().parent_path().parent_path().parent_path());
 
     if (!Window::InitGlfw()) {
         return -1;
@@ -25,7 +24,6 @@ int main() {
     bool runSimulation = true;
     float runSimulationDebounce = 0.1f;
 
-    FPSCounter::Init();
     while (!window.ShouldClose()) {
         Renderer::Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         Renderer::ClearColor({ 0.2f, 0.3f, 0.3f });
@@ -40,12 +38,13 @@ int main() {
         renderer.Update(DELTA_TIME);
         renderer.Render();
 
-        FPSCounter::Tick();
-        if (Input::isKeyDown(GLFW_KEY_F5)) FPSCounter::Print();
-
         window.CheckBasicInput();
         window.PollEvents();
+#ifndef NDEBUG
+        window.SwapBuffers(true);
+#else
         window.SwapBuffers();
+#endif
 
         if (Input::isKeyDown(GLFW_KEY_T) && runSimulationDebounce < 0.0f) {
             runSimulation = !runSimulation;
@@ -54,10 +53,13 @@ int main() {
         if (particleSpawnDebounce < 0.0f) {
             if (Input::isKeyDown(GLFW_KEY_F))
                 particleSystem.AddParticle(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, RANDOM_COLOR, 0.5f);
-            else if (Input::isKeyDown(GLFW_KEY_G))
-                particleSystem.AddBall(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 2.5f, RANDOM_COLOR);
+            else if (Input::isKeyDown(GLFW_KEY_Q))
+                particleSystem.AddBall(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 3.0f, RANDOM_COLOR);
+            else if (Input::isKeyDown(GLFW_KEY_E))
+                particleSystem.AddCube(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 4, 4, 4, RANDOM_COLOR);
             particleSpawnDebounce = 0.1f;
         }
+
         particleSpawnDebounce -= DELTA_TIME;
         runSimulationDebounce -= DELTA_TIME;
     }

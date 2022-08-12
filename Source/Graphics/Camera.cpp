@@ -52,15 +52,6 @@ void Camera::Inputs(float dt) {
     m_vel += m_acc * dt;
     m_vel *= 0.95f;
     m_acc = glm::vec3(0.0f);
-
-    if (Input::isKeyDown(GLFW_KEY_Q)) {
-        // print the position of the camera
-        printf("\n--------------------------- Camera data ---------------------------\n");
-        printf("Position: %f %f %f\n", m_pos.x, m_pos.y, m_pos.z);
-        // print the forward vector of the camera
-        printf("Forward: %f %f %f\n", m_orientation.x,m_orientation.y, m_orientation.z);
-        printf("-------------------------------------------------------------------\n\n");
-    }
     // ~Controller
 
     // Mouse
@@ -70,14 +61,14 @@ void Camera::Inputs(float dt) {
 
         if (firstClick)
         {
-            m_window->SetCursorPos( {m_window->m_width / 2, m_window->m_height / 2} );
+            m_window->SetCursorPos( { (float)m_window->m_width / 2.0f, (float)m_window->m_height / 2.0f } );
             firstClick = false;
         }
 
         glm::ivec2 mouse = m_window->GetCursorPos();
 
-        float rotX = m_sensitivity * (float)((float)mouse.y - (float)m_window->m_height / 2.0f) / (float)m_window->m_height;
-        float rotY = m_sensitivity * (float)((float)mouse.x - (float)m_window->m_width / 2.0f) / (float)m_window->m_width;
+        float rotX = m_sensitivity * ((float)mouse.y - (float)m_window->m_height / 2.0f) / (float)m_window->m_height;
+        float rotY = m_sensitivity * ((float)mouse.x - (float)m_window->m_width / 2.0f) / (float)m_window->m_width;
 
         glm::vec3 newOrientation = glm::rotate(m_orientation, glm::radians(-rotX), glm::normalize(glm::cross(m_orientation, up)));
 
@@ -88,7 +79,7 @@ void Camera::Inputs(float dt) {
 
         m_orientation = glm::rotate(m_orientation, glm::radians(-rotY), up);
 
-        m_window->SetCursorPos( {m_window->m_width / 2, m_window->m_height / 2} );
+        m_window->SetCursorPos( {(float)m_window->m_width / 2.0f, (float)m_window->m_height / 2.0f } );
     }
 
     else if (Input::isMouseButtonUp(GLFW_MOUSE_BUTTON_LEFT))

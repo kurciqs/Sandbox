@@ -49,8 +49,9 @@ Window::Window(int width, int height, const std::string& title)
 
     glfwSetWindowUserPointer(m_window, (void*)this);
 
-
     glfwSwapInterval(1);
+
+    m_t0 = glfwGetTime();
 }
 
 void Window::MakeContextCurrent() {
@@ -65,7 +66,23 @@ void Window::PollEvents() {
     }
 }
 
-void Window::SwapBuffers() {
+void Window::SwapBuffers(bool showFps) {
+    m_t = glfwGetTime();
+
+    if((m_t - m_t0) > 1.0 || m_frames == 0)
+    {
+        m_fps = (double)m_frames / (m_t - m_t0);
+        m_t0 = m_t;
+        m_frames = 0;
+        if (showFps) {
+            std::string originalTitle = m_title;
+            SetTitle(m_title + " | " + std::to_string((int)round(m_fps)));
+            m_title = originalTitle;
+        }
+    }
+    m_frames++;
+
+
     if (m_window) {
         glfwSwapBuffers(m_window);
     }

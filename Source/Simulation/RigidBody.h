@@ -1,9 +1,6 @@
 #ifndef SANDBOX_RIGIDBODY_H
 #define SANDBOX_RIGIDBODY_H
 
-#include <map>
-#include "glm/vec3.hpp"
-#include <glm/gtx/fast_square_root.hpp>
 #include <vector>
 #include "Simulation/Particle.h"
 #include "Graphics/Renderer.h"

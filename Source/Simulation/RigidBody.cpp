@@ -30,7 +30,7 @@ RigidBody::RigidBody(int begin, int end, const std::vector<Particle *>& particle
     }
     m_centerOfMass /= totalMass;
     for (int i: m_indices) {
-        m_offsets.push_back(particles[i]->cpos - m_centerOfMass); // NOTE: cpos or pos ??
+        m_offsets.push_back(particles[i]->cpos - m_centerOfMass);
     }
 }
 

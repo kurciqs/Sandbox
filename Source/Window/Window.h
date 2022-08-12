@@ -28,7 +28,7 @@ public:
 
     // Functions
     void HideCursor();
-    void SetIcon(const std::string& path);\
+    void SetIcon(const std::string& path);
     void SetTitle(const std::string& title);
     void ShowCursor();
     void SetCursorPos(const glm::ivec2 &pos);
@@ -39,7 +39,7 @@ public:
     [[nodiscard]] GLFWwindow* GetNativeWindow() const;
     void MakeContextCurrent();
     void PollEvents();
-    void SwapBuffers();
+    void SwapBuffers(bool showFps = false);
     void Close();
     bool ShouldClose();
     friend void resizeCallback(GLFWwindow* window, int width, int height);
@@ -58,6 +58,8 @@ private:
     int m_lastWidth = 0;
     int m_lastHeight = 0;
     float m_fullscreenKeyDebounce = 5.0f;
+    int m_frames = 0;
+    double m_t, m_t0, m_fps;
 };
 
 

@@ -34,8 +34,14 @@ void _print_log(const char *file, int line, const char *format, ...) {
     printf("\n");
 }
 
-template <typename T1, typename T2>
-size_t offset_of(T1 T2::*member) {
-    static T2 obj;
-    return size_t(&(obj.*member)) - size_t(&obj);
+std::filesystem::path getexepath() {
+#ifdef _WIN32
+    wchar_t path[MAX_PATH] = { 0 };
+    GetModuleFileNameW(nullptr, path, MAX_PATH);
+    return path;
+#else
+    char result[PATH_MAX];
+    ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+    return std::string(result, (count > 0) ? count : 0);
+#endif
 }

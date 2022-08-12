@@ -10,12 +10,6 @@
 #include "Simulation/Particle.h"
 #endif
 
-namespace FPSCounter {
-    void Init();
-    void Tick();
-    void Print();
-}
-
 static bool GL_init = false;
 
 class Renderer {

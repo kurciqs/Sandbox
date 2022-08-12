@@ -1,36 +1,5 @@
 #include "Renderer.h"
 
-namespace FPSCounter {
-    static int frames = 0;
-    static double t, t0, fps;
-    static float printdb = 1.0f;
-
-    void Init() {
-        t0 = glfwGetTime();
-    }
-
-    void Tick() {
-        t = glfwGetTime();
-
-        if((t - t0) > 1.0 || frames == 0)
-        {
-            fps = (double)frames / (t - t0);
-            fps = round(fps);
-            t0 = t;
-            frames = 0;
-        }
-        frames++;
-        printdb -= 0.01f;
-    }
-
-    void Print() {
-        if (printdb <= 0.0f) {
-            printf("FPS: %.1f\n", fps);
-            printdb = 1.0f;
-        }
-    }
-}
-
 static void GLAPIENTRY messageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
     if (type == GL_DEBUG_TYPE_ERROR)

@@ -4,11 +4,11 @@ PositionConstraint::PositionConstraint(Particle *p, glm::vec3 pos, float k) {
     m_particles.push_back(p);
     m_pos = pos;
     m_stiffness = 1.0f - powf((1.0f - k), 1.0f / SOLVER_ITERATIONS);
-    m_particles[0]->num_constraints++;
+    IncrementCounts();
 }
 
 PositionConstraint::~PositionConstraint() {
-    m_particles[0]->num_constraints--;
+    DecrementCounts();
 }
 
 void PositionConstraint::Project() {

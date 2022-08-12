@@ -5,13 +5,11 @@ ContactConstraint::ContactConstraint(Particle *p1, Particle *p2, float k) {
     m_particles.reserve(2);
     m_particles.push_back(p1);
     m_particles.push_back(p2);
-    m_particles[0]->num_constraints++;
-    m_particles[1]->num_constraints++;
+    IncrementCounts();
 }
 
 ContactConstraint::~ContactConstraint() {
-    m_particles[0]->num_constraints--;
-    m_particles[1]->num_constraints--;
+    DecrementCounts();
 }
 
 void ContactConstraint::Project() { // is just like the distance constraint but inequal

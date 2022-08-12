@@ -21,6 +21,18 @@ public:
         }
         return r;
     }
+
+    void DecrementCounts() {
+        for (Particle* p: m_particles) {
+            p->num_constraints--;
+        }
+    }
+
+    void IncrementCounts() {
+        for (Particle* p: m_particles) {
+            p->num_constraints++;
+        }
+    }
 protected:
     float m_stiffness;
     std::vector<Particle*> m_particles;

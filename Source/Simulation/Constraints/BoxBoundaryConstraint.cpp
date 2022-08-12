@@ -5,11 +5,11 @@ BoxBoundaryConstraint::BoxBoundaryConstraint(Particle *p1, glm::vec3 min, glm::v
     m_min = min;
     m_max = max;
     m_particles.push_back(p1);
-    m_particles[0]->num_constraints++;
+    IncrementCounts();
 }
 
 BoxBoundaryConstraint::~BoxBoundaryConstraint() {
-    m_particles[0]->num_constraints--;
+    DecrementCounts();
 }
 
 void BoxBoundaryConstraint::Project() { // TODO: fix this being not so good

@@ -7,8 +7,7 @@ DistanceConstraint::DistanceConstraint(Particle *p1, Particle *p2, float k, floa
     m_particles.reserve(2);
     m_particles.push_back(p1);
     m_particles.push_back(p2);
-    m_particles[0]->num_constraints++;
-    m_particles[1]->num_constraints++;
+    IncrementCounts();
 }
 
 void DistanceConstraint::Project() {
@@ -33,6 +32,5 @@ void DistanceConstraint::Draw(Renderer& renderer) {
 }
 
 DistanceConstraint::~DistanceConstraint()  {
-    m_particles[0]->num_constraints--;
-    m_particles[1]->num_constraints--;
+    DecrementCounts();
 }

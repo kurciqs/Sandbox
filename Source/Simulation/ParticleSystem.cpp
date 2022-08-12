@@ -145,9 +145,6 @@ void ParticleSystem::Draw(Renderer& renderer) {
                 c->Draw(renderer);
             }
         }
-        for (RigidBody *rb: m_rigidBodies) {
-            rb->Draw(m_particles, renderer);
-        }
     }
 
     // not cool:

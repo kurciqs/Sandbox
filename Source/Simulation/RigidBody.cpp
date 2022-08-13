@@ -19,11 +19,16 @@ void RigidBody::RecalculateCOM(const std::vector<Particle*>& particles, bool par
     m_centerOfMass /= m_totalMass;
 }
 
-RigidBody::RigidBody(int begin, int end, const std::vector<Particle *>& particles) {
+RigidBody::RigidBody(int rigidBodyID, int begin, int end, const std::vector<Particle *>& particles) {
+    ID = rigidBodyID;
     m_centerOfMass = glm::vec3(0.0f);
     float totalMass = 0.0f;
     for (int i = begin; i <= end; i++) {
         Particle* p = particles[i];
+        if (p->rigidBodyID != ID) {
+            print_error("IDs do not match: rigidBody %d - %d", ID, p->rigidBodyID);
+            continue;
+        }
         m_indices.push_back(i);
         m_centerOfMass += p->cpos * p->mass;
         totalMass += p->mass;

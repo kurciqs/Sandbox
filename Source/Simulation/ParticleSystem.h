@@ -8,6 +8,7 @@
 #include "Simulation/Constraints/BoxBoundaryConstraint.h"
 #include "Simulation/Constraints/PositionConstraint.h"
 #include "Simulation/Constraints/RigidShapeConstraint.h"
+#include "Simulation/Constraints/RigidContactConstraint.h"
 #include "Graphics/Renderer.h"
 
 #define k_distance 0.1f
@@ -15,7 +16,7 @@
 #define k_shape 1.0f
 
 #define GRAVITY
-#define PARTICLE_SLEEPING_EPSILON 0.0001f
+#define PARTICLE_SLEEPING_EPSILON 0.001f
 
 static glm::vec3 lowerBoundary(-15.0f);
 static glm::vec3 upperBoundary( 15.0f);

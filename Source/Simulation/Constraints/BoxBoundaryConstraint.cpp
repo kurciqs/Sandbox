@@ -22,7 +22,7 @@ void BoxBoundaryConstraint::Project() { // TODO: fix this being not so good
             p1->cpos.z < 0.0f ? glm::max(glm::abs(pos.z - p1->radius) - glm::abs(m_min.z), 0.0f) : glm::min(glm::abs(m_max.z) - glm::abs(pos.z + p1->radius), 0.0f)
     );
 
-    if (!p1->fixed) p1->cpos += dir * m_stiffness / (float)p1->num_constraints;
+    if (!p1->fixed) p1->cpos += SOR_COEF * dir * m_stiffness / (float)p1->num_constraints;
 
     //TODO: friction
 }

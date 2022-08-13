@@ -13,7 +13,7 @@ set(SOURCE_FILES Source/main.cpp Source/Window/Window.cpp Source/Window/Window.h
         Source/Simulation/Constraints/BoxBoundaryConstraint.cpp Source/Simulation/Constraints/BoxBoundaryConstraint.h
         Source/Simulation/RigidBody.cpp Source/Simulation/RigidBody.h
         Source/Simulation/Constraints/PositionConstraint.cpp Source/Simulation/Constraints/PositionConstraint.h
-        Source/Simulation/Constraints/RigidShapeConstraint.cpp Source/Simulation/Constraints/RigidShapeConstraint.h)
+        Source/Simulation/Constraints/RigidShapeConstraint.cpp Source/Simulation/Constraints/RigidShapeConstraint.h Source/Simulation/Constraints/RigidContactConstraint.cpp Source/Simulation/Constraints/RigidContactConstraint.h)
 
 include_directories(
         ${PROJECT_SOURCE_DIR}/Source
@@ -55,5 +55,5 @@ target_link_libraries(${PROJECT_NAME} glm)
 add_subdirectory(Libraries/stb)
 target_link_libraries(${PROJECT_NAME} stb)
 
-add_subdirectory(Libraries/imgui)
-target_link_libraries(${PROJECT_NAME} imgui)
+#add_subdirectory(Libraries/imgui)
+#target_link_libraries(${PROJECT_NAME} imgui)

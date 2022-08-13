@@ -73,9 +73,20 @@ void ParticleSystem::Update(float dt) {
             Particle* p2 = m_particles[j];
             float dist = glm::fastDistance(p1->cpos, p2->cpos);
             if (dist < p1->radius + p2->radius) {
-                // (8) disable collision between same phase (phase 0 collides with everyone)
-                if ((!p1->phase || !p2->phase) || (p1->phase != p2->phase))
-                    m_constraints[CONTACT].push_back(new ContactConstraint(p1, p2, k_contact));
+                // (8)
+                if (p1->rigidBodyID == 0 && p2->rigidBodyID == 0) {
+                    // normal collision between two normal particles
+                    m_constraints[CONTACT].push_back( new ContactConstraint(p1, p2, k_contact) );
+                }
+                else if (p1->rigidBodyID == 0 || p2->rigidBodyID == 0) {
+                    // collision between normal and rigidbody
+                    m_constraints[CONTACT].push_back( new ContactConstraint(p1, p2, k_contact) );
+                }
+                else if (p1->rigidBodyID != p2->rigidBodyID) {
+                    // collision between two rigid bodies, that aren't the same (their IDs aren't equal) AND they are not 0
+                    m_constraints[CONTACT].push_back( new RigidContactConstraint(m_rigidBodies[p1->rigidBodyID - 1], m_rigidBodies[p2->rigidBodyID - 1], p1, p2, k_contact) );
+                }
+                // else do nothing p1->rigidBodyID == p2->rigidBodyID (no collision required in a rigidbody)
             }
         }
     }
@@ -163,7 +174,7 @@ void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height
         for (int j = -height / 2; j < height / 2; j++) {
             for (int k = -depth / 2; k < depth / 2; k++) {
                 auto *p = new Particle(glm::vec3(i, j, k) + pos, color);
-                p->phase = (int)m_rigidBodies.size() + 1;
+                p->rigidBodyID = (int)m_rigidBodies.size() + 1;
                 p->vel = vel;
                 m_particles.push_back(p);
 
@@ -172,7 +183,7 @@ void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height
             }
         }
     }
-    m_rigidBodies.push_back( new RigidBody((int)m_particles.size() - lastIndex, (int)m_particles.size() - 1, m_particles) );
+    m_rigidBodies.push_back( new RigidBody((int)m_rigidBodies.size() + 1, (int)m_particles.size() - lastIndex, (int)m_particles.size() - 1, m_particles) );
     m_constraints[SHAPE].push_back( new RigidShapeConstraint(m_rigidBodies[m_rigidBodies.size() - 1], m_particles, k_shape) );
 }
 
@@ -183,7 +194,7 @@ void ParticleSystem::AddBall(glm::vec3 pos, glm::vec3 vel, float radius, glm::ve
             for (int k = -(int)glm::round(radius) - 1; k < (int)glm::round(radius) + 1; k++) {
                 if (glm::length2(glm::vec3(i, j, k)) + 2 < radius * radius) {
                     auto *p = new Particle(glm::vec3(i, j, k) + pos, color);
-                    p->phase = (int) m_rigidBodies.size() + 1;
+                    p->rigidBodyID = (int) m_rigidBodies.size() + 1;
                     p->vel = vel;
                     m_particles.push_back(p);
 
@@ -193,6 +204,6 @@ void ParticleSystem::AddBall(glm::vec3 pos, glm::vec3 vel, float radius, glm::ve
             }
         }
     }
-    m_rigidBodies.push_back( new RigidBody((int)m_particles.size() - lastIndex, (int)m_particles.size() - 1, m_particles) );
+    m_rigidBodies.push_back( new RigidBody((int)m_rigidBodies.size() + 1, (int)m_particles.size() - lastIndex, (int)m_particles.size() - 1, m_particles) );
     m_constraints[SHAPE].push_back( new RigidShapeConstraint(m_rigidBodies[m_rigidBodies.size() - 1], m_particles, k_shape) );
 }

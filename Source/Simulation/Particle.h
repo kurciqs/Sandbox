@@ -4,6 +4,7 @@
 #include "glm/vec3.hpp"
 #include <cmath>
 #include "Utils/Utils.h"
+#define SOR_COEF 1.1f
 
 struct Particle {
     void ApplyForce(glm::vec3 f);
@@ -20,6 +21,7 @@ struct Particle {
     bool fixed;
     int phase;
     int num_constraints;
+    int rigidBodyID;
 };
 
 

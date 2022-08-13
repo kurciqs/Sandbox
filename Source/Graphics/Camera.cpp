@@ -48,10 +48,12 @@ void Camera::Inputs(float dt) {
     // ~Keyboard
 
     // Controller
+
     m_pos += m_vel * dt;
     m_vel += m_acc * dt;
     m_vel *= 0.95f;
     m_acc = glm::vec3(0.0f);
+
     // ~Controller
 
     // Mouse

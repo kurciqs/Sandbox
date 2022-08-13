@@ -5,10 +5,6 @@
 #include "Simulation/Particle.h"
 #include "Graphics/Renderer.h"
 
-struct SDFData {
-    glm::vec3 grad;
-    float mag;
-};
 
 class RigidBody {
 public:
@@ -23,8 +19,8 @@ private:
     int ID{};
     std::vector<int> m_indices; // index in the main particle array
     glm::vec3 m_centerOfMass{};
-    std::vector<SDFData> m_sdfMap; // map<int - m_begin, ..
-    std::vector<glm::vec3> m_offsets; // map<int - m_begin, .. (r-s)
+//    std::vector<SDFData> m_sdfMap; // map<int - m_begin, ..
+        std::vector<glm::vec3> m_offsets; // map<int - m_begin, .. (r-s)
 };
 
 #endif //SANDBOX_RIGIDBODY_H

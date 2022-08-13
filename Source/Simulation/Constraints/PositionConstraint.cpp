@@ -18,7 +18,7 @@ void PositionConstraint::Project() {
 
     glm::vec3 delta = -dir * m_stiffness;
 
-    p1->cpos += SOR_COEF * delta / (float)p1->num_constraints;
+    if (!p1->fixed) p1->cpos += SOR_COEF * delta / (float)p1->num_constraints;
 }
 
 void PositionConstraint::Draw(Renderer &renderer) {

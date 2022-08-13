@@ -81,26 +81,38 @@ namespace MatrixSolver {
 }
 // Helper functions ~
 
-RigidShapeConstraint::RigidShapeConstraint(RigidBody *rb, const std::vector<Particle *>& particles, float k) {
+RigidShapeConstraint::RigidShapeConstraint(int rigidBodyID, int begin, int end, const std::vector<Particle *>& particles, float k) {
+    ID = rigidBodyID;
     m_stiffness = 1.0f - powf((1.0f - k), 1.0f / SOLVER_ITERATIONS);
-    m_rigidBody = rb;
 
-    for (int i: m_rigidBody->m_indices) {
-        m_particles.push_back(particles[i]);
+    for (int i = begin; i <= end; i++) {
+        Particle* p = particles[i];
+        if (p->rigidBodyID != ID) {
+            print_error("IDs do not match: rigidBody %d - %d", ID, p->rigidBodyID);
+            continue;
+        }
+        m_particles.push_back(p);
+        m_centerOfMass += p->cpos * p->mass;
+        m_totalMass += p->mass;
+    }
+    m_centerOfMass /= m_totalMass;
+
+    for (Particle* p : m_particles) {
+        m_offsets.push_back(p->cpos - m_centerOfMass);
     }
 
     IncrementCounts();
 }
 
 void RigidShapeConstraint::Project() {
-    m_rigidBody->RecalculateCOM(m_particles, true);
+    RecalculateCOM();
 
     glm::mat3 A(0.0f); // might be tisms
     for (int i = 0; i < m_particles.size(); i++) {
         Particle* pt = m_particles[i];
 
-        glm::vec3 p = pt->cpos - m_rigidBody->m_centerOfMass;
-        glm::vec3 q = m_rigidBody->m_offsets[i];
+        glm::vec3 p = pt->cpos - m_centerOfMass;
+        glm::vec3 q = m_offsets[i];
 
         A += pt->mass * glm::mat3(p.x * q.x, p.y * q.x, p.z * q.x,
                                   p.x * q.y, p.y * q.y, p.z * q.y,
@@ -116,20 +128,36 @@ void RigidShapeConstraint::Project() {
     for (int i = 0; i < m_particles.size(); i++) {
         Particle* p = m_particles[i];
 
-        glm::vec3 target = m_rigidBody->m_centerOfMass + rotation * m_rigidBody->m_offsets[i];
-        p->cpos += SOR_COEF * (target - p->cpos) * m_stiffness / (float)p->num_constraints;
+        glm::vec3 target = m_centerOfMass + rotation * m_offsets[i];
+        if (!p->fixed) p->cpos += SOR_COEF * (target - p->cpos) * m_stiffness / (float)p->num_constraints;
     }
 }
 
 void RigidShapeConstraint::Draw(Renderer &renderer) {
-    for (glm::vec3 off: m_rigidBody->m_offsets) {
-        renderer.DrawLine(m_rigidBody->m_centerOfMass, m_rigidBody->m_centerOfMass - off, glm::vec3(0.0f, 0.7f, 0.1f));
+    for (glm::vec3 off: m_offsets) {
+        renderer.DrawLine(m_centerOfMass, m_centerOfMass - off, glm::vec3(0.0f, 0.7f, 0.1f));
     }
     for (Particle* p: m_particles) {
-        renderer.DrawLine(p->pos, m_rigidBody->m_centerOfMass, glm::vec3(0.6f, 0.7f, 0.1f));
+        renderer.DrawLine(p->pos, m_centerOfMass, glm::vec3(0.6f, 0.7f, 0.1f));
     }
 }
 
 RigidShapeConstraint::~RigidShapeConstraint() {
     DecrementCounts();
+}
+
+void RigidShapeConstraint::RecalculateCOM() {
+    m_centerOfMass = glm::vec3(0.0f);
+    m_totalMass = 0.0f;
+    for (Particle *p: m_particles) {
+        m_centerOfMass += p->cpos * p->mass;
+        m_totalMass += p->mass;
+    }
+    m_centerOfMass /= m_totalMass;
+}
+
+void RigidShapeConstraint::AddParticle(Particle* p) {
+    m_particles.push_back(p);
+    RecalculateCOM();
+    m_offsets.push_back(p->cpos - m_centerOfMass);
 }

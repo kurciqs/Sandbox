@@ -2,6 +2,7 @@
 #define SANDBOX_PARTICLESYSTEM_H
 
 #include <vector>
+#include <map>
 #include "Simulation/Particle.h"
 #include "Simulation/Constraints/DistanceConstraint.h"
 #include "Simulation/Constraints/ContactConstraint.h"
@@ -42,9 +43,11 @@ public:
     void Destroy();
     void AddParticle(glm::vec3 pos, glm::vec3 vel, glm::vec3 color, float r);
     void AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height, int depth, glm::vec3 color);
-    void AddBall(glm::vec3 pos, glm::vec3 vel, float radius, glm::vec3 color);
+    void AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm::vec3 color);
 private:
     std::vector<RigidBody*> m_rigidBodies;
+    int m_rigidBodyCount = 1;
+    std::map<int, SDFData> m_SDFData; // map from global index to SDFData
     std::vector<Particle*> m_particles;
     std::vector<ConstraintGroup> m_constraints;
     glm::vec3 m_globalForce{0.0f, -9.8f, 0.0f}; // gravity

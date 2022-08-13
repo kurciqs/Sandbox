@@ -4,7 +4,7 @@
 #include "glm/vec3.hpp"
 #include <cmath>
 #include "Utils/Utils.h"
-#define SOR_COEF 1.1f
+#define SOR_COEF 1.0f
 
 struct Particle {
     void ApplyForce(glm::vec3 f);

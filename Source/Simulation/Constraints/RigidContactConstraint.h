@@ -4,15 +4,20 @@
 #include "Simulation/Constraint.h"
 #include "Simulation/RigidBody.h"
 
+struct SDFData {
+    glm::vec3 grad;
+    float mag;
+};
+
 class RigidContactConstraint : public Constraint {
 public:
-    RigidContactConstraint(RigidBody *rb1, RigidBody *rb2, Particle* p1, Particle* p2, float k);
+    RigidContactConstraint(Particle* p1, Particle* p2, SDFData d1, SDFData d2, float k);
     ~RigidContactConstraint() override;
 
     void Project() override;
     void Draw(Renderer& renderer) override;
 private:
-    std::vector<RigidBody*> m_rigidBodies;
+    std::vector<SDFData> m_SDFData;
 };
 
 

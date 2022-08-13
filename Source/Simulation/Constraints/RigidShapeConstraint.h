@@ -7,13 +7,18 @@
 
 class RigidShapeConstraint : public Constraint {
 public:
-    RigidShapeConstraint(RigidBody* rb, const std::vector<Particle*>& particles, float k);
+    RigidShapeConstraint(int rigidBodyID, int begin, int end, const std::vector<Particle*>& particles, float k);
     ~RigidShapeConstraint() override;
 
+    void AddParticle(Particle* p);
     void Project() override;
     void Draw(Renderer& renderer) override;
 private:
-    RigidBody* m_rigidBody;
+    void RecalculateCOM();
+    glm::vec3 m_centerOfMass{};
+    int ID{};
+    float m_totalMass{};
+    std::vector<glm::vec3> m_offsets; // map<int - m_begin, .. (r-s)
 };
 
 

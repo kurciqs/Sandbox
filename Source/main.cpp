@@ -3,8 +3,11 @@
 #define DELTA_TIME 0.02f
 
 int main() {
-
-    std::filesystem::current_path(getexepath().parent_path().parent_path().parent_path());
+    // set the workdir to ../../ from the executable
+    wchar_t exepath[MAX_PATH];
+    getexepath(exepath);
+    auto path = std::filesystem::path(exepath);
+    std::filesystem::current_path(path.parent_path().parent_path().parent_path());
 
     if (!Window::InitGlfw()) {
         return -1;
@@ -37,6 +40,9 @@ int main() {
         // Draw the ground
         renderer.DrawTriangle(lowerBoundary, glm::vec3(lowerBoundary.x, lowerBoundary.y, upperBoundary.z), glm::vec3(upperBoundary.x, lowerBoundary.y, upperBoundary.z), glm::vec3(0.4f));
         renderer.DrawTriangle(lowerBoundary, glm::vec3(upperBoundary.x, lowerBoundary.y, lowerBoundary.z), glm::vec3(upperBoundary.x, lowerBoundary.y, upperBoundary.z), glm::vec3(0.4f));
+        renderer.DrawLine(glm::vec3(0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        renderer.DrawLine(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        renderer.DrawLine(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
         renderer.Update(DELTA_TIME);
         renderer.Render();

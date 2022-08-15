@@ -127,6 +127,7 @@ void RigidShapeConstraint::Project() {
 
     for (int i = 0; i < m_particles.size(); i++) {
         Particle* p = m_particles[i];
+        p->R = rotation;
 
         glm::vec3 target = m_centerOfMass + rotation * m_offsets[i];
         if (!p->fixed) p->cpos += SOR_COEF * (target - p->cpos) * m_stiffness / (float)p->num_constraints;

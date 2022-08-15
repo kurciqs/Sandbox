@@ -24,6 +24,6 @@ void _print_error(const char* file, int line, const char* format, ...);
 void _print_log(const char* file, int line, const char* format, ...);
 
 
-std::filesystem::path getexepath();
+void getexepath(wchar_t* buf);
 
 #endif //SANDBOX_UTILS_H

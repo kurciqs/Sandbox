@@ -34,11 +34,10 @@ void _print_log(const char *file, int line, const char *format, ...) {
     printf("\n");
 }
 
-std::filesystem::path getexepath() {
+void getexepath(wchar_t* buf) {
 #ifdef _WIN32
-    wchar_t path[MAX_PATH] = { 0 };
-    GetModuleFileNameW(nullptr, path, MAX_PATH);
-    return path;
+//    wchar_t path[MAX_PATH] = { 0 };
+    GetModuleFileNameW(nullptr, buf, MAX_PATH);
 #else
     char result[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);

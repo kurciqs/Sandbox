@@ -18,8 +18,8 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
                 m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
             }
 
-//            AddCube(glm::vec3(5.0f), glm::vec3(0.0f), 4, 4, 4, RANDOM_COLOR);
-            AddBall(glm::vec3(0.1f), glm::vec3(0.0f), 3.0f, RANDOM_COLOR);
+            AddCube(glm::vec3(8.0f), glm::vec3(0.0f), 4, 4, 4, RANDOM_COLOR);
+            AddBall(glm::vec3(0.0f), glm::vec3(0.0f), 4.0f, RANDOM_COLOR);
         }
             break;
         default:
@@ -41,6 +41,11 @@ void ParticleSystem::Clear() {
         delete p;
     }
     m_particles.clear();
+
+    for (RigidBody* rb: m_rigidBodies) {
+        delete rb;
+    }
+    m_rigidBodies.clear();
 }
 
 void ParticleSystem::Destroy() {
@@ -62,7 +67,6 @@ void ParticleSystem::Update(float dt) {
     }
     // (5)
 
-
     // (6)
     // TODO
     for (int i = 0; i < m_particles.size(); i++) {
@@ -74,17 +78,17 @@ void ParticleSystem::Update(float dt) {
             float dist = glm::fastDistance(p1->cpos, p2->cpos);
             if (dist < p1->radius + p2->radius) {
                 // (8)
-                if (p1->rigidBodyID == 0 && p2->rigidBodyID == 0) {
-                    // normal collision between two normal particles
-                    m_constraints[CONTACT].push_back( new ContactConstraint(p1, p2, k_contact) );
-                }
-                else if (p1->rigidBodyID == 0 || p2->rigidBodyID == 0) {
-                    // collision between normal and rigidbody
+                if (p1->rigidBodyID == -1 || p2->rigidBodyID == -1) {
+                    // collision between normal and rigidbody or normal and normal
                     m_constraints[CONTACT].push_back( new ContactConstraint(p1, p2, k_contact) );
                 }
                 else if (p1->rigidBodyID != p2->rigidBodyID) {
-                    // collision between two rigid bodies, that aren't the same (their IDs aren't equal) AND they are not 0
-                    m_constraints[CONTACT].push_back( new RigidContactConstraint(p1, p2, m_SDFData[i], m_SDFData[j], k_contact) );
+                    // collision between two rigid bodies, that aren't the same (their IDs aren't equal) AND they are not -1
+                    SDFData d1 = m_rigidBodies[p1->rigidBodyID]->GetSDFData(i);
+                    SDFData d2 = m_rigidBodies[p2->rigidBodyID]->GetSDFData(j);
+//                    printf("%f  %f %f %f\n", d1.mag, d1.grad.x, d1.grad.y, d1.grad.z);
+//                    printf("%f  %f %f %f\n", d2.mag, d2.grad.x, d2.grad.y, d2.grad.z);
+                    m_constraints[CONTACT].push_back( new RigidContactConstraint(p1, p2, d1, d2, k_contact) );
                 }
                 // else do nothing p1->rigidBodyID == p2->rigidBodyID (no collision required in a rigidbody)
             }
@@ -134,7 +138,9 @@ void ParticleSystem::Update(float dt) {
 }
 
 void ParticleSystem::Draw(Renderer& renderer) {
-    renderer.DrawParticles(m_particles);
+    if (!Input::isKeyDown(GLFW_KEY_G)) {
+        renderer.DrawParticles(m_particles);
+    }
 
 #ifndef NDEBUG
 
@@ -146,15 +152,15 @@ void ParticleSystem::Draw(Renderer& renderer) {
         }
     }
 
-    for (int i = 0; i < m_particles.size(); i++) {
-        Particle* p = m_particles[i];
-        if (p->rigidBodyID) {
-            renderer.DrawLine(p->cpos + p->R * m_SDFData[i].grad, p->cpos, glm::vec3(1.0f));
-        }
-    }
-
     bool drawc = Input::isKeyDown(GLFW_KEY_C);
     if (drawc) {
+        for (int i = 0; i < m_particles.size(); i++) {
+            Particle* p = m_particles[i];
+            if (p->rigidBodyID != -1) {
+                RigidBody* rb = m_rigidBodies[p->rigidBodyID];
+                renderer.DrawLine(p->cpos + rb->GetSDFData(i).grad, p->cpos, glm::vec3(1.0f));
+            }
+        }
         for (const ConstraintGroup &g: m_constraints) {
             for (Constraint *c: g) {
                 c->Draw(renderer);
@@ -177,97 +183,77 @@ void ParticleSystem::AddParticle(glm::vec3 pos, glm::vec3 vel, glm::vec3 color, 
     m_constraints[STANDARD].push_back(new BoxBoundaryConstraint(p, upperBoundary, lowerBoundary, 1.0f));
 }
 
-float SDFToCube(glm::vec3 p, glm::vec3 r) {
-    glm::vec3 q = glm::abs(p) - r;
-    return glm::fastLength(glm::max(q, 0.0f)) + glm::min(glm::compMax(q), 0.0f);
-}
-
-glm::vec3 SDFGradientToCube(glm::vec3 p, glm::vec3 r) {
-    glm::vec3 res{};
-    float sdf = SDFToCube(p, r);
-    float sign = glm::sign(sdf);
-    float maxVal = INFINITY * sign;
-
-    float x0 = SDFToCube(p - glm::vec3(1.0f, 0.0f, 0.0f), r);
-    float x1 = SDFToCube(p + glm::vec3(1.0f, 0.0f, 0.0f), r);
-    float y0 = SDFToCube(p - glm::vec3(0.0f, 1.0f, 0.0f), r);
-    float y1 = SDFToCube(p + glm::vec3(0.0f, 1.0f, 0.0f), r);
-    float z0 = SDFToCube(p - glm::vec3(0.0f, 0.0f, 1.0f), r);
-    float z1 = SDFToCube(p + glm::vec3(0.0f, 0.0f, 1.0f), r);
-
-    res.x = sign * x0 < sign * x1 ? -(x0 - sdf) : (x1 - sdf);
-    res.y = sign * y0 < sign * y1 ? -(y0 - sdf) : (y1 - sdf);
-    res.z = sign * z0 < sign * z1 ? -(z0 - sdf) : (z1 - sdf);
-
-    return res;
-}
-
 float map(float X, float A, float B, float C, float D) {
     return (X-A)/(B-A) * (D-C) + C;
 }
 
 void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height, int depth, glm::vec3 color) {
+    auto* rb = new RigidBody(m_rigidBodyCount++);
+
     int lastIndex = 0;
     for (int i = -width / 2; i < width / 2; i++) {
         for (int j = -height / 2; j < height / 2; j++) {
             for (int k = -depth / 2; k < depth / 2; k++) {
                 glm::vec3 ppos = glm::vec3(i, j, k) + pos;
 
-                SDFData d = {
-                        glm::normalize(SDFGradientToCube(ppos, glm::vec3(width, height, depth) / 2.0f)),
-                        SDFToCube(ppos, glm::vec3(width, height, depth) / 2.0f)
-                };
-
-                m_SDFData.insert(std::pair(m_particles.size(), d));
-
-                auto *p = new Particle(ppos, (SDFGradientToCube(ppos, glm::vec3(width, height, depth) / 2.0f))) ;
-                p->rigidBodyID = m_rigidBodyCount;
+                auto *p = new Particle(ppos, color);
+                p->rigidBodyID = rb->ID;
                 p->vel = vel;
+
+                // SDF Calc:
+                SDFData d = {};
+                rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
                 m_particles.push_back(p);
 
-                lastIndex++;
                 m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
-
-
+                lastIndex++;
             }
         }
     }
-    m_constraints[SHAPE].push_back( new RigidShapeConstraint(m_rigidBodyCount++, (int)m_particles.size() - lastIndex, (int)m_particles.size() - 1, m_particles, k_shape) );
+    rb->CalculateOffsets();
+    m_rigidBodies.push_back(rb);
+    m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
 }
 
 void ParticleSystem::AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm::vec3 color) {
+    auto* rb = new RigidBody(m_rigidBodyCount++);
+
     int lastIndex = 0;
-    for (int i = -(int)glm::round(radius) - 1; i < (int)glm::round(radius) + 1; i++) {
-        for (int j = -(int)glm::round(radius) - 1; j < (int)glm::round(radius) + 1; j++) {
-            for (int k = -(int)glm::round(radius) - 1; k < (int)glm::round(radius) + 1; k++) {
-                if (glm::length2(glm::vec3(i, j, k)) + 2 < radius * radius) {
+    for (int i = -(int)glm::round(radius); i < (int)glm::round(radius) + 1; i++) {
+        for (int j = -(int)glm::round(radius); j < (int)glm::round(radius) + 1; j++) {
+            for (int k = -(int)glm::round(radius); k < (int)glm::round(radius) + 1; k++) {
+                if (glm::length2(glm::vec3(i, j, k)) < radius * radius) {
                     glm::vec3 ppos = glm::vec3(i, j, k) + center;
 
-                    glm::vec3 intersection = center + glm::fastNormalize(ppos - center) * radius;
-                    glm::vec3 dir = ppos - intersection;
-                    float mag = glm::fastDistance(center, ppos) > radius ? glm::fastLength(dir) : -glm::fastLength(dir);
-
-                    if (glm::fastDistance(center, ppos) <= radius)
-                        dir = -dir;
-
-                    if (center == ppos) {
-                        mag = -2.0f;
-                    }
-                    SDFData d{ glm::fastNormalize(dir), mag };
-
-                    m_SDFData.insert(std::pair(m_particles.size(), d));
-
-                    auto *p = new Particle(ppos, glm::vec3(map(mag, -2.0f, 0.0f, 0.0f, 1.0f)));
-                    p->rigidBodyID = m_rigidBodyCount;
-                    glm::vec3 off = ppos - center;
+                    auto *p = new Particle(ppos, color);
+                    p->rigidBodyID = rb->ID;
                     p->vel = vel;
+
+                    // SDF Calc:
+                    glm::vec3 dir = ppos - center;
+                    glm::vec3 intersection = center + glm::fastNormalize(dir) * radius;
+                    glm::vec3 diff = intersection - ppos;
+                    float mag = glm::fastLength(diff);
+                    mag = glm::fastLength(dir) > radius ? mag : -mag;
+//                    if (center == ppos) {
+//                        mag = -radius + 1.0f;
+//                    }
+
+//                    p->color = glm::vec3(map(mag, 0.0f, -radius + 1.0f, 0.0f, 1.0f));
+//                    printf("%f %f %f %f\n", mag, glm::normalize(diff).x, glm::normalize(diff).y, glm::normalize(diff).z);
+                    SDFData d = {glm::fastNormalize(diff), mag};
+
+
+                    rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
                     m_particles.push_back(p);
 
-                    lastIndex++;
                     m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
+                    lastIndex++;
                 }
             }
         }
     }
-    m_constraints[SHAPE].push_back( new RigidShapeConstraint(m_rigidBodyCount++, (int)m_particles.size() - lastIndex, (int)m_particles.size() - 1, m_particles, k_shape) );
+    rb->CalculateOffsets();
+    m_rigidBodies.push_back(rb);
+    m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
 }

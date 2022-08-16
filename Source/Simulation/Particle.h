@@ -22,7 +22,6 @@ struct Particle {
     int phase;
     int num_constraints;
     int rigidBodyID;
-    glm::mat3 R = glm::mat3(1.0f);
 };
 
 

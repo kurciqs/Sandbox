@@ -2,25 +2,35 @@
 #define SANDBOX_RIGIDBODY_H
 
 #include <vector>
+#include <map>
 #include "Simulation/Particle.h"
 #include "Graphics/Renderer.h"
+#include "Simulation/Constraint.h"
 
+struct SDFData {
+    glm::vec3 grad;
+    float mag;
+};
 
-class RigidBody {
-public:
-    RigidBody(int rigidBodyID, int begin, int end, const std::vector<Particle*>& particles); // use all particles from particles[being] to particles[end]
-    void AddVertex(const std::vector<Particle*>& particles, int index); // push extra ones
-    void RecalculateCOM(const std::vector<Particle*>& particles, bool particlesOrdered);
-
-    friend class RigidShapeConstraint;
-    friend class RigidContactConstraint;
-private:
-    float m_totalMass{};
+struct RigidBody {
+    explicit RigidBody(int id): ID(id) {};
     int ID{};
-    std::vector<int> m_indices; // index in the main particle array
-    glm::vec3 m_centerOfMass{};
-//    std::vector<SDFData> m_sdfMap; // map<int - m_begin, ..
-        std::vector<glm::vec3> m_offsets; // map<int - m_begin, .. (r-s)
+
+    void AddVertex(Particle* p, SDFData d, int particleIndex);
+    std::vector<Particle*> particles;
+    std::map<int, SDFData> sdfData;
+
+    void RecalculateCOM();
+    glm::vec3 centerOfMass{};
+    float totalMass{};
+
+    void CalculateOffsets(); // don't add particles after this one
+    std::vector<glm::vec3> offsets; // map<int - m_begin, .. (r-s)
+
+    void UpdateMatrix();
+    glm::mat3 rotation{1.0f};
+
+    SDFData GetSDFData(int index);
 };
 
 #endif //SANDBOX_RIGIDBODY_H

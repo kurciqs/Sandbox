@@ -4,11 +4,6 @@
 #include "Simulation/Constraint.h"
 #include "Simulation/RigidBody.h"
 
-struct SDFData {
-    glm::vec3 grad;
-    float mag;
-};
-
 class RigidContactConstraint : public Constraint {
 public:
     RigidContactConstraint(Particle* p1, Particle* p2, SDFData d1, SDFData d2, float k);

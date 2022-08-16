@@ -1,6 +1,5 @@
 #include "RigidContactConstraint.h"
 
-// TODO:
 RigidContactConstraint::RigidContactConstraint(Particle* p1, Particle* p2, SDFData d1, SDFData d2, float k) {
     m_stiffness = 1.0f - powf((1.0f - k), 1.0f / SOLVER_ITERATIONS);
 
@@ -27,6 +26,7 @@ void RigidContactConstraint::Project() {
 
     SDFData d1 = m_SDFData[0];
     SDFData d2 = m_SDFData[1];
+
     float absMag1 = glm::abs(d1.mag);
     float absMag2 = glm::abs(d2.mag);
 
@@ -34,7 +34,8 @@ void RigidContactConstraint::Project() {
     glm::vec3 normal = absMag1 < absMag2 ? d1.grad : -d2.grad;
     glm::vec3 newNormal(0.0f);
 
-    if (absMag1 < diameter || absMag2 < diameter) { // is border, maybe only p1->radius
+    bool isBorder = absMag1 < diameter || absMag2 < diameter;
+    if (isBorder) {
         mag = glm::fastLength(diff) - diameter;
         newNormal = glm::dot(diff, normal) < 0.0f ? diff - 2.0f * glm::dot(diff, normal) * normal : diff;
     }
@@ -53,5 +54,6 @@ void RigidContactConstraint::Draw(Renderer &renderer) {
         Particle* p = m_particles[i];
         SDFData s = m_SDFData[i];
         renderer.DrawLine(p->cpos, p->cpos + s.grad * s.mag, glm::vec3(0.3f, 0.8f, 0.2f));
+        p->color -= glm::vec3(0.01f);
     }
 }

@@ -16,34 +16,46 @@ RigidContactConstraint::~RigidContactConstraint() {
 }
 
 void RigidContactConstraint::Project() {
-    Particle* p1 = m_particles[0];
-    Particle* p2 = m_particles[1];
+    Particle *p1 = m_particles[0], *p2 = m_particles[1];
+    SDFData dat1 = m_SDFData[0], dat2 = m_SDFData[1];
 
-    glm::vec3 diff = p1->cpos - p2->cpos;
     float diameter = p1->radius + p2->radius;
-    if (glm::fastLength(diff) < diameter)
-        return;
 
-    SDFData d1 = m_SDFData[0];
-    SDFData d2 = m_SDFData[1];
+    glm::vec3 n{};
+    float d;
+    if (dat1.mag < 0 || dat2.mag < 0) {
+        glm::vec3 x12 = p2->cpos - p1->cpos;
+        float len = glm::length(x12);
+        d = diameter - len;
+        if (d < EPSILON) return;
+        n = x12 / len;
+    } else {
+        if (dat1.mag < dat2.mag) {
+            d = dat1.mag;
+            n = dat1.grad;
+        }
+        else {
+            d = dat2.mag;
+            n = -dat2.grad;
+        }
 
-    float absMag1 = glm::abs(d1.mag);
-    float absMag2 = glm::abs(d2.mag);
-
-    float mag = glm::min(absMag1, absMag2);
-    glm::vec3 normal = absMag1 < absMag2 ? d1.grad : -d2.grad;
-    glm::vec3 newNormal(0.0f);
-
-    bool isBorder = absMag1 < diameter || absMag2 < diameter;
-    if (isBorder) {
-        mag = glm::fastLength(diff) - diameter;
-        newNormal = glm::dot(diff, normal) < 0.0f ? diff - 2.0f * glm::dot(diff, normal) * normal : diff;
+        if (d < diameter + EPSILON) {
+            glm::vec3 x12 = p1->cpos - p2->cpos;
+            float len = glm::length(x12);
+            d = diameter - len;
+            if (d < EPSILON) return;
+            x12 = x12 / len;
+            float dp = glm::dot(x12, n);
+            if (dp < 0.0f) {
+                n = x12 - 2.0f * dp * n;
+            }
+            else {
+                n = x12;
+            }
+        }
     }
-    else {
-        newNormal = normal;
-    }
 
-    glm::vec3 delta = 1.0f / GetInvMassSum() * mag * newNormal * m_stiffness;
+    glm::vec3 delta = (1.0f / GetInvMassSum()) * d * n * m_stiffness;
 
     if (!p1->fixed) p1->cpos -= p1->invMass * delta / (float)p1->num_constraints;
     if (!p2->fixed) p2->cpos += p2->invMass * delta / (float)p2->num_constraints;

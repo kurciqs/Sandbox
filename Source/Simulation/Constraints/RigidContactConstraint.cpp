@@ -29,7 +29,8 @@ void RigidContactConstraint::Project() {
         d = diameter - len;
         if (d < EPSILON) return;
         n = x12 / len;
-    } else {
+    }
+    else {
         if (dat1.mag < dat2.mag) {
             d = dat1.mag;
             n = dat1.grad;
@@ -55,17 +56,16 @@ void RigidContactConstraint::Project() {
         }
     }
 
-    glm::vec3 delta = (1.0f / GetInvMassSum()) * d * n;
+    glm::vec3 dlt = (1.0f / GetInvMassSum()) * d * n;
 
-    if (!p1->fixed) p1->cpos -= p1->invMass * delta;
-    if (!p2->fixed) p2->cpos += p2->invMass * delta;
+    if (!p1->fixed) p1->cpos -= dlt * p1->invMass / (float)p1->num_constraints;
+    if (!p2->fixed) p2->cpos += dlt * p2->invMass / (float)p2->num_constraints;
 }
 
 void RigidContactConstraint::Draw(Renderer &renderer) {
     for (int i = 0; i < 2; i++) {
         Particle* p = m_particles[i];
         SDFData s = m_SDFData[i];
-        renderer.DrawLine(p->cpos, p->cpos + s.grad * s.mag, glm::vec3(0.3f, 0.8f, 0.2f));
-        p->color -= glm::vec3(0.01f);
+        renderer.DrawLine(p->cpos, p->cpos + s.grad, glm::vec3(0.9f, 0.0f, 0.2f));
     }
 }

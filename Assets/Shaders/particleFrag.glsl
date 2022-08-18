@@ -22,7 +22,7 @@ void main() {
     vec3 normal;
     normal.xy = vTexCoord * 2.0 - 1.0;
     float r2 = dot(normal.xy, normal.xy);
-    if (r2 > 1.0) {
+    if (length(vTexCoord) > vRadius) {
         discard;
     }
     normal.z = sqrt(1.0 - r2);

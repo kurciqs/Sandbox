@@ -160,10 +160,12 @@ void ParticleSystem::Draw(Renderer& renderer) {
         }
     }
 
-    for (Constraint* c: m_constraints[CONTACT]) {
-        delete c;
+    if (!drawc) {
+        for (Constraint *c: m_constraints[CONTACT]) {
+            delete c;
+        }
+        m_constraints[CONTACT].clear();
     }
-    m_constraints[CONTACT].clear();
 #endif
 }
 
@@ -179,47 +181,36 @@ float map(float X, float A, float B, float C, float D) {
     return (X-A)/(B-A) * (D-C) + C;
 }
 
-float SDFCube(glm::vec3 p, glm::vec3 b) {
-    glm::vec3 d = glm::abs(p) - b;
-    return glm::min(glm::max(d.x,glm::max(d.y,d.z)),0.0f) + glm::length(glm::max(d,0.0f));
-}
+SDFData SDFCubeData(glm::vec3 p, glm::vec3 b, float step) {
+    auto GetMag = [&](glm::vec3 ps, glm::vec3 s) {
+        glm::vec3 d = glm::abs(ps) - s;
+        return glm::min(glm::max(d.x,glm::max(d.y,d.z)),0.0f) + glm::length(glm::max(d,0.0f));
+    };
 
-glm::vec3 SDFGradientCube(glm::vec3 p, glm::vec3 b, bool corner) {
-    float d = SDFCube(p, b);
+    float d = GetMag(p, b);
     float sign = d >= 0 ? 1.0f : -1.0f;
-    float x0 = SDFCube(p - glm::vec3(1.0f, 0.0f, 0.0f), b);
-    float x1 = SDFCube(p + glm::vec3(1.0f, 0.0f, 0.0f), b);
-    float y0 = SDFCube(p - glm::vec3(0.0f, 1.0f, 0.0f), b);
-    float y1 = SDFCube(p + glm::vec3(0.0f, 1.0f, 0.0f), b);
-    float z0 = SDFCube(p - glm::vec3(0.0f, 0.0f, 1.0f), b);
-    float z1 = SDFCube(p + glm::vec3(0.0f, 0.0f, 1.0f), b);
+    float x0 = GetMag(p - glm::vec3(step, 0.0f, 0.0f), b);
+    float x1 = GetMag(p + glm::vec3(step, 0.0f, 0.0f), b);
+    float y0 = GetMag(p - glm::vec3(0.0f, step, 0.0f), b);
+    float y1 = GetMag(p + glm::vec3(0.0f, step, 0.0f), b);
+    float z0 = GetMag(p - glm::vec3(0.0f, 0.0f, step), b);
+    float z1 = GetMag(p + glm::vec3(0.0f, 0.0f, step), b);
 
-    float xgrad;
-    float ygrad;
-    float zgrad;
+    float xgrad = sign * x0 > sign * x1 ? (x1 - d) : -(x0 - d);
+    float ygrad = sign * y0 > sign * y1 ? (y1 - d) : -(y0 - d);
+    float zgrad = sign * z0 > sign * z1 ? (z1 - d) : -(z0 - d);
 
-    if (corner) {
-        xgrad = sign * x0 < sign * x1 ? (x1 - d) : -(x0 - d);
-        ygrad = sign * y0 < sign * y1 ? (y1 - d) : -(y0 - d);
-        zgrad = sign * z0 < sign * z1 ? (z1 - d) : -(z0 - d);
-    }
-    else {
-        xgrad = sign * x0 > sign * x1 ? (x1 - d) : -(x0 - d);
-        ygrad = sign * y0 > sign * y1 ? (y1 - d) : -(y0 - d);
-        zgrad = sign * z0 > sign * z1 ? (z1 - d) : -(z0 - d);
-    }
-
-    return glm::fastNormalize(glm::vec3(xgrad, ygrad, zgrad));
+    return {glm::vec3(xgrad, ygrad, zgrad), d};
 }
 
 void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height, int depth, glm::vec3 color) {
     auto* rb = new RigidBody(m_rigidBodyCount++);
 
-    glm::vec3 boxSize((float)width / 2.0f,  (float)height / 2.0f, (float)depth / 2.0f);
+    glm::vec3 boxSize((float)width / 2.0f + 0.5f,  (float)height / 2.0f + 0.5f, (float)depth / 2.0f + 0.5f);
     float step = 1.0f;
-    for (float i = -boxSize.x; i <= boxSize.y; i += step) {
-        for (float j = -boxSize.y; j <= boxSize.y; j += step) {
-            for (float k = -boxSize.z; k <= boxSize.z; k += step) {
+    for (float i = -boxSize.x + 1; i <= boxSize.x - 1; i += step) {
+        for (float j = -boxSize.y + 1; j <= boxSize.y - 1; j += step) {
+            for (float k = -boxSize.z + 1; k <= boxSize.z - 1; k += step) {
                 glm::vec3 ppos = glm::vec3(i, j, k) + pos;
 
                 auto *p = new Particle(ppos, color);
@@ -228,9 +219,9 @@ void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height
 
                 // SDF Calc:
                 glm::vec3 local = ppos - pos;
-                bool corner = (glm::abs(local.x) == boxSize.x && glm::abs(local.y) == boxSize.y) || (glm::abs(local.y) == boxSize.y && glm::abs(local.z) == boxSize.z) || (glm::abs(local.x) == boxSize.x && glm::abs(local.z) == boxSize.z);
-                SDFData d = {SDFGradientCube(local, boxSize, corner), SDFCube(local, boxSize)};
+                SDFData d = SDFCubeData(local, boxSize, step);
 
+                p->color = glm::vec3(glm::abs(d.mag) / boxSize);
                 rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
                 m_particles.push_back(p);
 
@@ -247,15 +238,15 @@ float SDFBall(glm::vec3 p, float s) {
     return glm::length(p) - s;
 }
 
-glm::vec3 SDFGradientBall(glm::vec3 p, float s) {
+glm::vec3 SDFGradientBall(glm::vec3 p, float s, float step) {
     float d = SDFBall(p, s);
     float sign = glm::sign(d);
-    float x0 = SDFBall(p - glm::vec3(1.0f, 0.0f, 0.0f), s);
-    float x1 = SDFBall(p + glm::vec3(1.0f, 0.0f, 0.0f), s);
-    float y0 = SDFBall(p - glm::vec3(0.0f, 1.0f, 0.0f), s);
-    float y1 = SDFBall(p + glm::vec3(0.0f, 1.0f, 0.0f), s);
-    float z0 = SDFBall(p - glm::vec3(0.0f, 0.0f, 1.0f), s);
-    float z1 = SDFBall(p + glm::vec3(0.0f, 0.0f, 1.0f), s);
+    float x0 = SDFBall(p - glm::vec3(step, 0.0f, 0.0f), s);
+    float x1 = SDFBall(p + glm::vec3(step, 0.0f, 0.0f), s);
+    float y0 = SDFBall(p - glm::vec3(0.0f, step, 0.0f), s);
+    float y1 = SDFBall(p + glm::vec3(0.0f, step, 0.0f), s);
+    float z0 = SDFBall(p - glm::vec3(0.0f, 0.0f, step), s);
+    float z1 = SDFBall(p + glm::vec3(0.0f, 0.0f, step), s);
 
     float xgrad = sign*x0 < sign*x1 ? -(x0 - d) : (x1 - d);
     float ygrad = sign*y0 < sign*y1 ? -(y0 - d) : (y1 - d);
@@ -278,7 +269,7 @@ void ParticleSystem::AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm:
                     p->vel = vel;
 
                     glm::vec3 local = ppos - center;
-                    SDFData d = {SDFGradientBall(local, radius), SDFBall(local, radius)};
+                    SDFData d = {SDFGradientBall(local, radius, 1.0f), SDFBall(local, radius)};
 
                     rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
                     m_particles.push_back(p);

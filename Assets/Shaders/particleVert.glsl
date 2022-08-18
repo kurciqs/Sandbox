@@ -28,7 +28,7 @@ void main() {
     newView[0][2] = 0;   newView[1][2] = 0;   newView[2][2] = 1;
 
     vCenter = (view * vec4(iOffset, 1.0)).xyz;
-    vTexCoord = (aPos.xy) * iRadius + vec2(0.5);
+    vTexCoord = (aPos.xy) * vRadius;
 
     gl_Position = proj * newView * (vec4(aPos * iRadius, 1.0));
 }

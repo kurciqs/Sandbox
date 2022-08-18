@@ -55,10 +55,10 @@ void RigidContactConstraint::Project() {
         }
     }
 
-    glm::vec3 delta = (1.0f / GetInvMassSum()) * d * n * m_stiffness;
+    glm::vec3 delta = (1.0f / GetInvMassSum()) * d * n;
 
-    if (!p1->fixed) p1->cpos -= p1->invMass * delta / (float)p1->num_constraints;
-    if (!p2->fixed) p2->cpos += p2->invMass * delta / (float)p2->num_constraints;
+    if (!p1->fixed) p1->cpos -= p1->invMass * delta;
+    if (!p2->fixed) p2->cpos += p2->invMass * delta;
 }
 
 void RigidContactConstraint::Draw(Renderer &renderer) {

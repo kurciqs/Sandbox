@@ -52,8 +52,6 @@ void ParticleSystem::Destroy() {
 void ParticleSystem::Update(float dt) {
     // (1)
     for (Particle* p : m_particles) {
-        if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_RIGHT) && !p->fixed)
-            p->ApplyForce(glm::vec3( (rand() % 100 - rand() % 100), (rand() % 100 - rand() % 100), (rand() % 100 - rand() % 100) ));
 #ifdef GRAVITY
         if (!p->fixed) p->ApplyForce(m_globalForce * p->mass);
 #endif
@@ -74,20 +72,17 @@ void ParticleSystem::Update(float dt) {
             Particle* p2 = m_particles[j];
             float dist = glm::fastDistance(p1->cpos, p2->cpos);
             if (dist < p1->radius + p2->radius) {
-                // (8)
+//                m_constraints[CONTACT].push_back( new ContactConstraint(p1, p2, k_contact) );
+                // (8) TODO improved collision between rbs:
                 if (p1->rigidBodyID == -1 || p2->rigidBodyID == -1) {
-                    // collision between normal and rigidbody or normal and normal
                     m_constraints[CONTACT].push_back( new ContactConstraint(p1, p2, k_contact) );
                 }
                 else if (p1->rigidBodyID != p2->rigidBodyID) {
-                    // collision between two rigid bodies, that aren't the same (their IDs aren't equal) AND they are not -1
                     SDFData d1 = m_rigidBodies[p1->rigidBodyID]->GetSDFData(i);
                     SDFData d2 = m_rigidBodies[p2->rigidBodyID]->GetSDFData(j);
-//                    printf("%f  %f %f %f\n", d1.mag, d1.grad.x, d1.grad.y, d1.grad.z);
-//                    printf("%f  %f %f %f\n", d2.mag, d2.grad.x, d2.grad.y, d2.grad.z);
                     m_constraints[CONTACT].push_back( new RigidContactConstraint(p1, p2, d1, d2, k_contact) );
                 }
-                // else do nothing p1->rigidBodyID == p2->rigidBodyID (no collision required in a rigidbody)
+
             }
         }
     }
@@ -140,19 +135,17 @@ void ParticleSystem::Draw(Renderer& renderer) {
     }
 
 #ifndef NDEBUG
-
-
     bool drawp = Input::isKeyDown(GLFW_KEY_R);
     if (drawp) {
-        for (Particle* p : m_particles) {
-            renderer.DrawLine(p->pos, glm::vec3(0.0f), glm::vec3(1.0f));
-        }
+//        for (Particle* p : m_particles) {
+//            renderer.DrawLine(p->pos, glm::vec3(0.0f), glm::vec3(1.0f));
+//        }
         for (int i = 0; i < m_particles.size(); i++) {
             Particle* p = m_particles[i];
             if (p->rigidBodyID != -1) {
                 RigidBody* rb = m_rigidBodies[p->rigidBodyID];
                 renderer.DrawLine(p->cpos + rb->GetSDFData(i).grad, p->cpos, glm::vec3(1.0f));
-                renderer.DrawLine(p->cpos + rb->GetSDFData(i).grad * glm::abs(rb->GetSDFData(i).mag), p->cpos, glm::vec3(0.0f, 0.2f, 0.4f));
+//                renderer.DrawLine(p->cpos + rb->GetSDFData(i).grad * glm::abs(rb->GetSDFData(i).mag), p->cpos, glm::vec3(0.0f, 0.2f, 0.4f));
             }
         }
     }
@@ -191,7 +184,7 @@ float SDFCube(glm::vec3 p, glm::vec3 b) {
     return glm::min(glm::max(d.x,glm::max(d.y,d.z)),0.0f) + glm::length(glm::max(d,0.0f));
 }
 
-glm::vec3 SDFGradientCube(glm::vec3 p, glm::vec3 b) {
+glm::vec3 SDFGradientCube(glm::vec3 p, glm::vec3 b, bool corner) {
     float d = SDFCube(p, b);
     float sign = d >= 0 ? 1.0f : -1.0f;
     float x0 = SDFCube(p - glm::vec3(1.0f, 0.0f, 0.0f), b);
@@ -201,9 +194,20 @@ glm::vec3 SDFGradientCube(glm::vec3 p, glm::vec3 b) {
     float z0 = SDFCube(p - glm::vec3(0.0f, 0.0f, 1.0f), b);
     float z1 = SDFCube(p + glm::vec3(0.0f, 0.0f, 1.0f), b);
 
-    float xgrad = sign*x0 < sign*x1 ? (x1 - d) : -(x0 - d);
-    float ygrad = sign*y0 < sign*y1 ? (y1 - d) : -(y0 - d);
-    float zgrad = sign*z0 < sign*z1 ? (z1 - d) : -(z0 - d);
+    float xgrad;
+    float ygrad;
+    float zgrad;
+
+    if (corner) {
+        xgrad = sign * x0 < sign * x1 ? (x1 - d) : -(x0 - d);
+        ygrad = sign * y0 < sign * y1 ? (y1 - d) : -(y0 - d);
+        zgrad = sign * z0 < sign * z1 ? (z1 - d) : -(z0 - d);
+    }
+    else {
+        xgrad = sign * x0 > sign * x1 ? (x1 - d) : -(x0 - d);
+        ygrad = sign * y0 > sign * y1 ? (y1 - d) : -(y0 - d);
+        zgrad = sign * z0 > sign * z1 ? (z1 - d) : -(z0 - d);
+    }
 
     return glm::fastNormalize(glm::vec3(xgrad, ygrad, zgrad));
 }
@@ -224,7 +228,8 @@ void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height
 
                 // SDF Calc:
                 glm::vec3 local = ppos - pos;
-                SDFData d = {SDFGradientCube(local, boxSize), SDFCube(local, boxSize)};
+                bool corner = (glm::abs(local.x) == boxSize.x && glm::abs(local.y) == boxSize.y) || (glm::abs(local.y) == boxSize.y && glm::abs(local.z) == boxSize.z) || (glm::abs(local.x) == boxSize.x && glm::abs(local.z) == boxSize.z);
+                SDFData d = {SDFGradientCube(local, boxSize, corner), SDFCube(local, boxSize)};
 
                 rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
                 m_particles.push_back(p);

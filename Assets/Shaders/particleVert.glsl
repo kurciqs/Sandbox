@@ -11,7 +11,7 @@ uniform mat4 view;
 out vec3 vColor;
 out float vRadius;
 out vec3 vCenter; // viewspace position of the fragment
-out vec2 vPosOnQuad;
+out vec2 vTexCoord;
 
 void main() {
     vColor = iColor;
@@ -28,7 +28,7 @@ void main() {
     newView[0][2] = 0;   newView[1][2] = 0;   newView[2][2] = 1;
 
     vCenter = (view * vec4(iOffset, 1.0)).xyz;
-    vPosOnQuad = (aPos.xy) * vec2(iRadius);
+    vTexCoord = (aPos.xy) * iRadius + vec2(0.5);
 
     gl_Position = proj * newView * (vec4(aPos * iRadius, 1.0));
 }

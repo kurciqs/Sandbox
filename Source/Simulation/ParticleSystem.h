@@ -27,9 +27,9 @@ enum ParticleSystemType {
 };
 
 enum ConstraintGroupEnum {
-    CONTACT = 0,
-    STANDARD = 1,
-    SHAPE = 2
+    CONTACT,
+    SHAPE,
+    STANDARD
 };
 
 class ParticleSystem {

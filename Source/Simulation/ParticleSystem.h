@@ -10,6 +10,7 @@
 #include "Simulation/Constraints/RigidShapeConstraint.h"
 #include "Simulation/Constraints/RigidContactConstraint.h"
 #include "Graphics/Renderer.h"
+#include "Utils/SDFGenerator.h"
 
 #define k_distance 0.1f
 #define k_contact 1.0f
@@ -48,7 +49,6 @@ private:
     std::vector<ConstraintGroup> m_constraints;
 
     int m_rigidBodyCount = 0;
-//    std::map<int, SDFData> m_SDFData; // map from global index to SDFData
     std::vector<RigidBody*> m_rigidBodies;
 
     glm::vec3 m_globalForce{0.0f, -9.8f, 0.0f}; // gravity

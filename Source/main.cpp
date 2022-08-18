@@ -22,7 +22,7 @@ int main() {
     }
     Renderer renderer(&window);
 
-    ParticleSystem particleSystem(10, ParticleSystemType::Testing);
+    ParticleSystem particleSystem(0, ParticleSystemType::Testing);
     particleSystem.AddCube(glm::vec3(8.0f), glm::vec3(0.0f), 5, 5, 5, RANDOM_COLOR);
 //    particleSystem.AddBall(glm::vec3(0.0f), glm::vec3(0.0f), 4.0f, RANDOM_COLOR);
     float particleSpawnDebounce = 0.2f;

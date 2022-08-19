@@ -142,8 +142,8 @@ void ParticleSystem::Draw(Renderer& renderer) {
             Particle* p = m_particles[i];
             if (p->rigidBodyID != -1) {
                 RigidBody* rb = m_rigidBodies[p->rigidBodyID];
-//                renderer.DrawLine(p->cpos + rb->GetSDFData(i).grad, p->cpos, glm::vec3(1.0f));
-                renderer.DrawLine(p->cpos + rb->GetSDFData(i).grad * glm::abs(rb->GetSDFData(i).mag), p->cpos, glm::vec3(0.0f, 0.2f, 0.4f));
+                renderer.DrawLine(p->cpos + rb->GetSDFData(i).grad, p->cpos, glm::vec3(1.0f));
+//                renderer.DrawLine(p->cpos + rb->GetSDFData(i).grad * glm::abs(rb->GetSDFData(i).mag), p->cpos, glm::vec3(0.0f, 0.2f, 0.4f));
             }
         }
     }
@@ -241,8 +241,13 @@ void ParticleSystem::AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm:
     m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
 }
 
-void ParticleSystem::AddRigidBody(glm::vec3 offset, std::string file) {
-    RigidBody* rb = Generator::RigidBodyFromOBJ(offset, std::move(file), m_rigidBodies.size());
+void ParticleSystem::AddRigidBody(glm::vec3 offset, const std::string& file) {
+    RigidBody* rb = Generator::RigidBodyFromOBJ(file, (int)m_rigidBodies.size(), (int)m_particles.size(), offset);
+    for (Particle* p : rb->particles) {
+        m_particles.push_back(p);
+        m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
+    }
+
     rb->CalculateOffsets();
     m_rigidBodies.push_back(rb);
     m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );

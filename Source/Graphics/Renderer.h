@@ -27,6 +27,7 @@ public:
     void DrawTriangle(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3, glm::vec3 color);
     void DrawLine(glm::vec3 p1, glm::vec3 p2, glm::vec3 color);
     void DrawParticles(std::vector<Particle*>& particles);
+    void DrawVertices(const std::vector<Vertex>& vertices);
 
     static void Clear(int mask);
     static void ClearColor(glm::vec3 color);

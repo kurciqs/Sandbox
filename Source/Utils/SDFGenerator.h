@@ -11,6 +11,6 @@ namespace Generator {
     SDFData SDFBall(glm::vec3 p, float s, float step);
 
     // TODO
-    RigidBody* RigidBodyFromOBJ(glm::vec3 offset, std::string path, int rigidBodyID);
+    RigidBody* RigidBodyFromOBJ(const std::string& path, int rigidBodyID, int firstParticleIndex, glm::vec3 offsets);
 }
 #endif //SANDBOX_SDFGENERATOR_H

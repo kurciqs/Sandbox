@@ -277,3 +277,9 @@ void Renderer::DrawLineCube(glm::vec3 position, glm::vec3 size, glm::vec3 color)
     DrawLine(glm::vec3(uc.x, lc.y, lc.z), glm::vec3(uc.x, uc.y, lc.z), color);
     DrawLine(glm::vec3(lc.x, lc.y, uc.z), glm::vec3(lc.x, uc.y, uc.z), color);
 }
+
+void Renderer::DrawVertices(const std::vector<Vertex>& vertices) {
+    for (Vertex v: vertices) {
+        m_batchVertices.push_back(v);
+    }
+}

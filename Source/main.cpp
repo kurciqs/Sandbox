@@ -23,9 +23,9 @@ int main() {
     Renderer renderer(&window);
 
     ParticleSystem particleSystem(0, ParticleSystemType::Testing);
+    particleSystem.AddRigidBody(glm::vec3(0.0f), "Assets/Models/Test.obj");
     particleSystem.AddCube(glm::vec3(8.0f), glm::vec3(0.0f), 5, 5, 5, RANDOM_COLOR);
 //    particleSystem.AddBall(glm::vec3(0.0f), glm::vec3(0.0f), 4.0f, RANDOM_COLOR);
-    particleSystem.AddRigidBody(glm::vec3(0.0f), "Assets/Models/Test.obj");
     float particleSpawnDebounce = 0.2f;
     bool runSimulation = true;
     float runSimulationDebounce = 0.1f;

@@ -5,6 +5,8 @@
 #include <cmath>
 #include "Utils/Utils.h"
 #define SOR_COEF 1.0f
+#define STATIC_FRICTION_COEF 0.1f
+#define KINETIC_FRICTION_COEF 0.25f
 
 struct Particle {
     void ApplyForce(glm::vec3 f);

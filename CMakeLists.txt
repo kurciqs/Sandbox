@@ -13,7 +13,7 @@ set(SOURCE_FILES Source/main.cpp Source/Window/Window.cpp Source/Window/Window.h
         Source/Simulation/Constraints/BoxBoundaryConstraint.cpp Source/Simulation/Constraints/BoxBoundaryConstraint.h
         Source/Simulation/RigidBody.cpp Source/Simulation/RigidBody.h
         Source/Simulation/Constraints/PositionConstraint.cpp Source/Simulation/Constraints/PositionConstraint.h
-        Source/Simulation/Constraints/RigidShapeConstraint.cpp Source/Simulation/Constraints/RigidShapeConstraint.h Source/Simulation/Constraints/RigidContactConstraint.cpp Source/Simulation/Constraints/RigidContactConstraint.h Source/Utils/SDFGenerator.cpp Source/Utils/SDFGenerator.h)
+        Source/Simulation/Constraints/RigidShapeConstraint.cpp Source/Simulation/Constraints/RigidShapeConstraint.h Source/Simulation/Constraints/RigidContactConstraint.cpp Source/Simulation/Constraints/RigidContactConstraint.h Source/Utils/SDFGenerator.cpp Source/Utils/SDFGenerator.h Libraries/tinyobjloader/include/tinyobjloader.h Libraries/tinyobjloader/src/tinyobjloader.cpp)
 
 include_directories(
         ${PROJECT_SOURCE_DIR}/Source
@@ -23,6 +23,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/Libraries/imgui/include
         ${PROJECT_SOURCE_DIR}/Libraries/json/include
         ${PROJECT_SOURCE_DIR}/Libraries/stb/include
+        ${PROJECT_SOURCE_DIR}/Libraries/tinyobjloader/include
 )
 
 IF(CMAKE_BUILD_TYPE STREQUAL "RELEASE")
@@ -54,6 +55,9 @@ target_link_libraries(${PROJECT_NAME} glm)
 
 add_subdirectory(Libraries/stb)
 target_link_libraries(${PROJECT_NAME} stb)
+
+add_subdirectory(Libraries/tinyobjloader)
+target_link_libraries(${PROJECT_NAME} tinyobjloader)
 
 #add_subdirectory(Libraries/imgui)
 #target_link_libraries(${PROJECT_NAME} imgui)

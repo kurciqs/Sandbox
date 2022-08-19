@@ -3,7 +3,6 @@
 
 #include "Simulation/Constraint.h"
 #include "Simulation/RigidBody.h"
-#define EPSILON 0.001f
 
 class RigidContactConstraint : public Constraint {
 public:

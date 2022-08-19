@@ -21,45 +21,66 @@ void RigidContactConstraint::Project() {
 
     float diameter = p1->radius + p2->radius;
 
-    glm::vec3 n{};
-    float d;
+    glm::vec3 contactNormal{};
+    float mag;
+    glm::vec3 diff = p2->cpos - p1->cpos;
     if (dat1.mag < 0 || dat2.mag < 0) {
-        glm::vec3 x12 = p2->cpos - p1->cpos;
+        glm::vec3 x12 = diff;
         float len = glm::length(x12);
-        d = diameter - len;
-        if (d < EPSILON) return;
-        n = x12 / len;
+        mag = diameter - len;
+        if (mag < EPSILON) return;
+        contactNormal = x12 / len;
     }
     else {
         if (dat1.mag < dat2.mag) {
-            d = dat1.mag;
-            n = dat1.grad;
+            mag = dat1.mag;
+            contactNormal = dat1.grad;
         }
         else {
-            d = dat2.mag;
-            n = -dat2.grad;
+            mag = dat2.mag;
+            contactNormal = -dat2.grad;
         }
 
-        if (d < diameter + EPSILON) {
-            glm::vec3 x12 = p1->cpos - p2->cpos;
+        if (mag < diameter + EPSILON) {
+            glm::vec3 x12 = -diff;
             float len = glm::length(x12);
-            d = diameter - len;
-            if (d < EPSILON) return;
+            mag = diameter - len;
+            if (mag < EPSILON) return;
             x12 = x12 / len;
-            float dp = glm::dot(x12, n);
+            float dp = glm::dot(x12, contactNormal);
             if (dp < 0.0f) {
-                n = x12 - 2.0f * dp * n;
+                contactNormal = x12 - 2.0f * dp * contactNormal;
             }
             else {
-                n = x12;
+                contactNormal = x12;
             }
         }
     }
 
-    glm::vec3 dlt = (1.0f / GetInvMassSum()) * d * n;
+    float oneOverWSum = 1.0f / GetInvMassSum();
+    glm::vec3 dlt = oneOverWSum * mag * contactNormal;
 
     if (!p1->fixed) p1->cpos -= dlt * p1->invMass / (float)p1->num_constraints;
     if (!p2->fixed) p2->cpos += dlt * p2->invMass / (float)p2->num_constraints;
+
+    glm::vec3 frictionNormal = glm::normalize(contactNormal);
+    glm::vec3 velocityDiff = (p1->cpos - p1->pos) - (p2->cpos - p2->pos);
+    glm::vec3 frictionDelta = velocityDiff - glm::dot(velocityDiff, frictionNormal) * frictionNormal;
+    float frictionDeltaLength = glm::length2(frictionDelta);
+    if (frictionDeltaLength < EPSILON * EPSILON) {
+        return;
+    }
+
+    if (frictionDeltaLength < STATIC_FRICTION_COEF * mag * STATIC_FRICTION_COEF * mag) {
+        if (!p1->fixed) p1->cpos -= frictionDelta * p1->invMass * oneOverWSum;
+        if (!p2->fixed) p2->cpos += frictionDelta * p2->invMass * oneOverWSum;
+    }
+    else {
+        glm::vec3 newDelta = frictionDelta * glm::min(KINETIC_FRICTION_COEF * mag / frictionDeltaLength, 1.0f);
+        if (!p1->fixed) p1->cpos -= newDelta * p1->invMass * oneOverWSum;
+        if (!p2->fixed) p2->cpos += newDelta * p2->invMass * oneOverWSum;
+    }
+
 }
 
 void RigidContactConstraint::Draw(Renderer &renderer) {

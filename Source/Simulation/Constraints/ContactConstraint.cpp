@@ -28,8 +28,6 @@ void ContactConstraint::Project() { // is just like the distance constraint but 
 
     if (!p1->fixed) p1->cpos += SOR_COEF * p1->invMass * delta / (float)p1->num_constraints;
     if (!p2->fixed) p2->cpos -= SOR_COEF * p2->invMass * delta / (float)p2->num_constraints;
-
-    //TODO: friction
 }
 
 void ContactConstraint::Draw(Renderer &renderer) {

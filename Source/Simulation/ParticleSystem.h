@@ -44,7 +44,7 @@ public:
     void AddParticle(glm::vec3 pos, glm::vec3 vel, glm::vec3 color, float r);
     void AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height, int depth, glm::vec3 color);
     void AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm::vec3 color);
-    void AddRigidBody(glm::vec3 offset, const std::string& fileToObj);
+    void AddObject(glm::vec3 offset, const std::string& fileToObj);
 private:
     std::vector<Particle*> m_particles;
     std::vector<ConstraintGroup> m_constraints;

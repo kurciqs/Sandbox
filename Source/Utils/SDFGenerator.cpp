@@ -44,9 +44,7 @@ namespace Generator {
         return {glm::vec3(xgrad, ygrad, zgrad), d};
     }
 
-    RigidBody *RigidBodyFromOBJ(const std::string& path, int rigidBodyID, int firstParticleIndex, glm::vec3 offset) {
-        auto* rb = new RigidBody(rigidBodyID);
-
+    std::vector<RigidBody*> RigidBodiesFromOBJ(const std::string& path, int rigidBodyID, int firstParticleIndex, glm::vec3 offset) {
         tinyobj::ObjReaderConfig reader_config;
         reader_config.mtl_search_path = "Assets/Models/"; // Path to material files
 
@@ -56,7 +54,6 @@ namespace Generator {
             if (!reader.Error().empty()) {
                 std::cerr << "TinyObjReader: " << reader.Error();
             }
-            exit(1);
         }
 
         if (!reader.Warning().empty()) {
@@ -66,52 +63,45 @@ namespace Generator {
         auto& attrib = reader.GetAttrib();
         auto& shapes = reader.GetShapes();
         auto& materials = reader.GetMaterials();
-        std::vector<Vertex> vertices;
-        // Loop over shapes
-        for (size_t s = 0; s < shapes.size(); s++) {
-            // Loop over faces(polygon)
-            size_t index_offset = 0;
-            for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
-                size_t fv = size_t(shapes[s].mesh.num_face_vertices[f]);
 
-                // Loop over vertices in the face.
-                for (size_t v = 0; v < fv; v++) {
-                    // access to vertex
-                    tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
-                    tinyobj::real_t vx = attrib.vertices[3*size_t(idx.vertex_index)+0];
-                    tinyobj::real_t vy = attrib.vertices[3*size_t(idx.vertex_index)+1];
-                    tinyobj::real_t vz = attrib.vertices[3*size_t(idx.vertex_index)+2];
+        std::vector<RigidBody*> rbs;
 
-                    // Check if `normal_index` is zero or positive. negative = no normal data
-                    if (idx.normal_index >= 0) {
-                        tinyobj::real_t nx = attrib.normals[3*size_t(idx.normal_index)+0];
-                        tinyobj::real_t ny = attrib.normals[3*size_t(idx.normal_index)+1];
-                        tinyobj::real_t nz = attrib.normals[3*size_t(idx.normal_index)+2];
-                    }
+        for (const tinyobj::shape_t& shape : shapes) {
+            auto *rb = new RigidBody(rigidBodyID++);
+
+            std::set<int> positionsUsed;
+            std::vector<glm::vec3> normals;
+            std::vector<glm::vec3> positions;
+            for (tinyobj::index_t idx: shape.mesh.indices) {
+                if (positionsUsed.contains(idx.vertex_index))
+                    continue;
+
+                tinyobj::real_t vx = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
+                tinyobj::real_t vy = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
+                tinyobj::real_t vz = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
+
+                positionsUsed.insert(idx.vertex_index);
+
+                glm::vec3 pos(vx, vy, vz);
+                auto *p = new Particle(pos + offset, glm::vec3(0.5f));
+                p->rigidBodyID = rb->ID;
+
+                if (idx.normal_index >= 0) {
+                    tinyobj::real_t nx = attrib.normals[3 * size_t(idx.normal_index) + 0];
+                    tinyobj::real_t ny = attrib.normals[3 * size_t(idx.normal_index) + 1];
+                    tinyobj::real_t nz = attrib.normals[3 * size_t(idx.normal_index) + 2];
+
+                    SDFData d{{nx, ny, nz}, 1.0f};
+                    rb->AddVertex(p, d, firstParticleIndex++); // before pushing to main array
                 }
-                index_offset += fv;
             }
+
+            rb->CalculateOffsets();
+
+            rbs.push_back(rb);
         }
 
-        for (int i = 0; i < attrib.vertices.size(); i += 3) {
-            tinyobj::real_t vx = attrib.vertices[size_t(i)+0];
-            tinyobj::real_t vy = attrib.vertices[size_t(i)+1];
-            tinyobj::real_t vz = attrib.vertices[size_t(i)+2];
-
-            glm::vec3 pos(vx, vy, vz);
-            auto* p = new Particle(pos + offset, glm::vec3(0.5f));
-
-            tinyobj::real_t nx = attrib.normals[size_t(i)+0];
-            tinyobj::real_t ny = attrib.normals[size_t(i)+1];
-            tinyobj::real_t nz = attrib.normals[size_t(i)+2];
-
-            SDFData d{{nx, ny, nz}, 1.0f};
-            printf("%f %f %f \n", d.grad.x, d.grad.y, d.grad.z);
-
-            rb->AddVertex(p, d, firstParticleIndex++); // before pushing to main array
-        }
-
-        return rb;
+        return rbs;
     }
 
 } // SDFGenerator

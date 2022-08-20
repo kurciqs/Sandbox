@@ -180,7 +180,7 @@ float map(float X, float A, float B, float C, float D) {
 }
 
 void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height, int depth, glm::vec3 color) {
-    auto* rb = new RigidBody(m_rigidBodies.size());
+    auto* rb = new RigidBody((int)m_rigidBodies.size());
 
     glm::vec3 boxSize((float)width / 2.0f + 0.5f,  (float)height / 2.0f + 0.5f, (float)depth / 2.0f + 0.5f);
     float step = 1.0f;
@@ -213,7 +213,7 @@ void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height
 }
 
 void ParticleSystem::AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm::vec3 color) {
-    auto* rb = new RigidBody(m_rigidBodies.size());
+    auto* rb = new RigidBody((int)m_rigidBodies.size());
 
     for (int i = -(int)glm::round(radius); i < (int)glm::round(radius) + 1; i++) {
         for (int j = -(int)glm::round(radius); j < (int)glm::round(radius) + 1; j++) {
@@ -241,14 +241,14 @@ void ParticleSystem::AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm:
     m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
 }
 
-void ParticleSystem::AddRigidBody(glm::vec3 offset, const std::string& file) {
-    RigidBody* rb = Generator::RigidBodyFromOBJ(file, (int)m_rigidBodies.size(), (int)m_particles.size(), offset);
-    for (Particle* p : rb->particles) {
-        m_particles.push_back(p);
-        m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
+void ParticleSystem::AddObject(glm::vec3 offset, const std::string& fileToObj) {
+    std::vector<RigidBody*> rbs = Generator::RigidBodiesFromOBJ(fileToObj, (int) m_rigidBodies.size(), (int) m_particles.size(), offset);
+    for (RigidBody* rb : rbs) {
+        for (Particle *p: rb->particles) {
+            m_particles.push_back(p);
+            m_constraints[STANDARD].push_back(new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f));
+        }
+        m_rigidBodies.push_back(rb);
+        m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
     }
-
-    rb->CalculateOffsets();
-    m_rigidBodies.push_back(rb);
-    m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
 }

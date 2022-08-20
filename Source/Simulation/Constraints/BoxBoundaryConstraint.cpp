@@ -12,7 +12,7 @@ BoxBoundaryConstraint::~BoxBoundaryConstraint() {
     DecrementCounts();
 }
 
-void BoxBoundaryConstraint::Project() { // TODO: fix this being not so good
+void BoxBoundaryConstraint::Project(){ // TODO: fix this being not so good
     Particle* p1 = m_particles[0];
 
     glm::vec3 pos = p1->cpos;
@@ -21,10 +21,6 @@ void BoxBoundaryConstraint::Project() { // TODO: fix this being not so good
             p1->cpos.y < 0.0f ? glm::max(glm::abs(pos.y - p1->radius) - glm::abs(m_min.y), 0.0f) : glm::min(glm::abs(m_max.y) - glm::abs(pos.y + p1->radius), 0.0f),
             p1->cpos.z < 0.0f ? glm::max(glm::abs(pos.z - p1->radius) - glm::abs(m_min.z), 0.0f) : glm::min(glm::abs(m_max.z) - glm::abs(pos.z + p1->radius), 0.0f)
     );
-
-    if (dir.x == 0.0f && dir.y == 0.0f && dir.z == 0.0f) {
-        return;
-    }
 
     if (!p1->fixed) p1->cpos += SOR_COEF * dir * m_stiffness / (float)p1->num_constraints;
 }

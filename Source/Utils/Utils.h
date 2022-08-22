@@ -1,7 +1,7 @@
 #ifndef SANDBOX_UTILS_H
 #define SANDBOX_UTILS_H
 
-#include <cstdio>
+#include <iostream>
 #include <cstdarg>
 #include "glm/glm.hpp"
 #include <unistd.h>

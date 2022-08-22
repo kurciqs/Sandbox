@@ -4,7 +4,51 @@
 #include "Simulation/Constraint.h"
 #include "Simulation/RigidBody.h"
 #include "tinyobjloader.h"
+#include "glm/gtx/hash.hpp"
 #include <set>
+
+struct Triangle {
+    glm::vec3 v1;
+    glm::vec3 v2;
+    glm::vec3 v3;
+    glm::vec3 n;
+};
+
+struct Prism {
+    // floor
+    glm::vec3 p1;
+    glm::vec3 p2;
+    glm::vec3 p3;
+
+    // ceiling
+    glm::vec3 p4;
+    glm::vec3 p5;
+    glm::vec3 p6;
+
+    glm::vec3 operator[] (int index) const {
+        switch(index) {
+            case 0:
+                return p1;
+            case 1:
+                return p2;
+            case 2:
+                return p3;
+            case 3:
+                return p4;
+            case 4:
+                return p5;
+            case 5:
+                return p6;
+            default:
+                return p1;
+        }
+    }
+};
+
+struct IAABB{
+    glm::ivec3 min;
+    glm::ivec3 max;
+};
 
 namespace Generator {
     SDFData SDFCube(glm::vec3 p, glm::vec3 b, float step);

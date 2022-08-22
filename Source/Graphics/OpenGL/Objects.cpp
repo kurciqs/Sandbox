@@ -92,24 +92,4 @@ VBO::VBO() {
     glGenBuffers(1, &ID);
 }
 
-//
-//void VBO::SetData(std::vector<Vertex> &vertices) const {
-//    glBindBuffer(GL_ARRAY_BUFFER, ID);
-//    glBufferData(GL_ARRAY_BUFFER, (GLsizei)(vertices.size() * sizeof(Vertex)), vertices.data(), GL_STATIC_DRAW);
-//    glBindBuffer(GL_ARRAY_BUFFER, 0);
-//}
-//
-//void VBO::SetData(std::vector<Position> &positions) const {
-//    glBindBuffer(GL_ARRAY_BUFFER, ID);
-//    glBufferData(GL_ARRAY_BUFFER, (GLsizei)(positions.size() * sizeof(Position)), positions.data(), GL_STATIC_DRAW);
-//    glBindBuffer(GL_ARRAY_BUFFER, 0);
-//}
-//
-//void VBO::SetData(std::vector<ParticleVertex>& particles) const {
-//    glBindBuffer(GL_ARRAY_BUFFER, ID);
-//    glBufferData(GL_ARRAY_BUFFER, (GLsizei)(particles.size() * sizeof(ParticleVertex)), particles.data(), GL_STATIC_DRAW);
-//    glBindBuffer(GL_ARRAY_BUFFER, 0);
-//}
-//
-
 // ~VBO

@@ -79,11 +79,19 @@ void Renderer::Flush() {
 }
 
 void Renderer::UploadVertices() {
+    for (Vertex v : m_alwaysDrawBatchVertices) {
+        m_batchVertices.push_back(v);
+    }
+
     m_VBO.SetData<Vertex>(m_batchVertices);
     m_VAO.Bind();
     m_VAO.LinkAttrib(m_VBO, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, position));
     m_VAO.LinkAttrib(m_VBO, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, color));
     m_VAO.Unbind();
+
+    for (Vertex v : m_alwaysDrawBatchLineVertices) {
+        m_batchLineVertices.push_back(v);
+    }
 
     m_lineVBO.SetData<Vertex>(m_batchLineVertices);
     m_lineVAO.Bind();
@@ -282,4 +290,22 @@ void Renderer::DrawVertices(const std::vector<Vertex>& vertices) {
     for (Vertex v: vertices) {
         m_batchVertices.push_back(v);
     }
+}
+
+
+void Renderer::AlwaysDrawVertices(const std::vector<Vertex> &vertices) {
+    for (Vertex v: vertices) {
+        m_alwaysDrawBatchVertices.push_back(v);
+    }
+}
+
+void Renderer::AlwaysDrawTriangle(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3, glm::vec3 color) {
+    m_alwaysDrawBatchVertices.push_back({c1, color});
+    m_alwaysDrawBatchVertices.push_back({c2, color});
+    m_alwaysDrawBatchVertices.push_back({c3, color});
+}
+
+void Renderer::AlwaysDrawLine(glm::vec3 p1, glm::vec3 p2, glm::vec3 color) {
+    m_alwaysDrawBatchLineVertices.push_back({p1, color});
+    m_alwaysDrawBatchLineVertices.push_back({p2, color});
 }

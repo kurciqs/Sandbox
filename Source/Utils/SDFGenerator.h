@@ -4,6 +4,7 @@
 #include "Simulation/Constraint.h"
 #include "Simulation/RigidBody.h"
 #include "tinyobjloader.h"
+#define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtx/hash.hpp"
 #include <set>
 

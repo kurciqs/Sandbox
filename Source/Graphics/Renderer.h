@@ -29,6 +29,10 @@ public:
     void DrawParticles(std::vector<Particle*>& particles);
     void DrawVertices(const std::vector<Vertex>& vertices);
 
+    void AlwaysDrawVertices(const std::vector<Vertex>& vertices);
+    void AlwaysDrawTriangle(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3, glm::vec3 color);
+    void AlwaysDrawLine(glm::vec3 p1, glm::vec3 p2, glm::vec3 color);
+
     static void Clear(int mask);
     static void ClearColor(glm::vec3 color);
     static bool InitGlad();
@@ -59,6 +63,9 @@ private:
     Shader m_particleShader;
     bool m_drawParticles;
     GLuint m_numParticles;
+
+    std::vector<Vertex> m_alwaysDrawBatchVertices;
+    std::vector<Vertex> m_alwaysDrawBatchLineVertices;
 };
 
 #endif //SANDBOX_RENDERER_H

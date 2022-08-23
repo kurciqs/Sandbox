@@ -69,6 +69,16 @@ static IAABB fromPrism(Prism p) {
     return IAABB{glm::ceil(glm::vec3(minx, miny, minz)) - 1.0f, glm::floor(glm::vec3(maxx, maxy, maxz)) + 1.0f};
 }
 
+static float distanceToEdge(glm::vec3 P0, glm::vec3 P1, glm::vec3 P)
+{
+    glm::vec3 v = P1 - P0;
+    glm::vec3 w = P - P0;
+    float c1 = glm::dot(w, v);
+    float c2 = glm::dot(v, v);
+    float b = c1 / c2;
+    return glm::length(P - (P0 + b * v));
+}
+
 namespace Generator {
     SDFData SDFCube(glm::vec3 p, glm::vec3 b, float step) {
         auto GetMag = [&](glm::vec3 ps, glm::vec3 s) {
@@ -137,7 +147,7 @@ namespace Generator {
 
         for (const tinyobj::shape_t& shape : shapes) {
 
-//            auto *rb = new RigidBody(rigidBodyID++);
+            auto *rb = new RigidBody(rigidBodyID++);
 
             std::vector<Triangle> triangles;
 
@@ -176,17 +186,45 @@ namespace Generator {
             }
 
             float epsilon = glm::sqrt(3);
+
+            glm::vec3 minPos(INFINITY);
+            glm::vec3 maxPos(-INFINITY);
+
+            std::vector<float> signedDistanceField;
+            std::fill(signedDistanceField.begin(), signedDistanceField.end(), INFINITY);
+
+            std::unordered_map<glm::ivec3, int> signedDistanceFieldIndices;
+
+            float step = 1.0f;
+
             for (Triangle t: triangles) {
                 Prism prism = fromTriangle(t, epsilon);
                 IAABB iaabb = fromPrism(prism);
 
-                std::map<glm::ivec3, float> signedDistanceField;
+                if ((float)iaabb.min.x < minPos.x) {
+                    minPos.x = (float)iaabb.min.x;
+                }
+                if ((float)iaabb.min.y < minPos.y) {
+                    minPos.y = (float)iaabb.min.y;
+                }
+                if ((float)iaabb.min.z < minPos.z) {
+                    minPos.z = (float)iaabb.min.z;
+                }
+                if ((float)iaabb.max.x > maxPos.x) {
+                    maxPos.x = (float)iaabb.max.x;
+                }
+                if ((float)iaabb.max.y > maxPos.y) {
+                    maxPos.y = (float)iaabb.max.y;
+                }
+                if ((float)iaabb.max.z > maxPos.z) {
+                    maxPos.z = (float)iaabb.max.z;
+                }
 
-                renderer->DrawTriangle(t.v1, t.v2, t.v3, glm::vec3(0.5f));
-                renderer->DrawLine(t.v1 + t.n * 0.001f, t.v2 + t.n * 0.001f, glm::vec3(0.0f));
-                renderer->DrawLine(t.v2 + t.n * 0.001f, t.v3 + t.n * 0.001f, glm::vec3(0.0f));
-                renderer->DrawLine(t.v3 + t.n * 0.001f, t.v1 + t.n * 0.001f, glm::vec3(0.0f));
-                renderer->DrawLine((t.v1 + t.v2 + t.v3) / 3.0f, (t.v1 + t.v2 + t.v3) / 3.0f + t.n * 0.2f, glm::vec3(0.1f, 0.8f, 0.2f));
+                renderer->AlwaysDrawTriangle(t.v1, t.v2, t.v3, glm::vec3(0.5f));
+                renderer->AlwaysDrawLine(t.v1 + t.n * 0.001f, t.v2 + t.n * 0.001f, glm::vec3(0.0f));
+                renderer->AlwaysDrawLine(t.v2 + t.n * 0.001f, t.v3 + t.n * 0.001f, glm::vec3(0.0f));
+                renderer->AlwaysDrawLine(t.v3 + t.n * 0.001f, t.v1 + t.n * 0.001f, glm::vec3(0.0f));
+                renderer->AlwaysDrawLine((t.v1 + t.v2 + t.v3) / 3.0f, (t.v1 + t.v2 + t.v3) / 3.0f + t.n * 0.2f, glm::vec3(0.1f, 0.8f, 0.2f));
 
                 for (int i = iaabb.min.x; i < iaabb.max.x; i++) {
                     for (int j = iaabb.min.y; j < iaabb.max.y; j++) {
@@ -194,20 +232,50 @@ namespace Generator {
                             glm::vec3 p(i, j, k);
                             float d = glm::dot(p - t.v1, t.n);
                             float sgn = glm::sign(d);
+                            sgn = sgn == 0.0f ? 1.0f : sgn;
                             float distToV1 = glm::distance(p, t.v1);
                             float distToV2 = glm::distance(p, t.v2);
                             float distToV3 = glm::distance(p, t.v3);
                             float minDist = glm::min(distToV1, glm::min(distToV2, distToV3));
-                            // TODO
+                            float distToE1 = distanceToEdge(t.v1, t.v2, p);
+                            float distToE2 = distanceToEdge(t.v2, t.v3, p);
+                            float distToE3 = distanceToEdge(t.v1, t.v3, p);
+                            float minDistToEdge = glm::min(distToE1, glm::min(distToE2, distToE3));
 
+                            d = glm::min(glm::abs(d), glm::min(minDist, minDistToEdge)) * sgn;
+                            glm::ivec3 ipos = glm::ivec3(i, j, k);
+
+                            signedDistanceFieldIndices.insert(std::pair(ipos, signedDistanceField.size())); // only wirtes if hasn't been done before
+
+                            int index = signedDistanceFieldIndices[ipos];
+
+                            float distVal = glm::abs(signedDistanceField[index]) > glm::abs(d) ? signedDistanceField[index] : d;
+                            signedDistanceField[index] = distVal;
                         }
                     }
                 }
             }
 
-//            rb->CalculateOffsets();
+            for (float i = minPos.x; i <= maxPos.x; i += step) {
+                for (float j = minPos.y; j <= maxPos.y; j += step) {
+                    for (float k = minPos.z; k <= maxPos.z; k += step) {
+                        glm::vec3 p(i, j, k);
+                        float sd = signedDistanceField[signedDistanceFieldIndices[glm::ivec3(p)]];
+                        printf("%f\n", sd);
+//                        renderer->DrawCube(p - glm::vec3(0.3f), glm::vec3(0.6f), glm::vec3(glm::abs(sd) / 3.6f));
+                        SDFData d{glm::vec3(), sd};
+                        if (sd < 0.0f) {
+                            auto* pt = new Particle(glm::vec3(i, j, k), glm::vec3(glm::abs(sd) / 3.6f));
+//                            pt->radius = 0.25f;
+                            rb->AddVertex(pt, d, firstParticleIndex++);
+                        }
+                    }
+                }
+            }
 
-//            rbs.push_back(rb);
+            rb->CalculateOffsets();
+
+            rbs.push_back(rb);
         }
 
         return rbs;

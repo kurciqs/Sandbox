@@ -249,6 +249,6 @@ void ParticleSystem::AddObject(glm::vec3 offset, const std::string& fileToObj) {
             m_constraints[STANDARD].push_back(new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f));
         }
         m_rigidBodies.push_back(rb);
-//        m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
+        m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
     }
 }

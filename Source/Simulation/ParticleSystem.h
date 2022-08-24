@@ -16,7 +16,7 @@
 #define k_contact 1.0f
 #define k_shape 1.0f
 
-//#define GRAVITY
+#define GRAVITY
 #define PARTICLE_SLEEPING_EPSILON 0.001f
 
 static glm::vec3 lowerBoundary(-15.0f);

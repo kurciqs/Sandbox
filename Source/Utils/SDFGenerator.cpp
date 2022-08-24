@@ -2,7 +2,136 @@
 
 extern Renderer *renderer;
 
-static glm::vec3 GetFaceNormal(const std::vector<glm::vec3>& points_3d)
+glm::vec2 lineUv(glm::vec3 a, glm::vec3 b, glm::vec3 q) {
+    glm::vec3 ab = b - a;
+    glm::vec3 aq = q - a;
+    glm::vec3 dirAb = normalize(ab);
+
+    float v = dot(aq, dirAb) / length(ab);
+    float u = 1.f - v;
+
+    return glm::vec2(u, v);
+}
+
+
+float signedArea(glm::vec3 v1, glm::vec3 v2, glm::vec3 n) {
+    float sa;
+
+    glm::vec3 resCross = cross(v1, v2);
+
+    if (length(resCross) == 0) {
+        sa = 0;
+    } else {
+        float sign = dot(n, normalize(resCross));
+        sa = length(resCross) * sign;
+    }
+
+    return sa;
+}
+
+glm::vec3 baryCoord(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 n, glm::vec3 p) {
+    glm::vec3 ab = b - a;
+    glm::vec3 bc = c - b;
+    glm::vec3 ca = a - c;
+    glm::vec3 ac = c - a;
+
+    glm::vec3 ap = p - a;
+    glm::vec3 bp = p - b;
+    glm::vec3 cp = p - c;
+
+    float Sabc = signedArea(ab, ac, n);
+    float Sabp = signedArea(ab, ap, n);
+    float Sbcp = signedArea(bc, bp, n);
+    float Scap = signedArea(ca, cp, n);
+
+    float u, v, w;
+    u = Sbcp / Sabc;
+    v = Scap / Sabc;
+    w = Sabp / Sabc;
+
+    return glm::vec3(u, v, w);
+}
+
+glm::vec3 point2plane(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 n, glm::vec3 p) {
+    glm::vec3 ab, ac, ap;
+    ap = p - a;
+
+    // PP'
+    glm::vec3 ppProj = -dot(ap, n) * n;
+
+    // AP'
+    glm::vec3 apProj = ap + ppProj;
+
+    // P'
+    glm::vec3 pProj = apProj + a;
+
+    return pProj;
+}
+
+float distPoint2Triangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 n, glm::vec3 p) {
+    float dist = 9999.f;
+
+    glm::vec3 Pproj = point2plane(a, b, c, n, p);
+    glm::vec3 Pbary = baryCoord(a, b, c, n, Pproj);
+
+    if ((Pbary.x >= 0 && Pbary.x <= 1.f) && (Pbary.y >= 0 && Pbary.y <= 1.f) &&
+        (Pbary.z >= 0 && Pbary.z <= 1.f)) {
+        glm::vec3 nm = glm::normalize(cross(b - a, c - a));
+
+        dist = abs(dot(nm, p - a));
+    }
+    else {
+        glm::vec2 uvAb, uvBc, uvCa;
+        uvAb = lineUv(a, b, Pproj);
+        uvBc = lineUv(b, c, Pproj);
+        uvCa = lineUv(c, a, Pproj);
+
+        glm::vec3 uvwAbc = baryCoord(a, b, c, n, Pproj);
+
+        if (uvAb[1] <= 0 && uvCa[0] <= 0) {
+            dist = length(p - a);
+        } else if (uvAb[0] <= 0 && uvBc[1] <= 0) {
+            dist = length(p - b);
+        } else if (uvBc[0] <= 0 && uvCa[1] <= 0) {
+            dist = length(p - c);
+        }
+        else if (uvAb[0] > 0 && uvAb[1] > 0 && uvwAbc[2] <= 0) {
+            glm::vec3 dirAb = normalize(b - a);
+            glm::vec3 APproj = Pproj - a;
+            float frac = dot(APproj, dirAb);
+            glm::vec3 Pinter = a + dirAb * frac;
+
+            dist = length(p - Pinter);
+        } else if (uvBc[0] > 0 && uvBc[1] > 0 && uvwAbc[0] <= 0) {
+            glm::vec3 dirBc = normalize(c - b);
+            glm::vec3 BPproj = Pproj - b;
+            float frac = dot(BPproj, dirBc);
+            glm::vec3 Pinter = b + dirBc * frac;
+
+            dist = length(p - Pinter);
+        } else if (uvCa[0] > 0 && uvCa[1] > 0 && uvwAbc[1] <= 0) {
+            glm::vec3 dirCa = normalize(a - c);
+            glm::vec3 CPproj = Pproj - c;
+            float frac = dot(CPproj, dirCa);
+            glm::vec3 Pinter = c + dirCa * frac;
+
+            dist = length(p - Pinter);
+        }
+    }
+
+    float temp = dot(p - a, n);
+
+    float sign = (temp == 0) ? 1.f : (temp / abs(temp));
+
+    float epsilon = 0.01f;
+    if (abs(temp) < epsilon) {
+        sign = 1.f;
+    }
+
+    return dist * sign;
+}
+
+static glm::vec3 getFaceNormal(const std::vector<glm::vec3>& points_3d)
 {
     // Newell's Method
     glm::vec3 n(0.0f);
@@ -149,7 +278,13 @@ namespace Generator {
 
             auto *rb = new RigidBody(rigidBodyID++);
 
+            glm::vec3 minPos(INFINITY);
+            glm::vec3  maxPos(-INFINITY);
+
             std::vector<Triangle> triangles;
+            std::vector<IAABB> iaabbs;
+
+            float epsilon = glm::sqrt(3) * 0.5f;
 
             size_t index_offset = 0;
             for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
@@ -178,27 +313,11 @@ namespace Generator {
                         attrib.vertices[3 * size_t(idx.vertex_index) + 1],
                         attrib.vertices[3 * size_t(idx.vertex_index) + 2]};
 
-                triangle.n = GetFaceNormal( {triangle.v1, triangle.v2, triangle.v3} );
+                triangle.n = getFaceNormal({triangle.v1, triangle.v2, triangle.v3});
 
                 triangles.push_back(triangle);
 
-                index_offset += fv;
-            }
-
-            float epsilon = glm::sqrt(3);
-
-            glm::vec3 minPos(INFINITY);
-            glm::vec3 maxPos(-INFINITY);
-
-            std::vector<float> signedDistanceField;
-            std::fill(signedDistanceField.begin(), signedDistanceField.end(), INFINITY);
-
-            std::unordered_map<glm::ivec3, int> signedDistanceFieldIndices;
-
-            float step = 1.0f;
-
-            for (Triangle t: triangles) {
-                Prism prism = fromTriangle(t, epsilon);
+                Prism prism = fromTriangle(triangle, epsilon);
                 IAABB iaabb = fromPrism(prism);
 
                 if ((float)iaabb.min.x < minPos.x) {
@@ -220,53 +339,64 @@ namespace Generator {
                     maxPos.z = (float)iaabb.max.z;
                 }
 
-                renderer->AlwaysDrawTriangle(t.v1, t.v2, t.v3, glm::vec3(0.5f));
-                renderer->AlwaysDrawLine(t.v1 + t.n * 0.001f, t.v2 + t.n * 0.001f, glm::vec3(0.0f));
-                renderer->AlwaysDrawLine(t.v2 + t.n * 0.001f, t.v3 + t.n * 0.001f, glm::vec3(0.0f));
-                renderer->AlwaysDrawLine(t.v3 + t.n * 0.001f, t.v1 + t.n * 0.001f, glm::vec3(0.0f));
-                renderer->AlwaysDrawLine((t.v1 + t.v2 + t.v3) / 3.0f, (t.v1 + t.v2 + t.v3) / 3.0f + t.n * 0.2f, glm::vec3(0.1f, 0.8f, 0.2f));
+                iaabbs.push_back(iaabb);
+
+                index_offset += fv;
+            }
+
+            std::unordered_map<glm::vec3, float> sdf;
+
+            for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
+                for (int j = (int)minPos.y; j < (int)maxPos.y; j++) {
+                    for (int k = (int)minPos.z; k < (int)maxPos.z; k++) {
+                        sdf.insert(std::pair(glm::vec3(i, j, k), INFINITY));
+                    }
+                }
+            }
+
+            for (int ind = 0; ind < triangles.size(); ind++) {
+                IAABB iaabb = iaabbs[ind];
+                Triangle t = triangles[ind];
+
+//                renderer->AlwaysDrawTriangle(t.v1, t.v2, t.v3, glm::vec3(0.5f));
+//                renderer->AlwaysDrawLine(t.v1 + t.n * 0.001f, t.v2 + t.n * 0.001f, glm::vec3(0.0f));
+//                renderer->AlwaysDrawLine(t.v2 + t.n * 0.001f, t.v3 + t.n * 0.001f, glm::vec3(0.0f));
+//                renderer->AlwaysDrawLine(t.v3 + t.n * 0.001f, t.v1 + t.n * 0.001f, glm::vec3(0.0f));
+//                renderer->AlwaysDrawLine((t.v1 + t.v2 + t.v3) / 3.0f, (t.v1 + t.v2 + t.v3) / 3.0f + t.n * 0.2f, glm::vec3(0.1f, 0.8f, 0.2f));
 
                 for (int i = iaabb.min.x; i < iaabb.max.x; i++) {
                     for (int j = iaabb.min.y; j < iaabb.max.y; j++) {
                         for (int k = iaabb.min.z; k < iaabb.max.z; k++) {
                             glm::vec3 p(i, j, k);
-                            float d = glm::dot(p - t.v1, t.n);
-                            float sgn = glm::sign(d);
-                            sgn = sgn == 0.0f ? 1.0f : sgn;
-                            float distToV1 = glm::distance(p, t.v1);
-                            float distToV2 = glm::distance(p, t.v2);
-                            float distToV3 = glm::distance(p, t.v3);
-                            float minDist = glm::min(distToV1, glm::min(distToV2, distToV3));
-                            float distToE1 = distanceToEdge(t.v1, t.v2, p);
-                            float distToE2 = distanceToEdge(t.v2, t.v3, p);
-                            float distToE3 = distanceToEdge(t.v1, t.v3, p);
-                            float minDistToEdge = glm::min(distToE1, glm::min(distToE2, distToE3));
+//                            float d = glm::dot(p - t.v1, t.n);
+//                            float sgn = glm::sign(d);
+//                            sgn = sgn == 0.0f ? 1.0f : sgn;
+//                            float distToV1 = glm::distance(p, t.v1);
+//                            float distToV2 = glm::distance(p, t.v2);
+//                            float distToV3 = glm::distance(p, t.v3);
+//                            float minDistToVertex = glm::min(distToV1, glm::min(distToV2, distToV3));
+//                            float distToE1 = distanceToEdge(t.v1, t.v2, p);
+//                            float distToE2 = distanceToEdge(t.v2, t.v3, p);
+//                            float distToE3 = distanceToEdge(t.v1, t.v3, p);
+//                            float minDistToEdge = glm::min(distToE1, glm::min(distToE2, distToE3));
 
-                            d = glm::min(glm::abs(d), glm::min(minDist, minDistToEdge)) * sgn;
-                            glm::ivec3 ipos = glm::ivec3(i, j, k);
+//                            d = glm::min(glm::abs(d), glm::min(minDistToVertex, minDistToEdge)) * sgn;
+                            float d = distPoint2Triangle(t.v1, t.v2, t.v3, t.n, p);
 
-                            signedDistanceFieldIndices.insert(std::pair(ipos, signedDistanceField.size())); // only wirtes if hasn't been done before
-
-                            int index = signedDistanceFieldIndices[ipos];
-
-                            float distVal = glm::abs(signedDistanceField[index]) > glm::abs(d) ? signedDistanceField[index] : d;
-                            signedDistanceField[index] = distVal;
+                            sdf.insert_or_assign(p, glm::abs(sdf[p]) > glm::abs(d) ? d : sdf[p]);
                         }
                     }
                 }
             }
 
-            for (float i = minPos.x; i <= maxPos.x; i += step) {
-                for (float j = minPos.y; j <= maxPos.y; j += step) {
-                    for (float k = minPos.z; k <= maxPos.z; k += step) {
+            for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
+                for (int j = (int)minPos.y; j < (int)maxPos.y; j++) {
+                    for (int k = (int)minPos.z; k < (int)maxPos.z; k++) {
                         glm::vec3 p(i, j, k);
-                        float sd = signedDistanceField[signedDistanceFieldIndices[glm::ivec3(p)]];
-                        printf("%f\n", sd);
-//                        renderer->DrawCube(p - glm::vec3(0.3f), glm::vec3(0.6f), glm::vec3(glm::abs(sd) / 3.6f));
+                        float sd = sdf[p];
                         SDFData d{glm::vec3(), sd};
                         if (sd < 0.0f) {
-                            auto* pt = new Particle(glm::vec3(i, j, k), glm::vec3(glm::abs(sd) / 3.6f));
-//                            pt->radius = 0.25f;
+                            auto* pt = new Particle(p, glm::vec3(glm::abs(sd) / 3.6f));
                             rb->AddVertex(pt, d, firstParticleIndex++);
                         }
                     }

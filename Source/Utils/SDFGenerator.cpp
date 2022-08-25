@@ -10,20 +10,20 @@ glm::vec2 lineUv(glm::vec3 a, glm::vec3 b, glm::vec3 q) {
     float v = dot(aq, dirAb) / length(ab);
     float u = 1.f - v;
 
-    return glm::vec2(u, v);
+    return {u, v};
 }
 
 
 float signedArea(glm::vec3 v1, glm::vec3 v2, glm::vec3 n) {
     float sa;
 
-    glm::vec3 resCross = cross(v1, v2);
+    glm::vec3 resCross = glm::cross(v1, v2);
 
-    if (length(resCross) == 0) {
-        sa = 0;
+    if (glm::length(resCross) == 0) {
+        sa = 0.0f;
     } else {
-        float sign = dot(n, normalize(resCross));
-        sa = length(resCross) * sign;
+        float sign = glm::dot(n, glm::normalize(resCross));
+        sa = glm::length(resCross) * sign;
     }
 
     return sa;
@@ -49,7 +49,7 @@ glm::vec3 baryCoord(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 n, glm::vec
     v = Scap / Sabc;
     w = Sabp / Sabc;
 
-    return glm::vec3(u, v, w);
+    return {u, v, w};
 }
 
 glm::vec3 point2plane(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 n, glm::vec3 p) {
@@ -57,7 +57,7 @@ glm::vec3 point2plane(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 n, glm::v
     ap = p - a;
 
     // PP'
-    glm::vec3 ppProj = -dot(ap, n) * n;
+    glm::vec3 ppProj = -glm::dot(ap, n) * n;
 
     // AP'
     glm::vec3 apProj = ap + ppProj;
@@ -121,9 +121,9 @@ float distPoint2Triangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 n, glm
 
     float temp = dot(p - a, n);
 
-    float sign = (temp == 0) ? 1.f : (temp / abs(temp));
+    float sign = (temp == 0.0f) ? 1.f : (temp / abs(temp));
 
-    float epsilon = 0.01f;
+    float epsilon = 0.001f;
     if (abs(temp) < epsilon) {
         sign = 1.f;
     }
@@ -154,13 +154,13 @@ static glm::vec3 getFaceNormal(const std::vector<glm::vec3>& points_3d)
 static Prism fromTriangle(Triangle t, float epsilon) {
     Prism res{};
 
-    res.p1 = t.v1 - t.n * epsilon;
-    res.p2 = t.v2 - t.n * epsilon;
-    res.p3 = t.v3 - t.n * epsilon;
+    res.p1 = t.v1 + t.n * epsilon;
+    res.p2 = t.v2 + t.n * epsilon;
+    res.p3 = t.v3 + t.n * epsilon;
 
-    res.p4 = t.v1 + t.n * epsilon;
-    res.p5 = t.v2 + t.n * epsilon;
-    res.p6 = t.v3 + t.n * epsilon;
+    res.p4 = t.v1 - t.n * epsilon;
+    res.p5 = t.v2 - t.n * epsilon;
+    res.p6 = t.v3 - t.n * epsilon;
 
     return res;
 }
@@ -195,7 +195,7 @@ static IAABB fromPrism(Prism p) {
         }
     }
 
-    return IAABB{glm::ceil(glm::vec3(minx, miny, minz)) - 1.0f, glm::floor(glm::vec3(maxx, maxy, maxz)) + 1.0f};
+    return IAABB{glm::ceil(glm::vec3(minx, miny, minz)) - glm::vec3(2.0f), glm::floor(glm::vec3(maxx, maxy, maxz)) + glm::vec3(2.0f)};
 }
 
 static float distanceToEdge(glm::vec3 P0, glm::vec3 P1, glm::vec3 P)
@@ -349,14 +349,18 @@ namespace Generator {
             for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
                 for (int j = (int)minPos.y; j < (int)maxPos.y; j++) {
                     for (int k = (int)minPos.z; k < (int)maxPos.z; k++) {
-                        sdf.insert(std::pair(glm::vec3(i, j, k), INFINITY));
+                        sdf.insert(std::pair(glm::vec3(i, j, k), 9999.0f));
                     }
                 }
             }
 
+            renderer->AlwaysDrawLineCube(minPos, maxPos - minPos, glm::vec3(0.0f));
+
             for (int ind = 0; ind < triangles.size(); ind++) {
                 IAABB iaabb = iaabbs[ind];
                 Triangle t = triangles[ind];
+
+//                renderer->AlwaysDrawLineCube(iaabb.min, iaabb.max - iaabb.min, glm::vec3(1.0f));
 
 //                renderer->AlwaysDrawTriangle(t.v1, t.v2, t.v3, glm::vec3(0.5f));
 //                renderer->AlwaysDrawLine(t.v1 + t.n * 0.001f, t.v2 + t.n * 0.001f, glm::vec3(0.0f));
@@ -368,19 +372,6 @@ namespace Generator {
                     for (int j = iaabb.min.y; j < iaabb.max.y; j++) {
                         for (int k = iaabb.min.z; k < iaabb.max.z; k++) {
                             glm::vec3 p(i, j, k);
-//                            float d = glm::dot(p - t.v1, t.n);
-//                            float sgn = glm::sign(d);
-//                            sgn = sgn == 0.0f ? 1.0f : sgn;
-//                            float distToV1 = glm::distance(p, t.v1);
-//                            float distToV2 = glm::distance(p, t.v2);
-//                            float distToV3 = glm::distance(p, t.v3);
-//                            float minDistToVertex = glm::min(distToV1, glm::min(distToV2, distToV3));
-//                            float distToE1 = distanceToEdge(t.v1, t.v2, p);
-//                            float distToE2 = distanceToEdge(t.v2, t.v3, p);
-//                            float distToE3 = distanceToEdge(t.v1, t.v3, p);
-//                            float minDistToEdge = glm::min(distToE1, glm::min(distToE2, distToE3));
-
-//                            d = glm::min(glm::abs(d), glm::min(minDistToVertex, minDistToEdge)) * sgn;
                             float d = distPoint2Triangle(t.v1, t.v2, t.v3, t.n, p);
 
                             sdf.insert_or_assign(p, glm::abs(sdf[p]) > glm::abs(d) ? d : sdf[p]);
@@ -389,6 +380,7 @@ namespace Generator {
                 }
             }
 
+
             for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
                 for (int j = (int)minPos.y; j < (int)maxPos.y; j++) {
                     for (int k = (int)minPos.z; k < (int)maxPos.z; k++) {
@@ -396,7 +388,7 @@ namespace Generator {
                         float sd = sdf[p];
                         SDFData d{glm::vec3(), sd};
                         if (sd < 0.0f) {
-                            auto* pt = new Particle(p, glm::vec3(glm::abs(sd) / 3.6f));
+                            auto* pt = new Particle(p, glm::vec3(glm::abs(sd) / 6.7f));
                             rb->AddVertex(pt, d, firstParticleIndex++);
                         }
                     }

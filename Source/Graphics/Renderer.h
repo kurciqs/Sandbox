@@ -32,6 +32,7 @@ public:
     void AlwaysDrawVertices(const std::vector<Vertex>& vertices);
     void AlwaysDrawTriangle(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3, glm::vec3 color);
     void AlwaysDrawLine(glm::vec3 p1, glm::vec3 p2, glm::vec3 color);
+    void AlwaysDrawLineCube(glm::vec3 position, glm::vec3 size, glm::vec3 color);
 
     static void Clear(int mask);
     static void ClearColor(glm::vec3 color);

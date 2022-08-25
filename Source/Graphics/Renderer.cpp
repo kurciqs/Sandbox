@@ -309,3 +309,22 @@ void Renderer::AlwaysDrawLine(glm::vec3 p1, glm::vec3 p2, glm::vec3 color) {
     m_alwaysDrawBatchLineVertices.push_back({p1, color});
     m_alwaysDrawBatchLineVertices.push_back({p2, color});
 }
+
+void Renderer::AlwaysDrawLineCube(glm::vec3 position, glm::vec3 size, glm::vec3 color) {
+    // lower corner:
+    glm::vec3 lc = position;
+    // upper corner:
+    glm::vec3 uc = position + size;
+    AlwaysDrawLine(lc, glm::vec3(lc.x, uc.y, lc.z), color);
+    AlwaysDrawLine(lc, glm::vec3(uc.x, lc.y, lc.z), color);
+    AlwaysDrawLine(lc, glm::vec3(lc.x, lc.y, uc.z), color);
+    AlwaysDrawLine(uc, glm::vec3(uc.x, uc.y, lc.z), color);
+    AlwaysDrawLine(uc, glm::vec3(lc.x, uc.y, uc.z), color);
+    AlwaysDrawLine(uc, glm::vec3(uc.x, lc.y, uc.z), color);
+    AlwaysDrawLine(glm::vec3(lc.x, uc.y, lc.z), glm::vec3(uc.x, uc.y, lc.z), color);
+    AlwaysDrawLine(glm::vec3(lc.x, uc.y, lc.z), glm::vec3(lc.x, uc.y, uc.z), color);
+    AlwaysDrawLine(glm::vec3(uc.x, lc.y, uc.z), glm::vec3(uc.x, lc.y, lc.z), color);
+    AlwaysDrawLine(glm::vec3(uc.x, lc.y, uc.z), glm::vec3(lc.x, lc.y, uc.z), color);
+    AlwaysDrawLine(glm::vec3(uc.x, lc.y, lc.z), glm::vec3(uc.x, uc.y, lc.z), color);
+    AlwaysDrawLine(glm::vec3(lc.x, lc.y, uc.z), glm::vec3(lc.x, uc.y, uc.z), color);
+}

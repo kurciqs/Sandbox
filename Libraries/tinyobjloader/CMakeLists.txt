@@ -4,4 +4,4 @@ project(tinyobjloader)
 # stb lib
 add_library(tinyobjloader STATIC
         src/tinyobjloader.cpp
-        include/tinyobjloader.h)
+        include/tinyobjloader.h mapbox/earcut.hpp)

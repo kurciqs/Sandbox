@@ -4,7 +4,6 @@
 #include "Simulation/Constraint.h"
 #include "Simulation/RigidBody.h"
 #include "tinyobjloader.h"
-#define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtx/hash.hpp"
 #include <set>
 
@@ -57,6 +56,6 @@ namespace Generator {
     SDFData SDFBall(glm::vec3 p, float s, float step);
 
     // TODO
-    std::vector<RigidBody*> RigidBodiesFromOBJ(const std::string& path, int rigidBodyID, int firstParticleIndex, glm::vec3 offset);
+    std::vector<RigidBody*> RigidBodiesFromOBJ(const std::string& path, int rigidBodyID, int firstParticleIndex, glm::vec3 offset, glm::vec3 color, glm::vec3 vel);
 }
 #endif //SANDBOX_SDFGENERATOR_H

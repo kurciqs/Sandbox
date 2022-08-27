@@ -25,6 +25,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/Libraries/json/include
         ${PROJECT_SOURCE_DIR}/Libraries/stb/include
         ${PROJECT_SOURCE_DIR}/Libraries/tinyobjloader/include
+        ${PROJECT_SOURCE_DIR}/Libraries/tinyobjloader/
 )
 
 IF(CMAKE_BUILD_TYPE STREQUAL "RELEASE")

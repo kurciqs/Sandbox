@@ -241,8 +241,8 @@ void ParticleSystem::AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm:
     m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
 }
 
-void ParticleSystem::AddObject(glm::vec3 offset, const std::string& fileToObj) {
-    std::vector<RigidBody*> rbs = Generator::RigidBodiesFromOBJ(fileToObj, (int) m_rigidBodies.size(), (int) m_particles.size(), offset);
+void ParticleSystem::AddObject(glm::vec3 offset, const std::string& fileToObj, glm::vec3 color, glm::vec3 vel) {
+    std::vector<RigidBody*> rbs = Generator::RigidBodiesFromOBJ(fileToObj, (int) m_rigidBodies.size(), (int) m_particles.size(), offset, color, vel);
     for (RigidBody* rb : rbs) {
         for (Particle *p: rb->particles) {
             m_particles.push_back(p);

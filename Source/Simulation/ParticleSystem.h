@@ -16,7 +16,7 @@
 #define k_contact 1.0f
 #define k_shape 1.0f
 
-//#define GRAVITY
+#define GRAVITY
 #define PARTICLE_SLEEPING_EPSILON 0.001f
 
 static glm::vec3 lowerBoundary(-15.0f);
@@ -44,7 +44,7 @@ public:
     void AddParticle(glm::vec3 pos, glm::vec3 vel, glm::vec3 color, float r);
     void AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height, int depth, glm::vec3 color);
     void AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm::vec3 color);
-    void AddObject(glm::vec3 offset, const std::string& fileToObj);
+    void AddObject(glm::vec3 offset, const std::string& fileToObj, glm::vec3 color, glm::vec3 vel = glm::vec3(0.0f));
 private:
     std::vector<Particle*> m_particles;
     std::vector<ConstraintGroup> m_constraints;

@@ -30,7 +30,7 @@ int main() {
     particleSystem.AddCube(glm::vec3(8.0f), glm::vec3(0.0f), 5, 5, 5, RANDOM_COLOR);
 
 //    particleSystem.AddBall(glm::vec3(0.0f), glm::vec3(0.0f), 4.0f, RANDOM_COLOR);
-    particleSystem.AddObject(glm::vec3(0.0f), "Assets/Models/Test.obj");
+    particleSystem.AddObject(glm::vec3(0.0f), "Assets/Models/Test.obj", RANDOM_COLOR);
 
     float particleSpawnDebounce = 0.2f;
     bool runSimulation = true;

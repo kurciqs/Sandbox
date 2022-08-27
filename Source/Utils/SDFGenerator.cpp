@@ -2,6 +2,46 @@
 
 extern Renderer *renderer;
 
+// find distance x0 is from segment x1-x2
+static float point_segment_distance(const glm::vec3 &x0, const glm::vec3 &x1, const glm::vec3 &x2)
+{
+    glm::vec3 dx(x2-x1);
+    float m2 = glm::length2(dx);
+    // find parameter value of closest point on segment
+    float s12=(float)(glm::dot(x2-x0, dx)/m2);
+    if(s12<0.0f){
+        s12=0.0f;
+    }else if(s12>1.0f){
+        s12=1.0f;
+    }
+    // and find the distance
+    return glm::distance(x0, s12*x1+(1-s12)*x2);
+}
+
+// find distance x0 is from triangle x1-x2-x3
+static float point_triangle_distance(const glm::vec3 &x0, const glm::vec3 &x1, const glm::vec3 &x2, const glm::vec3 &x3)
+{
+    // first find barycentric coordinates of closest point on infinite plane
+    glm::vec3 x13(x1-x3), x23(x2-x3), x03(x0-x3);
+    float m13=glm::length2(x13), m23=glm::length2(x23), d=dot(x13,x23);
+    float invdet=1.f/glm::max(m13*m23-d*d,1e-30f);
+    float a=glm::dot(x13,x03), b=glm::dot(x23,x03);
+    // the barycentric coordinates themselves
+    float w23=invdet*(m23*a-d*b);
+    float w31=invdet*(m13*b-d*a);
+    float w12=1.0f-w23-w31;
+    if(w23>=0.0f && w31>=0.0f && w12>=0.0f){ // if we're inside the triangle
+        return glm::distance(x0, w23*x1+w31*x2+w12*x3);
+    }else{ // we have to clamp to one of the edges
+        if(w23>0.0f) // this rules out edge 2-3 for us
+            return glm::min(point_segment_distance(x0,x1,x2), point_segment_distance(x0,x1,x3));
+        else if(w31>0) // this rules out edge 1-3
+            return glm::min(point_segment_distance(x0,x1,x2), point_segment_distance(x0,x2,x3));
+        else // w12 must be >0, ruling out edge 1-2
+            return glm::min(point_segment_distance(x0,x1,x3), point_segment_distance(x0,x2,x3));
+    }
+}
+
 glm::vec2 lineUv(glm::vec3 a, glm::vec3 b, glm::vec3 q) {
     glm::vec3 ab = b - a;
     glm::vec3 aq = q - a;
@@ -131,6 +171,7 @@ float distPoint2Triangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 n, glm
     return dist * sign;
 }
 
+
 static glm::vec3 getFaceNormal(const std::vector<glm::vec3>& points_3d)
 {
     // Newell's Method
@@ -161,6 +202,15 @@ static Prism fromTriangle(Triangle t, float epsilon) {
     res.p4 = t.v1 - t.n * epsilon;
     res.p5 = t.v2 - t.n * epsilon;
     res.p6 = t.v3 - t.n * epsilon;
+
+//    renderer->AlwaysDrawTriangle(res.p1, res.p2, res.p3, glm::vec3(0.5f));
+//    renderer->AlwaysDrawTriangle(res.p4, res.p5, res.p6, glm::vec3(0.5f));
+//    renderer->AlwaysDrawLine(res.p1, res.p2, glm::vec3(1.0f));
+//    renderer->AlwaysDrawLine(res.p2, res.p3, glm::vec3(1.0f));
+//    renderer->AlwaysDrawLine(res.p3, res.p1, glm::vec3(1.0f));
+//    renderer->AlwaysDrawLine(res.p4, res.p5, glm::vec3(1.0f));
+//    renderer->AlwaysDrawLine(res.p5, res.p6, glm::vec3(1.0f));
+//    renderer->AlwaysDrawLine(res.p6, res.p4, glm::vec3(1.0f));
 
     return res;
 }
@@ -195,7 +245,9 @@ static IAABB fromPrism(Prism p) {
         }
     }
 
-    return IAABB{glm::ceil(glm::vec3(minx, miny, minz)) - glm::vec3(2.0f), glm::floor(glm::vec3(maxx, maxy, maxz)) + glm::vec3(2.0f)};
+    IAABB iaabb{glm::floor(glm::vec3(minx, miny, minz)), glm::ceil(glm::vec3(maxx, maxy, maxz))};
+//    renderer->AlwaysDrawLineCube(iaabb.min, iaabb.max - iaabb.min, RANDOM_COLOR);
+    return iaabb;
 }
 
 static float distanceToEdge(glm::vec3 P0, glm::vec3 P1, glm::vec3 P)
@@ -228,7 +280,7 @@ namespace Generator {
         float ygrad = sign * y0 > sign * y1 ? (y1 - d) : -(y0 - d);
         float zgrad = sign * z0 > sign * z1 ? (z1 - d) : -(z0 - d);
 
-        return {(glm::vec3(xgrad, ygrad, zgrad)), d};
+        return {glm::normalize(glm::vec3(xgrad, ygrad, zgrad)), d};
     }
 
     SDFData SDFBall(glm::vec3 p, float s, float step) {
@@ -249,10 +301,10 @@ namespace Generator {
         float ygrad = sign*y0 < sign*y1 ? -(y0 - d) : (y1 - d);
         float zgrad = sign*z0 < sign*z1 ? -(z0 - d) : (z1 - d);
 
-        return {glm::vec3(xgrad, ygrad, zgrad), d};
+        return {glm::normalize(glm::vec3(xgrad, ygrad, zgrad)), d};
     }
 
-    std::vector<RigidBody*> RigidBodiesFromOBJ(const std::string& path, int rigidBodyID, int firstParticleIndex, glm::vec3 offset) {
+    std::vector<RigidBody*> RigidBodiesFromOBJ(const std::string& path, int rigidBodyID, int firstParticleIndex, glm::vec3 offset, glm::vec3 color, glm::vec3 vel) {
         tinyobj::ObjReaderConfig reader_config;
         reader_config.mtl_search_path = "Assets/Models/"; // Path to material files
 
@@ -273,6 +325,7 @@ namespace Generator {
         auto& materials = reader.GetMaterials();
 
         std::vector<RigidBody*> rbs;
+        float epsilon = glm::sqrt(3) * 0.25f;
 
         for (const tinyobj::shape_t& shape : shapes) {
 
@@ -284,7 +337,6 @@ namespace Generator {
             std::vector<Triangle> triangles;
             std::vector<IAABB> iaabbs;
 
-            float epsilon = glm::sqrt(3) * 0.5f;
 
             size_t index_offset = 0;
             for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
@@ -349,12 +401,12 @@ namespace Generator {
             for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
                 for (int j = (int)minPos.y; j < (int)maxPos.y; j++) {
                     for (int k = (int)minPos.z; k < (int)maxPos.z; k++) {
-                        sdf.insert(std::pair(glm::vec3(i, j, k), 9999.0f));
+                        sdf.insert(std::pair(glm::vec3(i, j, k), 99999.0f));
                     }
                 }
             }
 
-            renderer->AlwaysDrawLineCube(minPos, maxPos - minPos, glm::vec3(0.0f));
+//            renderer->AlwaysDrawLineCube(minPos, maxPos - minPos, glm::vec3(0.0f));
 
             for (int ind = 0; ind < triangles.size(); ind++) {
                 IAABB iaabb = iaabbs[ind];
@@ -372,7 +424,8 @@ namespace Generator {
                     for (int j = iaabb.min.y; j < iaabb.max.y; j++) {
                         for (int k = iaabb.min.z; k < iaabb.max.z; k++) {
                             glm::vec3 p(i, j, k);
-                            float d = distPoint2Triangle(t.v1, t.v2, t.v3, t.n, p);
+                            float d = point_triangle_distance(p, t.v1, t.v2, t.v3) * glm::sign(glm::dot(p - t.v1, t.n));
+//                            float d = distPoint2Triangle(t.v1, t.v2, t.v3, t.n, p);
 
                             sdf.insert_or_assign(p, glm::abs(sdf[p]) > glm::abs(d) ? d : sdf[p]);
                         }
@@ -380,15 +433,40 @@ namespace Generator {
                 }
             }
 
+            float step = 1.0f;
+
+            auto GetData = [&](glm::vec3 p) {
+                auto GetMag = [&](glm::vec3 ps) {
+                    return sdf[ps];
+                };
+
+                float d = GetMag(p);
+                float sign = glm::sign(d);
+                float x0 = GetMag(p - glm::vec3(step, 0.0f, 0.0f));
+                float x1 = GetMag(p + glm::vec3(step, 0.0f, 0.0f));
+                float y0 = GetMag(p - glm::vec3(0.0f, step, 0.0f));
+                float y1 = GetMag(p + glm::vec3(0.0f, step, 0.0f));
+                float z0 = GetMag(p - glm::vec3(0.0f, 0.0f, step));
+                float z1 = GetMag(p + glm::vec3(0.0f, 0.0f, step));
+
+                float xgrad = sign*x0 < sign*x1 ? -(x0 - d) : (x1 - d);
+                float ygrad = sign*y0 < sign*y1 ? -(y0 - d) : (y1 - d);
+                float zgrad = sign*z0 < sign*z1 ? -(z0 - d) : (z1 - d);
+
+                return SDFData{glm::normalize(glm::vec3(xgrad, ygrad, zgrad)), d};
+            };
 
             for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
                 for (int j = (int)minPos.y; j < (int)maxPos.y; j++) {
                     for (int k = (int)minPos.z; k < (int)maxPos.z; k++) {
                         glm::vec3 p(i, j, k);
                         float sd = sdf[p];
-                        SDFData d{glm::vec3(), sd};
-                        if (sd < 0.0f) {
-                            auto* pt = new Particle(p, glm::vec3(glm::abs(sd) / 6.7f));
+                        SDFData d = GetData(p);
+                        if (sd < -0.05f) {
+                            auto* pt = new Particle(p, color);
+                            pt->color = glm::vec3(glm::abs(sd) / 10.0f);
+                            pt->rigidBodyID = rb->ID;
+                            pt->vel = vel;
                             rb->AddVertex(pt, d, firstParticleIndex++);
                         }
                     }

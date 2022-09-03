@@ -366,8 +366,6 @@ namespace Generator {
                 }
             }
 
-
-
             for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
                 for (int j = (int)minPos.y; j < (int)maxPos.y; j++) {
                     int total_count=0;

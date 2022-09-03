@@ -7,7 +7,7 @@ static float point_segment_distance(const glm::vec3 &x0, const glm::vec3 &x1, co
 {
     glm::vec3 dx(x2-x1);
     float m2 = glm::length2(dx);
-    // find parameter value of closest point on segment
+    // find parameter value of the closest point on segment
     float s12=(float)(glm::dot(x2-x0, dx)/m2);
     if(s12<0.0f){
         s12=0.0f;
@@ -21,7 +21,7 @@ static float point_segment_distance(const glm::vec3 &x0, const glm::vec3 &x1, co
 // find distance x0 is from triangle x1-x2-x3
 static float point_triangle_distance(const glm::vec3 &x0, const glm::vec3 &x1, const glm::vec3 &x2, const glm::vec3 &x3)
 {
-    // first find barycentric coordinates of closest point on infinite plane
+    // first find barycentric coordinates of the closest point on infinite plane
     glm::vec3 x13(x1-x3), x23(x2-x3), x03(x0-x3);
     float m13=glm::length2(x13), m23=glm::length2(x23), d=dot(x13,x23);
     float invdet=1.f/glm::max(m13*m23-d*d,1e-30f);
@@ -42,135 +42,39 @@ static float point_triangle_distance(const glm::vec3 &x0, const glm::vec3 &x1, c
     }
 }
 
-glm::vec2 lineUv(glm::vec3 a, glm::vec3 b, glm::vec3 q) {
-    glm::vec3 ab = b - a;
-    glm::vec3 aq = q - a;
-    glm::vec3 dirAb = normalize(ab);
-
-    float v = dot(aq, dirAb) / length(ab);
-    float u = 1.f - v;
-
-    return {u, v};
+static int orientation(float x1, float y1, float x2, float y2, float &twice_signed_area)
+{
+    twice_signed_area=y1*x2-x1*y2;
+    if(twice_signed_area>0) return 1;
+    else if(twice_signed_area<0) return -1;
+    else if(y2>y1) return 1;
+    else if(y2<y1) return -1;
+    else if(x1>x2) return 1;
+    else if(x1<x2) return -1;
+    else return 0; // only true when x1==x2 and y1==y2
 }
 
-
-float signedArea(glm::vec3 v1, glm::vec3 v2, glm::vec3 n) {
-    float sa;
-
-    glm::vec3 resCross = glm::cross(v1, v2);
-
-    if (glm::length(resCross) == 0) {
-        sa = 0.0f;
-    } else {
-        float sign = glm::dot(n, glm::normalize(resCross));
-        sa = glm::length(resCross) * sign;
-    }
-
-    return sa;
+// robust test of (x0,y0) in the triangle (x1,y1)-(x2,y2)-(x3,y3)
+// if true is returned, the barycentric coordinates are set in a,b,c.
+static bool point_in_triangle_2d(float x0, float y0,
+                                 float x1, float y1, float x2, float y2, float x3, float y3,
+                                 float& a, float& b, float& c)
+{
+    x1-=x0; x2-=x0; x3-=x0;
+    y1-=y0; y2-=y0; y3-=y0;
+    int signa=orientation(x2, y2, x3, y3, a);
+    if(signa==0) return false;
+    int signb=orientation(x3, y3, x1, y1, b);
+    if(signb!=signa) return false;
+    int signc=orientation(x1, y1, x2, y2, c);
+    if(signc!=signa) return false;
+    float sum=a+b+c;
+    assert(sum!=0); // if the SOS signs match and are nonkero, there's no way all of a, b, and c are zero.
+    a/=sum;
+    b/=sum;
+    c/=sum;
+    return true;
 }
-
-glm::vec3 baryCoord(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 n, glm::vec3 p) {
-    glm::vec3 ab = b - a;
-    glm::vec3 bc = c - b;
-    glm::vec3 ca = a - c;
-    glm::vec3 ac = c - a;
-
-    glm::vec3 ap = p - a;
-    glm::vec3 bp = p - b;
-    glm::vec3 cp = p - c;
-
-    float Sabc = signedArea(ab, ac, n);
-    float Sabp = signedArea(ab, ap, n);
-    float Sbcp = signedArea(bc, bp, n);
-    float Scap = signedArea(ca, cp, n);
-
-    float u, v, w;
-    u = Sbcp / Sabc;
-    v = Scap / Sabc;
-    w = Sabp / Sabc;
-
-    return {u, v, w};
-}
-
-glm::vec3 point2plane(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 n, glm::vec3 p) {
-    glm::vec3 ab, ac, ap;
-    ap = p - a;
-
-    // PP'
-    glm::vec3 ppProj = -glm::dot(ap, n) * n;
-
-    // AP'
-    glm::vec3 apProj = ap + ppProj;
-
-    // P'
-    glm::vec3 pProj = apProj + a;
-
-    return pProj;
-}
-
-float distPoint2Triangle(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 n, glm::vec3 p) {
-    float dist = 9999.f;
-
-    glm::vec3 Pproj = point2plane(a, b, c, n, p);
-    glm::vec3 Pbary = baryCoord(a, b, c, n, Pproj);
-
-    if ((Pbary.x >= 0 && Pbary.x <= 1.f) && (Pbary.y >= 0 && Pbary.y <= 1.f) &&
-        (Pbary.z >= 0 && Pbary.z <= 1.f)) {
-        glm::vec3 nm = glm::normalize(cross(b - a, c - a));
-
-        dist = abs(dot(nm, p - a));
-    }
-    else {
-        glm::vec2 uvAb, uvBc, uvCa;
-        uvAb = lineUv(a, b, Pproj);
-        uvBc = lineUv(b, c, Pproj);
-        uvCa = lineUv(c, a, Pproj);
-
-        glm::vec3 uvwAbc = baryCoord(a, b, c, n, Pproj);
-
-        if (uvAb[1] <= 0 && uvCa[0] <= 0) {
-            dist = length(p - a);
-        } else if (uvAb[0] <= 0 && uvBc[1] <= 0) {
-            dist = length(p - b);
-        } else if (uvBc[0] <= 0 && uvCa[1] <= 0) {
-            dist = length(p - c);
-        }
-        else if (uvAb[0] > 0 && uvAb[1] > 0 && uvwAbc[2] <= 0) {
-            glm::vec3 dirAb = normalize(b - a);
-            glm::vec3 APproj = Pproj - a;
-            float frac = dot(APproj, dirAb);
-            glm::vec3 Pinter = a + dirAb * frac;
-
-            dist = length(p - Pinter);
-        } else if (uvBc[0] > 0 && uvBc[1] > 0 && uvwAbc[0] <= 0) {
-            glm::vec3 dirBc = normalize(c - b);
-            glm::vec3 BPproj = Pproj - b;
-            float frac = dot(BPproj, dirBc);
-            glm::vec3 Pinter = b + dirBc * frac;
-
-            dist = length(p - Pinter);
-        } else if (uvCa[0] > 0 && uvCa[1] > 0 && uvwAbc[1] <= 0) {
-            glm::vec3 dirCa = normalize(a - c);
-            glm::vec3 CPproj = Pproj - c;
-            float frac = dot(CPproj, dirCa);
-            glm::vec3 Pinter = c + dirCa * frac;
-
-            dist = length(p - Pinter);
-        }
-    }
-
-    float temp = dot(p - a, n);
-
-    float sign = (temp == 0.0f) ? 1.f : (temp / abs(temp));
-
-    float epsilon = 0.001f;
-    if (abs(temp) < epsilon) {
-        sign = 1.f;
-    }
-
-    return dist * sign;
-}
-
 
 static glm::vec3 getFaceNormal(const std::vector<glm::vec3>& points_3d)
 {
@@ -332,11 +236,10 @@ namespace Generator {
             auto *rb = new RigidBody(rigidBodyID++);
 
             glm::vec3 minPos(INFINITY);
-            glm::vec3  maxPos(-INFINITY);
+            glm::vec3 maxPos(-INFINITY);
 
             std::vector<Triangle> triangles;
             std::vector<IAABB> iaabbs;
-
 
             size_t index_offset = 0;
             for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
@@ -401,12 +304,15 @@ namespace Generator {
             for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
                 for (int j = (int)minPos.y; j < (int)maxPos.y; j++) {
                     for (int k = (int)minPos.z; k < (int)maxPos.z; k++) {
-                        sdf.insert(std::pair(glm::vec3(i, j, k), 99999.0f));
+                        sdf.insert(std::pair(glm::vec3(i, j, k), 9999.0f));
                     }
                 }
             }
 
 //            renderer->AlwaysDrawLineCube(minPos, maxPos - minPos, glm::vec3(0.0f));
+
+            int intersections[1000][1000][1000];
+            glm::ivec3 size(glm::abs(maxPos.x - minPos.x), glm::abs(maxPos.y - minPos.y), glm::abs(maxPos.z - minPos.z));
 
             for (int ind = 0; ind < triangles.size(); ind++) {
                 IAABB iaabb = iaabbs[ind];
@@ -419,15 +325,54 @@ namespace Generator {
 //                renderer->AlwaysDrawLine(t.v2 + t.n * 0.001f, t.v3 + t.n * 0.001f, glm::vec3(0.0f));
 //                renderer->AlwaysDrawLine(t.v3 + t.n * 0.001f, t.v1 + t.n * 0.001f, glm::vec3(0.0f));
 //                renderer->AlwaysDrawLine((t.v1 + t.v2 + t.v3) / 3.0f, (t.v1 + t.v2 + t.v3) / 3.0f + t.n * 0.2f, glm::vec3(0.1f, 0.8f, 0.2f));
-
+                // SDF part
                 for (int i = iaabb.min.x; i < iaabb.max.x; i++) {
                     for (int j = iaabb.min.y; j < iaabb.max.y; j++) {
                         for (int k = iaabb.min.z; k < iaabb.max.z; k++) {
                             glm::vec3 p(i, j, k);
-                            float d = point_triangle_distance(p, t.v1, t.v2, t.v3) * glm::sign(glm::dot(p - t.v1, t.n));
-//                            float d = distPoint2Triangle(t.v1, t.v2, t.v3, t.n, p);
-
+                            float d = point_triangle_distance(p, t.v1, t.v2, t.v3);
                             sdf.insert_or_assign(p, glm::abs(sdf[p]) > glm::abs(d) ? d : sdf[p]);
+                        }
+                    }
+                }
+
+                auto fip=(float)t.v1[0], fjp=(float)t.v1[1], fkp=(float)t.v1[2];
+                auto fiq=(float)t.v2[0], fjq=(float)t.v2[1], fkq=(float)t.v2[2];
+                auto fir=(float)t.v3[0], fjr=(float)t.v3[1], fkr=(float)t.v3[2];
+
+                // intersection part
+                int j0 = glm::ceil(glm::min(fjp,glm::min(fjq,fjr)));
+                int j1 = glm::floor(glm::max(fjp,glm::max(fjq,fjr)));
+                int k0 = glm::ceil(glm::min(fkp,glm::min(fkq,fkr)));
+                int k1 = glm::floor(glm::max(fkp,glm::max(fkq,fkr)));
+                for(int k=k0; k<=k1; ++k) {
+                    for(int j=j0; j<=j1; ++j){
+                        float a, b, c;
+//                        if(point_in_triangle_2d(j, k, fjp, fkp, fjq, fkq, fjr, fkr, a, b, c)){
+                        if(point_in_triangle_2d(j, k, fjp, fkp, fjq, fkq, fjr, fkr, a, b, c)){
+                            float fi=a * t.v1.x + b * t.v1.y + c * t.v1.z; // intersection i coordinate
+                            int i_interval = int(glm::ceil(fi)); // intersection is in (i_interval-1,i_interval]
+//                            if(i_interval<0) ++intersection_count(0, j, k); // we enlarge the first interval to include everything to the -x direction
+                            if (i_interval < 0) {
+                                intersections[0][j][k] = intersections[0][j][k] + 1;
+                            }
+//                            else if(i_interval<ni) ++intersection_count(i_interval,j,k);
+                            else {
+                                intersections[i_interval][j][k] = intersections[i_interval][j][k] + 1;
+                            }
+                            // we ignore intersections that are beyond the +x side of the grid
+                        }
+                    }
+                }
+            }
+
+            for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
+                for (int j = (int)minPos.y; j < (int)maxPos.y; j++) {
+                    int total_count=0;
+                    for (int k = (int)minPos.z; k < (int)maxPos.z; k++) {
+                        total_count+=intersections[i + int(minPos.x)][j + int(minPos.y)][k + int(minPos.z)];
+                        if(total_count%2==1){ // if parity of intersections so far is odd,
+                            sdf.insert_or_assign(glm::vec3(i, j, k), -sdf[glm::vec3(i, j, k)]); // we are inside the mesh
                         }
                     }
                 }
@@ -456,13 +401,14 @@ namespace Generator {
                 return SDFData{glm::normalize(glm::vec3(xgrad, ygrad, zgrad)), d};
             };
 
+            // TODO sweeping??
             for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
                 for (int j = (int)minPos.y; j < (int)maxPos.y; j++) {
                     for (int k = (int)minPos.z; k < (int)maxPos.z; k++) {
                         glm::vec3 p(i, j, k);
                         float sd = sdf[p];
                         SDFData d = GetData(p);
-                        if (sd < -0.05f) {
+                        if (sd < 0.0f) {
                             auto* pt = new Particle(p, color);
                             pt->color = glm::vec3(glm::abs(sd) / 10.0f);
                             pt->rigidBodyID = rb->ID;

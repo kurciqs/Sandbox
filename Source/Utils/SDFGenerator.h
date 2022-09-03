@@ -7,6 +7,8 @@
 #include "glm/gtx/hash.hpp"
 #include <set>
 
+#define IS_OUTER(x) (x >= 0.0f)
+
 struct Triangle {
     glm::vec3 v1;
     glm::vec3 v2;

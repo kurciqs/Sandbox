@@ -2,6 +2,26 @@
 
 extern Renderer *renderer;
 
+static bool IS_EDGE(glm::vec3 p, std::unordered_map<glm::vec3, float>& sdf) {
+    bool is_outer = IS_OUTER(sdf[p]);
+
+    // check all surrounding pixels
+    for (float x = -1.0f; x <= 1.0f; x += 1.0f) {
+        for (float y = -1.0f; y <= 1.0f; y += 1.0f) {
+            for (float z = -1.0f; z <= 1.0f; z += 1.0f) {
+                if (x == 0.0f && y == 0.0f && z == 0.0f) {
+                    continue;
+                }
+                glm::vec3 newPos = p + glm::vec3(x, y, z);
+                if (is_outer != IS_OUTER(sdf[newPos])) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 // find distance x0 is from segment x1-x2
 static float point_segment_distance(const glm::vec3 &x0, const glm::vec3 &x1, const glm::vec3 &x2)
 {
@@ -40,40 +60,6 @@ static float point_triangle_distance(const glm::vec3 &x0, const glm::vec3 &x1, c
         else // w12 must be >0, ruling out edge 1-2
             return glm::min(point_segment_distance(x0,x1,x3), point_segment_distance(x0,x2,x3));
     }
-}
-
-static int orientation(float x1, float y1, float x2, float y2, float &twice_signed_area)
-{
-    twice_signed_area=y1*x2-x1*y2;
-    if(twice_signed_area>0) return 1;
-    else if(twice_signed_area<0) return -1;
-    else if(y2>y1) return 1;
-    else if(y2<y1) return -1;
-    else if(x1>x2) return 1;
-    else if(x1<x2) return -1;
-    else return 0; // only true when x1==x2 and y1==y2
-}
-
-// robust test of (x0,y0) in the triangle (x1,y1)-(x2,y2)-(x3,y3)
-// if true is returned, the barycentric coordinates are set in a,b,c.
-static bool point_in_triangle_2d(float x0, float y0,
-                                 float x1, float y1, float x2, float y2, float x3, float y3,
-                                 float& a, float& b, float& c)
-{
-    x1-=x0; x2-=x0; x3-=x0;
-    y1-=y0; y2-=y0; y3-=y0;
-    int signa=orientation(x2, y2, x3, y3, a);
-    if(signa==0) return false;
-    int signb=orientation(x3, y3, x1, y1, b);
-    if(signb!=signa) return false;
-    int signc=orientation(x1, y1, x2, y2, c);
-    if(signc!=signa) return false;
-    float sum=a+b+c;
-    assert(sum!=0); // if the SOS signs match and are nonkero, there's no way all of a, b, and c are zero.
-    a/=sum;
-    b/=sum;
-    c/=sum;
-    return true;
 }
 
 static glm::vec3 getFaceNormal(const std::vector<glm::vec3>& points_3d)
@@ -229,7 +215,7 @@ namespace Generator {
         auto& materials = reader.GetMaterials();
 
         std::vector<RigidBody*> rbs;
-        float epsilon = glm::sqrt(3) * 0.25f;
+        float epsilon = glm::sqrt(3) * 0.5f;
 
         for (const tinyobj::shape_t& shape : shapes) {
 
@@ -240,6 +226,7 @@ namespace Generator {
 
             std::vector<Triangle> triangles;
             std::vector<IAABB> iaabbs;
+            std::vector<tinyobj::material_t> materials_t;
 
             size_t index_offset = 0;
             for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
@@ -272,6 +259,8 @@ namespace Generator {
 
                 triangles.push_back(triangle);
 
+                materials_t.push_back(materials[shape.mesh.material_ids[f]]);
+
                 Prism prism = fromTriangle(triangle, epsilon);
                 IAABB iaabb = fromPrism(prism);
 
@@ -300,6 +289,7 @@ namespace Generator {
             }
 
             std::unordered_map<glm::vec3, float> sdf;
+            std::unordered_map<glm::vec3, glm::vec3> colors;
 
             for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
                 for (int j = (int)minPos.y; j < (int)maxPos.y; j++) {
@@ -309,77 +299,41 @@ namespace Generator {
                 }
             }
 
-//            renderer->AlwaysDrawLineCube(minPos, maxPos - minPos, glm::vec3(0.0f));
-
-            int intersections[1000][1000][1000];
-            glm::ivec3 size(glm::abs(maxPos.x - minPos.x), glm::abs(maxPos.y - minPos.y), glm::abs(maxPos.z - minPos.z));
-
             for (int ind = 0; ind < triangles.size(); ind++) {
                 IAABB iaabb = iaabbs[ind];
                 Triangle t = triangles[ind];
-
+                tinyobj::material_t material = materials_t[ind];
+/*
 //                renderer->AlwaysDrawLineCube(iaabb.min, iaabb.max - iaabb.min, glm::vec3(1.0f));
-
 //                renderer->AlwaysDrawTriangle(t.v1, t.v2, t.v3, glm::vec3(0.5f));
 //                renderer->AlwaysDrawLine(t.v1 + t.n * 0.001f, t.v2 + t.n * 0.001f, glm::vec3(0.0f));
 //                renderer->AlwaysDrawLine(t.v2 + t.n * 0.001f, t.v3 + t.n * 0.001f, glm::vec3(0.0f));
 //                renderer->AlwaysDrawLine(t.v3 + t.n * 0.001f, t.v1 + t.n * 0.001f, glm::vec3(0.0f));
 //                renderer->AlwaysDrawLine((t.v1 + t.v2 + t.v3) / 3.0f, (t.v1 + t.v2 + t.v3) / 3.0f + t.n * 0.2f, glm::vec3(0.1f, 0.8f, 0.2f));
+*/
                 // SDF part
                 for (int i = iaabb.min.x; i < iaabb.max.x; i++) {
                     for (int j = iaabb.min.y; j < iaabb.max.y; j++) {
                         for (int k = iaabb.min.z; k < iaabb.max.z; k++) {
                             glm::vec3 p(i, j, k);
+
                             float d = point_triangle_distance(p, t.v1, t.v2, t.v3);
-                            sdf.insert_or_assign(p, glm::abs(sdf[p]) > glm::abs(d) ? d : sdf[p]);
-                        }
-                    }
-                }
 
-                auto fip=(float)t.v1[0], fjp=(float)t.v1[1], fkp=(float)t.v1[2];
-                auto fiq=(float)t.v2[0], fjq=(float)t.v2[1], fkq=(float)t.v2[2];
-                auto fir=(float)t.v3[0], fjr=(float)t.v3[1], fkr=(float)t.v3[2];
-
-                // intersection part
-                int j0 = glm::ceil(glm::min(fjp,glm::min(fjq,fjr)));
-                int j1 = glm::floor(glm::max(fjp,glm::max(fjq,fjr)));
-                int k0 = glm::ceil(glm::min(fkp,glm::min(fkq,fkr)));
-                int k1 = glm::floor(glm::max(fkp,glm::max(fkq,fkr)));
-                for(int k=k0; k<=k1; ++k) {
-                    for(int j=j0; j<=j1; ++j){
-                        float a, b, c;
-//                        if(point_in_triangle_2d(j, k, fjp, fkp, fjq, fkq, fjr, fkr, a, b, c)){
-                        if(point_in_triangle_2d(j, k, fjp, fkp, fjq, fkq, fjr, fkr, a, b, c)){
-                            float fi=a * t.v1.x + b * t.v1.y + c * t.v1.z; // intersection i coordinate
-                            int i_interval = int(glm::ceil(fi)); // intersection is in (i_interval-1,i_interval]
-//                            if(i_interval<0) ++intersection_count(0, j, k); // we enlarge the first interval to include everything to the -x direction
-                            if (i_interval < 0) {
-                                intersections[0][j][k] = intersections[0][j][k] + 1;
+                            float dotp = glm::dot(p - t.v1, t.n);
+                            float sign = (dotp == 0.0f) ? 1.0f : dotp / glm::abs(dotp);
+                            if (glm::abs(dotp) < 0.01f) {
+                                sign = 1.f;
                             }
-//                            else if(i_interval<ni) ++intersection_count(i_interval,j,k);
-                            else {
-                                intersections[i_interval][j][k] = intersections[i_interval][j][k] + 1;
-                            }
-                            // we ignore intersections that are beyond the +x side of the grid
-                        }
-                    }
-                }
-            }
+//                            renderer->AlwaysDrawLineCube(p - glm::vec3(0.5f), glm::vec3(1.0f), glm::vec3(1.0f));
+                            sdf.insert_or_assign(p, glm::abs(sdf[p]) > glm::abs(d) ? sign * d : sdf[p]);
 
-            for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
-                for (int j = (int)minPos.y; j < (int)maxPos.y; j++) {
-                    int total_count=0;
-                    for (int k = (int)minPos.z; k < (int)maxPos.z; k++) {
-                        total_count+=intersections[i + int(minPos.x)][j + int(minPos.y)][k + int(minPos.z)];
-                        if(total_count%2==1){ // if parity of intersections so far is odd,
-                            sdf.insert_or_assign(glm::vec3(i, j, k), -sdf[glm::vec3(i, j, k)]); // we are inside the mesh
+                            colors.insert_or_assign(p, glm::vec3(material.diffuse[0], material.diffuse[1], material.diffuse[2]));
                         }
                     }
                 }
             }
 
             float step = 1.0f;
-
             auto GetData = [&](glm::vec3 p) {
                 auto GetMag = [&](glm::vec3 ps) {
                     return sdf[ps];
@@ -401,16 +355,15 @@ namespace Generator {
                 return SDFData{glm::normalize(glm::vec3(xgrad, ygrad, zgrad)), d};
             };
 
-            // TODO sweeping??
             for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
                 for (int j = (int)minPos.y; j < (int)maxPos.y; j++) {
                     for (int k = (int)minPos.z; k < (int)maxPos.z; k++) {
                         glm::vec3 p(i, j, k);
-                        float sd = sdf[p];
                         SDFData d = GetData(p);
-                        if (sd < 0.0f) {
+                        if (d.mag < 0.0f) {
                             auto* pt = new Particle(p, color);
-                            pt->color = glm::vec3(glm::abs(sd) / 10.0f);
+                            pt->color = colors[p];
+//                            pt->color = glm::vec3(glm::abs(d.mag) / 10.0f);
                             pt->rigidBodyID = rb->ID;
                             pt->vel = vel;
                             rb->AddVertex(pt, d, firstParticleIndex++);

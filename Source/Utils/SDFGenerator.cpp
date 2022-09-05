@@ -9,9 +9,6 @@ static bool IS_EDGE(glm::vec3 p, std::unordered_map<glm::vec3, float>& sdf) {
     for (float x = -1.0f; x <= 1.0f; x += 1.0f) {
         for (float y = -1.0f; y <= 1.0f; y += 1.0f) {
             for (float z = -1.0f; z <= 1.0f; z += 1.0f) {
-                if (x == 0.0f && y == 0.0f && z == 0.0f) {
-                    continue;
-                }
                 glm::vec3 newPos = p + glm::vec3(x, y, z);
                 if (is_outer != IS_OUTER(sdf[newPos])) {
                     return true;
@@ -92,26 +89,26 @@ static Prism fromTriangle(Triangle t, float epsilon) {
     res.p4 = t.v1 - t.n * epsilon;
     res.p5 = t.v2 - t.n * epsilon;
     res.p6 = t.v3 - t.n * epsilon;
-
-//    renderer->AlwaysDrawTriangle(res.p1, res.p2, res.p3, glm::vec3(0.5f));
-//    renderer->AlwaysDrawTriangle(res.p4, res.p5, res.p6, glm::vec3(0.5f));
-//    renderer->AlwaysDrawLine(res.p1, res.p2, glm::vec3(1.0f));
-//    renderer->AlwaysDrawLine(res.p2, res.p3, glm::vec3(1.0f));
-//    renderer->AlwaysDrawLine(res.p3, res.p1, glm::vec3(1.0f));
-//    renderer->AlwaysDrawLine(res.p4, res.p5, glm::vec3(1.0f));
-//    renderer->AlwaysDrawLine(res.p5, res.p6, glm::vec3(1.0f));
-//    renderer->AlwaysDrawLine(res.p6, res.p4, glm::vec3(1.0f));
-
+/*
+    renderer->AlwaysDrawTriangle(res.p1, res.p2, res.p3, glm::vec3(0.5f));
+    renderer->AlwaysDrawTriangle(res.p4, res.p5, res.p6, glm::vec3(0.5f));
+    renderer->AlwaysDrawLine(res.p1, res.p2, glm::vec3(1.0f));
+    renderer->AlwaysDrawLine(res.p2, res.p3, glm::vec3(1.0f));
+    renderer->AlwaysDrawLine(res.p3, res.p1, glm::vec3(1.0f));
+    renderer->AlwaysDrawLine(res.p4, res.p5, glm::vec3(1.0f));
+    renderer->AlwaysDrawLine(res.p5, res.p6, glm::vec3(1.0f));
+    renderer->AlwaysDrawLine(res.p6, res.p4, glm::vec3(1.0f));
+*/
     return res;
 }
 
 static IAABB fromPrism(Prism p) {
-    float minx = INFINITY;
-    float maxx = -INFINITY;
-    float miny = INFINITY;
-    float maxy = -INFINITY;
-    float minz = INFINITY;
-    float maxz = -INFINITY;
+    float minx = 9999.0f;
+    float maxx = -9999.0f;
+    float miny = 9999.0f;
+    float maxy = -9999.0f;
+    float minz = 9999.0f;
+    float maxz = -9999.0f;
 
     for (int i = 0; i < 6; i++) {
         glm::vec3 ps = p[i];
@@ -215,7 +212,7 @@ namespace Generator {
         auto& materials = reader.GetMaterials();
 
         std::vector<RigidBody*> rbs;
-        float epsilon = glm::sqrt(3) * 0.5f;
+        float epsilon = glm::sqrt(3) * 0.75f;
 
         for (const tinyobj::shape_t& shape : shapes) {
 
@@ -303,14 +300,17 @@ namespace Generator {
                 IAABB iaabb = iaabbs[ind];
                 Triangle t = triangles[ind];
                 tinyobj::material_t material = materials_t[ind];
+
+                renderer->AlwaysDrawLineCube(glm::vec3(iaabb.min) + glm::vec3(0.05f), glm::vec3(iaabb.max - iaabb.min) - glm::vec3(0.05f), RANDOM_COLOR);
+
 /*
-//                renderer->AlwaysDrawLineCube(iaabb.min, iaabb.max - iaabb.min, glm::vec3(1.0f));
-//                renderer->AlwaysDrawTriangle(t.v1, t.v2, t.v3, glm::vec3(0.5f));
-//                renderer->AlwaysDrawLine(t.v1 + t.n * 0.001f, t.v2 + t.n * 0.001f, glm::vec3(0.0f));
-//                renderer->AlwaysDrawLine(t.v2 + t.n * 0.001f, t.v3 + t.n * 0.001f, glm::vec3(0.0f));
-//                renderer->AlwaysDrawLine(t.v3 + t.n * 0.001f, t.v1 + t.n * 0.001f, glm::vec3(0.0f));
-//                renderer->AlwaysDrawLine((t.v1 + t.v2 + t.v3) / 3.0f, (t.v1 + t.v2 + t.v3) / 3.0f + t.n * 0.2f, glm::vec3(0.1f, 0.8f, 0.2f));
+                renderer->AlwaysDrawTriangle(t.v1, t.v2, t.v3, glm::vec3(0.5f));
+                renderer->AlwaysDrawLine(t.v1 + t.n * 0.001f, t.v2 + t.n * 0.001f, glm::vec3(0.0f));
+                renderer->AlwaysDrawLine(t.v2 + t.n * 0.001f, t.v3 + t.n * 0.001f, glm::vec3(0.0f));
+                renderer->AlwaysDrawLine(t.v3 + t.n * 0.001f, t.v1 + t.n * 0.001f, glm::vec3(0.0f));
+                renderer->AlwaysDrawLine((t.v1 + t.v2 + t.v3) / 3.0f, (t.v1 + t.v2 + t.v3) / 3.0f + t.n * 0.2f, glm::vec3(0.1f, 0.8f, 0.2f));
 */
+
                 // SDF part
                 for (int i = iaabb.min.x; i < iaabb.max.x; i++) {
                     for (int j = iaabb.min.y; j < iaabb.max.y; j++) {
@@ -324,10 +324,24 @@ namespace Generator {
                             if (glm::abs(dotp) < 0.01f) {
                                 sign = 1.f;
                             }
+
 //                            renderer->AlwaysDrawLineCube(p - glm::vec3(0.5f), glm::vec3(1.0f), glm::vec3(1.0f));
+
                             sdf.insert_or_assign(p, glm::abs(sdf[p]) > glm::abs(d) ? sign * d : sdf[p]);
 
                             colors.insert_or_assign(p, glm::vec3(material.diffuse[0], material.diffuse[1], material.diffuse[2]));
+                        }
+                    }
+                }
+            }
+
+            for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
+                for (int j = (int)minPos.y; j < (int)maxPos.y; j++) {
+                    for (int k = (int)minPos.z; k < (int)maxPos.z; k++) {
+                        glm::vec3 p(i, j, k);
+                        if (!IS_EDGE(p, sdf)) {
+                            colors.insert_or_assign(p, glm::vec3(0.0f));
+                            sdf.insert_or_assign(p, 9999.0f);
                         }
                     }
                 }
@@ -360,6 +374,7 @@ namespace Generator {
                     for (int k = (int)minPos.z; k < (int)maxPos.z; k++) {
                         glm::vec3 p(i, j, k);
                         SDFData d = GetData(p);
+//                        renderer->AlwaysDrawLineCube(p - glm::vec3(0.5f), glm::vec3(1.0f), glm::abs(d.mag) == 9999.0f ? (glm::sign(d.mag) == 1.0f ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0)) : glm::vec3(glm::abs(d.mag) / 10.0f));
                         if (d.mag < 0.0f) {
                             auto* pt = new Particle(p, color);
                             pt->color = colors[p];

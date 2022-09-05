@@ -45,7 +45,6 @@ int main() {
         particleSystem.Draw(*renderer);
 
         renderer->DrawLineCube(lowerBoundary, upperBoundary - lowerBoundary, glm::vec3(0.5f, 0.6f, 0.7f));
-        renderer->DrawCube(glm::vec3(-0.25f), glm::vec3(0.5f), glm::vec3(1.0f));
         // Draw the ground
         renderer->DrawTriangle(lowerBoundary, glm::vec3(lowerBoundary.x, lowerBoundary.y, upperBoundary.z), glm::vec3(upperBoundary.x, lowerBoundary.y, upperBoundary.z), glm::vec3(0.4f));
         renderer->DrawTriangle(lowerBoundary, glm::vec3(upperBoundary.x, lowerBoundary.y, lowerBoundary.z), glm::vec3(upperBoundary.x, lowerBoundary.y, upperBoundary.z), glm::vec3(0.4f));

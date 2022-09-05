@@ -328,3 +328,47 @@ void Renderer::AlwaysDrawLineCube(glm::vec3 position, glm::vec3 size, glm::vec3 
     AlwaysDrawLine(glm::vec3(uc.x, lc.y, lc.z), glm::vec3(uc.x, uc.y, lc.z), color);
     AlwaysDrawLine(glm::vec3(lc.x, lc.y, uc.z), glm::vec3(lc.x, uc.y, uc.z), color);
 }
+
+void Renderer::AlwaysDrawCube(glm::vec3 position, glm::vec3 size, glm::vec3 color) {
+    m_alwaysDrawBatchVertices.push_back({position, color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, 0.0f, 0.0f), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, size.y, 0.0f), color});
+    m_alwaysDrawBatchVertices.push_back({position, color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(0.0f, size.y, 0.0f), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, size.y, 0.0f), color});
+
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(0.0f, 0.0f, size.z), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, 0.0f, size.z), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, size.y, size.z), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(0.0f, 0.0f, size.z), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(0.0f, size.y, size.z), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, size.y, size.z), color});
+
+    m_alwaysDrawBatchVertices.push_back({position, color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, 0.0f, 0.0f), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, 0.0f, size.z), color});
+    m_alwaysDrawBatchVertices.push_back({position, color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(0.0f, 0.0f, size.z), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, 0.0f, size.z), color});
+
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(0.0f, size.y, 0.0f), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, size.y, 0.0f), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, size.y, size.z), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(0.0f, size.y, 0.0f), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(0.0f, size.y, size.z), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, size.y, size.z), color});
+
+    m_alwaysDrawBatchVertices.push_back({position, color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(0.0f, 0.0f, size.z), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(0.0f, size.y, size.z), color});
+    m_alwaysDrawBatchVertices.push_back({position, color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(0.0f, size.y, 0.0f), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(0.0f, size.y, size.z), color});
+
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, 0.0f, 0.0f), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, 0.0f, size.z), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, size.y, size.z), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, 0.0f, 0.0f), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, size.y, 0.0f), color});
+    m_alwaysDrawBatchVertices.push_back({position + glm::vec3(size.x, size.y, size.z), color});
+}

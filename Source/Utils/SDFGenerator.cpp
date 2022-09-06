@@ -218,13 +218,27 @@ namespace Generator {
 
             auto *rb = new RigidBody(rigidBodyID++);
 
-            glm::vec3 minPos(INFINITY);
-            glm::vec3 maxPos(-INFINITY);
-
+            glm::vec3 minPos(-3.0f);
+            glm::vec3 maxPos(3.0f);
+/*
             std::vector<Triangle> triangles;
             std::vector<IAABB> iaabbs;
             std::vector<tinyobj::material_t> materials_t;
+*/
 
+            // Declare mesh vertices and triangles
+            std::vector<tmd::Vec3d> vertices;
+            std::vector<std::array<int, 3>> indices;
+            // indices[i] are inds to a triangle which pulls positions from vertices
+
+            for (int i = 0; i < attrib.vertices.size(); i += 3) {
+                vertices.emplace_back( attrib.vertices[i + 0], attrib.vertices[i + 1], attrib.vertices[i + 2] );
+            }
+
+            for (int i = 0; i < shape.mesh.indices.size(); i += 3) {
+                indices.push_back( { shape.mesh.indices[i + 0].vertex_index, shape.mesh.indices[i + 1].vertex_index, shape.mesh.indices[i + 2].vertex_index } );
+            }
+/*
             size_t index_offset = 0;
             for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
                 auto fv = size_t(shape.mesh.num_face_vertices[f]);
@@ -235,6 +249,7 @@ namespace Generator {
 
                 Triangle triangle{};
                 tinyobj::index_t idx = shape.mesh.indices[index_offset];
+
                 triangle.v1 = {
                         attrib.vertices[3 * size_t(idx.vertex_index) + 0],
                         attrib.vertices[3 * size_t(idx.vertex_index) + 1],
@@ -246,6 +261,7 @@ namespace Generator {
                         attrib.vertices[3 * size_t(idx.vertex_index) + 1],
                         attrib.vertices[3 * size_t(idx.vertex_index) + 2]};
 
+
                 idx = shape.mesh.indices[index_offset + 2];
                 triangle.v3 = {
                         attrib.vertices[3 * size_t(idx.vertex_index) + 0],
@@ -255,7 +271,6 @@ namespace Generator {
                 triangle.n = getFaceNormal({triangle.v1, triangle.v2, triangle.v3});
 
                 triangles.push_back(triangle);
-
                 materials_t.push_back(materials[shape.mesh.material_ids[f]]);
 
                 Prism prism = fromTriangle(triangle, epsilon);
@@ -281,13 +296,12 @@ namespace Generator {
                 }
 
                 iaabbs.push_back(iaabb);
-
                 index_offset += fv;
             }
-
+*/
+/*
             std::unordered_map<glm::vec3, float> sdf;
             std::unordered_map<glm::vec3, glm::vec3> colors;
-
             for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
                 for (int j = (int)minPos.y; j < (int)maxPos.y; j++) {
                     for (int k = (int)minPos.z; k < (int)maxPos.z; k++) {
@@ -295,7 +309,8 @@ namespace Generator {
                     }
                 }
             }
-
+*/
+/*
             for (int ind = 0; ind < triangles.size(); ind++) {
                 IAABB iaabb = iaabbs[ind];
                 Triangle t = triangles[ind];
@@ -303,13 +318,13 @@ namespace Generator {
 
                 renderer->AlwaysDrawLineCube(glm::vec3(iaabb.min) + glm::vec3(0.05f), glm::vec3(iaabb.max - iaabb.min) - glm::vec3(0.05f), RANDOM_COLOR);
 
-/*
+
                 renderer->AlwaysDrawTriangle(t.v1, t.v2, t.v3, glm::vec3(0.5f));
                 renderer->AlwaysDrawLine(t.v1 + t.n * 0.001f, t.v2 + t.n * 0.001f, glm::vec3(0.0f));
                 renderer->AlwaysDrawLine(t.v2 + t.n * 0.001f, t.v3 + t.n * 0.001f, glm::vec3(0.0f));
                 renderer->AlwaysDrawLine(t.v3 + t.n * 0.001f, t.v1 + t.n * 0.001f, glm::vec3(0.0f));
                 renderer->AlwaysDrawLine((t.v1 + t.v2 + t.v3) / 3.0f, (t.v1 + t.v2 + t.v3) / 3.0f + t.n * 0.2f, glm::vec3(0.1f, 0.8f, 0.2f));
-*/
+
 
                 // SDF part
                 for (int i = iaabb.min.x; i < iaabb.max.x; i++) {
@@ -334,23 +349,44 @@ namespace Generator {
                     }
                 }
             }
-
+*/
+/*
             for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
                 for (int j = (int)minPos.y; j < (int)maxPos.y; j++) {
                     for (int k = (int)minPos.z; k < (int)maxPos.z; k++) {
+                        float dist = 9999.0f;
+                        int nearestTriangle;
                         glm::vec3 p(i, j, k);
-                        if (!IS_EDGE(p, sdf)) {
-                            colors.insert_or_assign(p, glm::vec3(0.0f));
-                            sdf.insert_or_assign(p, 9999.0f);
+                        for (int ind = 0; ind < triangles.size(); ind++) {
+                            Triangle t = triangles[ind];
+
+                            float temp = point_triangle_distance(p, t.v1, t.v2, t.v3);
+                            float dotp = glm::dot(p - t.v1, t.n);
+                            float sign = (dotp == 0.0f) ? 1.0f : dotp / glm::abs(dotp);
+
+                            if (glm::abs(dotp) < 0.25f) {
+                                sign = 1.f;
+                            }
+
+                            if (glm::abs(temp) < glm::abs(dist)) {
+                                dist = temp * sign;
+                                nearestTriangle = ind;
+                            }
                         }
+                        colors.insert_or_assign(p, glm::vec3(materials_t[nearestTriangle].diffuse[0], materials_t[nearestTriangle].diffuse[1], materials_t[nearestTriangle].diffuse[2]));
+                        sdf.insert_or_assign(p, dist);
                     }
                 }
             }
+*/
+
+
+            tmd::TriangleMeshDistance mesh_distance(vertices, indices);
 
             float step = 1.0f;
             auto GetData = [&](glm::vec3 p) {
                 auto GetMag = [&](glm::vec3 ps) {
-                    return sdf[ps];
+                    return (float)mesh_distance.signed_distance({ ps.x, ps.y, ps.z }).distance;
                 };
 
                 float d = GetMag(p);
@@ -366,7 +402,7 @@ namespace Generator {
                 float ygrad = sign*y0 < sign*y1 ? -(y0 - d) : (y1 - d);
                 float zgrad = sign*z0 < sign*z1 ? -(z0 - d) : (z1 - d);
 
-                return SDFData{glm::normalize(glm::vec3(xgrad, ygrad, zgrad)), d};
+                return SDFData{ glm::normalize(glm::vec3(xgrad, ygrad, zgrad)), d };
             };
 
             for (int i = (int)minPos.x; i < (int)maxPos.x; i++) {
@@ -374,12 +410,12 @@ namespace Generator {
                     for (int k = (int)minPos.z; k < (int)maxPos.z; k++) {
                         glm::vec3 p(i, j, k);
                         SDFData d = GetData(p);
-//                        renderer->AlwaysDrawLineCube(p - glm::vec3(0.5f), glm::vec3(1.0f), glm::abs(d.mag) == 9999.0f ? (glm::sign(d.mag) == 1.0f ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0)) : glm::vec3(glm::abs(d.mag) / 10.0f));
-                        if (d.mag < 0.0f) {
+//                        printf("%f\n", d.mag);
+//                        renderer->AlwaysDrawLineCube(p - glm::vec3(0.4f), glm::vec3(0.8f), glm::sign(d.mag) == 1.0f ? glm::vec3(0.0f, 1.0f, 0.0f) : glm::vec3(glm::abs(d.mag) / 4.0f));
+                        if (d.mag <= 0.0f) {
                             auto* pt = new Particle(p, color);
-                            pt->color = colors[p];
+                            pt->color = color;
 //                            pt->color = glm::vec3(glm::abs(d.mag) / 10.0f);
-                            pt->rigidBodyID = rb->ID;
                             pt->vel = vel;
                             rb->AddVertex(pt, d, firstParticleIndex++);
                         }

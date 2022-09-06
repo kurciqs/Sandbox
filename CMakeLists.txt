@@ -14,7 +14,7 @@ set(SOURCE_FILES Source/main.cpp Source/Window/Window.cpp Source/Window/Window.h
         Source/Simulation/RigidBody.cpp Source/Simulation/RigidBody.h
         Source/Simulation/Constraints/PositionConstraint.cpp Source/Simulation/Constraints/PositionConstraint.h
         Source/Simulation/Constraints/RigidShapeConstraint.cpp Source/Simulation/Constraints/RigidShapeConstraint.h Source/Simulation/Constraints/RigidContactConstraint.cpp
-        Source/Simulation/Constraints/RigidContactConstraint.h Source/Utils/SDFGenerator.cpp Source/Utils/SDFGenerator.h)
+        Source/Simulation/Constraints/RigidContactConstraint.h Source/Utils/SDFGenerator.cpp Source/Utils/SDFGenerator.h Source/Utils/tmd.h)
 
 include_directories(
         ${PROJECT_SOURCE_DIR}/Source

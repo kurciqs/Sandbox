@@ -6,6 +6,8 @@
 #include "tinyobjloader.h"
 #include "glm/gtx/hash.hpp"
 #include <set>
+#include "tmd.h"
+#define TO_VEC3(x) glm::vec3(x[0], x[1], x[2])
 
 #define IS_OUTER(x) (x >= 0.0f && x != 9999.0f)
 

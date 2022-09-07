@@ -19,8 +19,8 @@
 #define GRAVITY
 #define PARTICLE_SLEEPING_EPSILON 0.001f
 
-static glm::vec3 lowerBoundary(-15.0f);
-static glm::vec3 upperBoundary( 15.0f);
+static glm::vec3 lowerBoundary(-25.0f);
+static glm::vec3 upperBoundary( 25.0f);
 using ConstraintGroup = std::vector<Constraint*>;
 
 enum ParticleSystemType {

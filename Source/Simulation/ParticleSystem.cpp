@@ -191,6 +191,7 @@ void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height
 
                 auto *p = new Particle(ppos, color);
                 p->rigidBodyID = rb->ID;
+                p->radius = step / 2.0f;
                 p->vel = vel;
 
                 // SDF Calc:
@@ -213,14 +214,16 @@ void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height
 
 void ParticleSystem::AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm::vec3 color) {
     auto* rb = new RigidBody((int)m_rigidBodies.size());
-
-    for (int i = -(int)glm::round(radius); i < (int)glm::round(radius) + 1; i++) {
-        for (int j = -(int)glm::round(radius); j < (int)glm::round(radius) + 1; j++) {
-            for (int k = -(int)glm::round(radius); k < (int)glm::round(radius) + 1; k++) {
+    float step = 1.0f;
+    // TODO step and smaller radii
+    for (float i = -glm::floor(radius); i < glm::ceil(radius); i += step) {
+        for (float j = -glm::floor(radius); j < glm::ceil(radius); j += step) {
+            for (float k = -glm::floor(radius); k < glm::ceil(radius); k += step) {
                 glm::vec3 ppos = glm::vec3(i, j, k) + center;
 
                 auto *p = new Particle(ppos, color);
                 p->rigidBodyID = rb->ID;
+                p->radius = step / 2.0f;
                 p->vel = vel;
 
                 SDFData d = Generator::SDFBall(ppos - center, radius, 1.0f);

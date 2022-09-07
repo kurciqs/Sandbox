@@ -27,10 +27,10 @@ int main() {
 
     ParticleSystem particleSystem(0, ParticleSystemType::Testing);
 
-    particleSystem.AddCube(glm::vec3(8.0f), glm::vec3(0.0f), 2, 2, 2, RANDOM_COLOR);
+    particleSystem.AddCube(glm::vec3(8.0f), glm::vec3(0.0f), 4, 4, 4, RANDOM_COLOR);
 
 //    particleSystem.AddBall(glm::vec3(0.0f), glm::vec3(0.0f), 4.0f, RANDOM_COLOR);
-    particleSystem.AddObject(glm::vec3(0.0f), "Assets/Models/Test.obj");
+//    particleSystem.AddObject(glm::vec3(0.0f), "Assets/Models/Test.obj");
 
     float particleSpawnDebounce = 0.2f;
     bool runSimulation = true;
@@ -71,9 +71,9 @@ int main() {
             if (Input::isKeyDown(GLFW_KEY_F))
                 particleSystem.AddParticle(renderer->GetCameraPosition() + renderer->GetCameraOrientation() * 2.0f, renderer->GetCameraOrientation() * 20.0f, RANDOM_COLOR, 0.5f);
             else if (Input::isKeyDown(GLFW_KEY_Q))
-                particleSystem.AddBall(renderer->GetCameraPosition() + renderer->GetCameraOrientation() * 2.0f, renderer->GetCameraOrientation() * 20.0f, 4.0f, RANDOM_COLOR);
+                particleSystem.AddBall(renderer->GetCameraPosition() + renderer->GetCameraOrientation() * 2.0f, renderer->GetCameraOrientation() * 20.0f, 2.0f, RANDOM_COLOR);
             else if (Input::isKeyDown(GLFW_KEY_E))
-                particleSystem.AddCube(renderer->GetCameraPosition() + renderer->GetCameraOrientation() * 2.0f, renderer->GetCameraOrientation() * 20.0f, 4, 4, 4, RANDOM_COLOR);
+                particleSystem.AddCube(renderer->GetCameraPosition() + renderer->GetCameraOrientation() * 2.0f, renderer->GetCameraOrientation() * 20.0f, 3, 3, 3, RANDOM_COLOR);
             particleSpawnDebounce = 0.2f;
         }
 

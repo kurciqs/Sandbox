@@ -194,8 +194,7 @@ void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height
                 p->vel = vel;
 
                 // SDF Calc:
-                glm::vec3 local = ppos - pos;
-                SDFData d = Generator::SDFCube(local, boxSize, step);
+                SDFData d = Generator::SDFCube(ppos - pos, boxSize, step);
                 if (d.mag >= 0.0f) {
                     continue;
                 }
@@ -224,11 +223,11 @@ void ParticleSystem::AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm:
                 p->rigidBodyID = rb->ID;
                 p->vel = vel;
 
-                glm::vec3 local = ppos - center;
-                SDFData d = Generator::SDFBall(local, radius, 1.0f);
+                SDFData d = Generator::SDFBall(ppos - center, radius, 1.0f);
                 if (d.mag >= 0.0f) {
                     continue;
                 }
+
                 rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
                 m_particles.push_back(p);
 

@@ -27,12 +27,10 @@ int main() {
 
     ParticleSystem particleSystem(0, ParticleSystemType::Testing);
 
-    particleSystem.AddCube(glm::vec3(8.0f), glm::vec3(0.0f), 5, 5, 5, RANDOM_COLOR);
+    particleSystem.AddCube(glm::vec3(8.0f), glm::vec3(0.0f), 2, 2, 2, RANDOM_COLOR);
 
 //    particleSystem.AddBall(glm::vec3(0.0f), glm::vec3(0.0f), 4.0f, RANDOM_COLOR);
-    printf("%f\n", glfwGetTime());
-    particleSystem.AddObject(glm::vec3(0.0f), "Assets/Models/Test.obj", RANDOM_COLOR);
-    printf("%f\n", glfwGetTime());
+    particleSystem.AddObject(glm::vec3(0.0f), "Assets/Models/Test.obj");
 
     float particleSpawnDebounce = 0.2f;
     bool runSimulation = true;

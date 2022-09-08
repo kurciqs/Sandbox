@@ -1,7 +1,5 @@
 #include "ParticleSystem.h"
 
-#include <utility>
-
 ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
 {
     switch (type) {
@@ -12,7 +10,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             m_constraints.emplace_back();
 
             for (int i = 0; i < numParticles; i++) {
-                auto* p = new Particle( glm::vec3(rand() % 10 - rand() % 10, 5, rand() % 10 - rand() % 10), RANDOM_COLOR );
+                auto* p = new Particle( RANDOM_POS_IN_BOUNDARIES, RANDOM_COLOR );
                 m_particles.push_back(p);
             }
 
@@ -215,7 +213,7 @@ void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height
 void ParticleSystem::AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm::vec3 color) {
     auto* rb = new RigidBody((int)m_rigidBodies.size());
     float step = 1.0f;
-    // TODO step and smaller radii
+
     for (float i = -glm::floor(radius); i < glm::ceil(radius); i += step) {
         for (float j = -glm::floor(radius); j < glm::ceil(radius); j += step) {
             for (float k = -glm::floor(radius); k < glm::ceil(radius); k += step) {
@@ -226,7 +224,7 @@ void ParticleSystem::AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm:
                 p->radius = step / 2.0f;
                 p->vel = vel;
 
-                SDFData d = Generator::SDFBall(ppos - center, radius, 1.0f);
+                SDFData d = Generator::SDFBall(ppos - center, radius, step);
                 if (d.mag >= 0.0f) {
                     continue;
                 }
@@ -253,4 +251,101 @@ void ParticleSystem::AddObject(glm::vec3 offset, const std::string& fileToObj, g
         m_rigidBodies.push_back(rb);
         m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
     }
+}
+
+void ParticleSystem::AddTorus(glm::vec3 center, glm::vec3 vel, float innerRadius, float outerRadius, glm::vec3 color) {
+    auto* rb = new RigidBody((int)m_rigidBodies.size());
+    float step = 1.0f;
+
+    for (float i = -glm::floor(outerRadius) - 2.0f; i < glm::ceil(outerRadius) + 2.0f; i += step) {
+        for (float j = -glm::floor(outerRadius / 2.0f) - 2.0f; j < glm::ceil(outerRadius / 2.0f) + 2.0f; j += step) {
+            for (float k = -glm::floor(outerRadius) - 2.0f; k < glm::ceil(outerRadius) + 2.0f; k += step) {
+                glm::vec3 ppos = glm::vec3(i, j, k) + center;
+
+                auto *p = new Particle(ppos, color);
+                p->rigidBodyID = rb->ID;
+                p->radius = step / 2.0f;
+                p->vel = vel;
+
+                SDFData d = Generator::SDFTorus(ppos - center, glm::vec2(outerRadius, innerRadius), step);
+                if (d.mag >= 0.0f) {
+                    continue;
+                }
+
+                rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
+                m_particles.push_back(p);
+
+                m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
+            }
+        }
+    }
+    rb->CalculateOffsets();
+    m_rigidBodies.push_back(rb);
+    m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
+}
+
+void ParticleSystem::AddCylinder(glm::vec3 center, glm::vec3 vel, float height, float radius, glm::vec3 color) {
+    auto* rb = new RigidBody((int)m_rigidBodies.size());
+    float step = 1.0f;
+
+    for (float i = -glm::floor(radius) - 1.0f; i < glm::ceil(radius) + 1.0f; i += step) {
+        for (float j = -glm::floor(height / 2.0f) - 1.0f; j < glm::ceil(height / 2.0f) + 1.0f; j += step) {
+            for (float k = -glm::floor(radius) - 1.0f; k < glm::ceil(radius) + 1.0f; k += step) {
+                glm::vec3 ppos = glm::vec3(i, j, k) + center;
+
+                auto *p = new Particle(ppos, color);
+                p->rigidBodyID = rb->ID;
+                p->radius = step / 2.0f;
+                p->vel = vel;
+
+                SDFData d = Generator::SDFCylinder(ppos - center, radius, height, step);
+                if (d.mag >= 0.0f) {
+                    continue;
+                }
+
+                rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
+                m_particles.push_back(p);
+
+                m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
+            }
+        }
+    }
+    rb->CalculateOffsets();
+    m_rigidBodies.push_back(rb);
+    m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
+}
+
+void ParticleSystem::AddCone(glm::vec3 center, glm::vec3 vel, float angle /*radians*/, float height, glm::vec3 color) {
+    auto* rb = new RigidBody((int)m_rigidBodies.size());
+    float step = 1.0f;
+
+    float cosangle = cosf(angle);
+    float sinangle = sinf(angle);
+    float radius = (height / cosangle) * sinangle;
+
+    for (float i = -glm::floor(radius) - 1.0f; i < glm::ceil(radius) + 1.0f; i += step) {
+        for (float j = -glm::floor(height) - 1.0f; j < 0.0f; j += step) {
+            for (float k = -glm::floor(radius) - 1.0f; k < glm::ceil(radius) + 1.0f; k += step) {
+                glm::vec3 ppos = glm::vec3(i, j, k) + center;
+
+                auto *p = new Particle(ppos, color);
+                p->rigidBodyID = rb->ID;
+                p->radius = step / 2.0f;
+                p->vel = vel;
+
+                SDFData d = Generator::SDFCone(ppos - center, glm::vec2(sinangle, cosangle), height, step);
+                if (d.mag >= 0.0f) {
+                    continue;
+                }
+
+                rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
+                m_particles.push_back(p);
+
+                m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
+            }
+        }
+    }
+    rb->CalculateOffsets();
+    m_rigidBodies.push_back(rb);
+    m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
 }

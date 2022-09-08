@@ -1,7 +1,5 @@
 #include "SDFGenerator.h"
 
-extern Renderer *renderer;
-
 namespace Generator {
     SDFData SDFCube(glm::vec3 p, glm::vec3 b, float step) {
         auto GetMag = [&](glm::vec3 ps, glm::vec3 s) {
@@ -180,6 +178,79 @@ namespace Generator {
         }
 
         return rbs;
+    }
+
+    SDFData SDFTorus(glm::vec3 p, glm::vec2 t, float step) {
+        auto GetMag = [&](glm::vec3 ps) {
+            float x = glm::length(glm::vec2(ps.x, ps.z))-t.x;
+            return glm::length(glm::vec2(x, ps.y))-t.y;
+        };
+
+        float d = GetMag(p);
+        float sign = glm::sign(d);
+        float x0 = GetMag(p - glm::vec3(step, 0.0f, 0.0f));
+        float x1 = GetMag(p + glm::vec3(step, 0.0f, 0.0f));
+        float y0 = GetMag(p - glm::vec3(0.0f, step, 0.0f));
+        float y1 = GetMag(p + glm::vec3(0.0f, step, 0.0f));
+        float z0 = GetMag(p - glm::vec3(0.0f, 0.0f, step));
+        float z1 = GetMag(p + glm::vec3(0.0f, 0.0f, step));
+
+        float xgrad = sign*x0 < sign*x1 ? -(x0 - d) : (x1 - d);
+        float ygrad = sign*y0 < sign*y1 ? -(y0 - d) : (y1 - d);
+        float zgrad = sign*z0 < sign*z1 ? -(z0 - d) : (z1 - d);
+
+        return {glm::normalize(glm::vec3(xgrad, ygrad, zgrad)), d};
+    }
+
+    SDFData SDFCylinder(glm::vec3 p, float h, float r, float step) {
+        auto GetMag = [&](glm::vec3 ps) {
+            glm::vec2 d = glm::abs(glm::vec2(glm::length(glm::vec2(ps.x, ps.z)),ps.y)) - glm::vec2(h,r);
+            return glm::min(glm::max(d.x,d.y),0.0f) + glm::length(glm::max(d,0.0f));
+        };
+
+        float d = GetMag(p);
+        float sign = glm::sign(d);
+        float x0 = GetMag(p - glm::vec3(step, 0.0f, 0.0f));
+        float x1 = GetMag(p + glm::vec3(step, 0.0f, 0.0f));
+        float y0 = GetMag(p - glm::vec3(0.0f, step, 0.0f));
+        float y1 = GetMag(p + glm::vec3(0.0f, step, 0.0f));
+        float z0 = GetMag(p - glm::vec3(0.0f, 0.0f, step));
+        float z1 = GetMag(p + glm::vec3(0.0f, 0.0f, step));
+
+        float xgrad = sign*x0 < sign*x1 ? -(x0 - d) : (x1 - d);
+        float ygrad = sign*y0 < sign*y1 ? -(y0 - d) : (y1 - d);
+        float zgrad = sign*z0 < sign*z1 ? -(z0 - d) : (z1 - d);
+
+        return {glm::normalize(glm::vec3(xgrad, ygrad, zgrad)), d};
+    }
+
+    SDFData SDFCone(glm::vec3 p, glm::vec2 c, float h, float step) {
+        auto GetMag = [&](glm::vec3 ps) {
+            glm::vec2 q = h*glm::vec2(c.x/c.y,-1.0);
+
+            glm::vec2 w = glm::vec2( glm::length(glm::vec2(ps.x, ps.z)), ps.y );
+            glm::vec2 a = w - q*glm::clamp( glm::dot(w,q)/glm::dot(q,q), 0.0f, 1.0f );
+            glm::vec2 b = w - q*glm::vec2( glm::clamp( w.x/q.x, 0.0f, 1.0f ), 1.0f );
+            float k = glm::sign( q.y );
+            float d = glm::min(glm::dot( a, a ), glm::dot(b, b));
+            float s = glm::max( k*(w.x*q.y-w.y*q.x),k*(w.y-q.y)  );
+            return glm::sqrt(d)*glm::sign(s);
+        };
+
+        float d = GetMag(p);
+        float sign = glm::sign(d);
+        float x0 = GetMag(p - glm::vec3(step, 0.0f, 0.0f));
+        float x1 = GetMag(p + glm::vec3(step, 0.0f, 0.0f));
+        float y0 = GetMag(p - glm::vec3(0.0f, step, 0.0f));
+        float y1 = GetMag(p + glm::vec3(0.0f, step, 0.0f));
+        float z0 = GetMag(p - glm::vec3(0.0f, 0.0f, step));
+        float z1 = GetMag(p + glm::vec3(0.0f, 0.0f, step));
+
+        float xgrad = sign*x0 < sign*x1 ? -(x0 - d) : (x1 - d);
+        float ygrad = sign*y0 < sign*y1 ? -(y0 - d) : (y1 - d);
+        float zgrad = sign*z0 < sign*z1 ? -(z0 - d) : (z1 - d);
+
+        return {glm::normalize(glm::vec3(xgrad, ygrad, zgrad)), d};
     }
 
 } // SDFGenerator

@@ -28,7 +28,8 @@ static glm::vec3 upperBoundary( 25.0f);
 using ConstraintGroup = std::vector<Constraint*>;
 
 enum ParticleSystemType {
-    Testing
+    Testing,
+    Pool
 };
 
 enum ConstraintGroupEnum {
@@ -54,7 +55,6 @@ public:
     void AddTorus(glm::vec3 center, glm::vec3 vel, float innerRadius, float outerRadius, glm::vec3 color);
     void AddCylinder(glm::vec3 center, glm::vec3 vel, float height, float radius, glm::vec3 color);
     void AddCone(glm::vec3 center, glm::vec3 vel, float angle, float height, glm::vec3 color);
-    // TODO add torus, cylinder, cone
 private:
     std::vector<Particle*> m_particles;
     std::vector<ConstraintGroup> m_constraints;

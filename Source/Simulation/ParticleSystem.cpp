@@ -19,6 +19,35 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             }
         }
             break;
+        case ParticleSystemType::Pool:
+        {
+            m_constraints.emplace_back();
+            m_constraints.emplace_back();
+            m_constraints.emplace_back();
+
+            for (int i = 0; i < numParticles; i++) {
+                auto* p = new Particle( RANDOM_POS_IN_BOUNDARIES, RANDOM_COLOR );
+                m_particles.push_back(p);
+            }
+
+
+            for (Particle* p: m_particles) {
+                m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
+            }
+
+            // the pool object
+            AddObject(glm::vec3(0.0f, lowerBoundary.y + 2.0f, 0.0f), "Assets/Models/Test.obj");
+
+            // this would be the particles, which represent a fluid
+            for (int i = 0; i < 150; i++) {
+                auto *p = new Particle(glm::vec3(rand() % 6 - rand() % 6, -rand() % 15 - 5, rand() % 6 - rand() % 6), glm::vec3(0.1f, 0.4f, 0.8f));
+                p->radius = 0.5f;
+                p->phase = Phase::Liquid;
+
+                m_particles.push_back(p);
+            }
+        }
+            break;
         default:
             break;
     }

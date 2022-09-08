@@ -238,11 +238,17 @@ void Renderer::DrawLine(glm::vec3 p1, glm::vec3 p2, glm::vec3 color) {
 
 void Renderer::DrawParticles(std::vector<Particle*>& particles) {
 
-    std::vector<ParticleVertex> vertices(particles.size());
-    for (int i = 0; i < vertices.size(); i++) {
-        vertices[i].position = particles[i]->pos;
-        vertices[i].color = particles[i]->color;
-        vertices[i].radius = particles[i]->radius;
+    std::vector<ParticleVertex> vertices;
+    std::vector<ParticleVertex> fluidVertices;
+
+    for (int i = 0; i < particles.size(); i++) {
+        Particle* p = particles[i];
+        if (p->phase == Phase::Solid) {
+            vertices.push_back( {p->pos, p->color, p->radius} );
+        }
+        else if (p->phase == Phase::Liquid) {
+            vertices.push_back( {p->pos, p->color, p->radius} );
+        }
     }
     m_numParticles = vertices.size();
 
@@ -258,12 +264,10 @@ void Renderer::DrawParticles(std::vector<Particle*>& particles) {
     m_particleVAO.DivideAttrib(3, 1);
 
     m_particleVBO.Unbind(); // ~VBO
-    m_particleShader.Bind(); // Shader
 
     // essentially makes it be called during Draw()
     m_drawParticles = true;
 
-    m_particleShader.Unbind(); // ~Shader
     m_particleVAO.Unbind(); // ~VAO
 }
 
@@ -291,7 +295,6 @@ void Renderer::DrawVertices(const std::vector<Vertex>& vertices) {
         m_batchVertices.push_back(v);
     }
 }
-
 
 void Renderer::AlwaysDrawVertices(const std::vector<Vertex> &vertices) {
     for (Vertex v: vertices) {

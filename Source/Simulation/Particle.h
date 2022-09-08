@@ -8,9 +8,15 @@
 #define STATIC_FRICTION_COEF 0.1f
 #define KINETIC_FRICTION_COEF 0.25f
 
+enum Phase {
+    Liquid,
+    Solid,
+    Gas
+};
+
 struct Particle {
     void ApplyForce(glm::vec3 f);
-    Particle(glm::vec3 position, glm::vec3 color_, float mass_ = 1.0f, float radius_ = 0.5f, int phase_ = 0, bool fixed_ = false);
+    Particle(glm::vec3 position, glm::vec3 color_, float mass_ = 1.0f, float radius_ = 0.5f, int phase_ = Phase::Solid, bool fixed_ = false);
     ~Particle() = default;
     glm::vec3 pos{0.0f};
     glm::vec3 cpos{0.0f};

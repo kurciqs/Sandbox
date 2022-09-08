@@ -14,11 +14,7 @@ public:
     void Draw(Renderer& renderer) override;
 private:
     RigidBody* m_rb;
-//    void RecalculateCOM();
-//    glm::vec3 m_centerOfMass{};
-//    int ID{};
-//    float m_totalMass{};
-//    std::vector<glm::vec3> m_offsets; // map<int - m_begin, .. (r-s)
+    std::vector<float> m_distances;
 };
 
 

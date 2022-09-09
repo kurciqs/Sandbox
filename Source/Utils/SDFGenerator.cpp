@@ -4,7 +4,7 @@ namespace Generator {
     SDFData SDFCube(glm::vec3 p, glm::vec3 b, float step) {
         auto GetMag = [&](glm::vec3 ps, glm::vec3 s) {
             glm::vec3 d = glm::abs(ps) - s;
-            return glm::min(glm::max(d.x,glm::max(d.y,d.z)),0.0f) + glm::length(glm::max(d,0.0f));
+            return glm::min(glm::max(d.x,glm::max(d.y,d.z)),0.0f) + glm::fastLength(glm::max(d,0.0f));
         };
 
         float d = GetMag(p, b);

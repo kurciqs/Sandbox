@@ -45,7 +45,9 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
                 p->phase = Phase::Liquid;
 
                 m_particles.push_back(p);
+                m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
             }
+
         }
             break;
         default:
@@ -216,16 +218,16 @@ void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height
             for (float k = -boxSize.z + 1; k <= boxSize.z - 1; k += step) {
                 glm::vec3 ppos = glm::vec3(i, j, k) + pos;
 
-                auto *p = new Particle(ppos, color);
-                p->rigidBodyID = rb->ID;
-                p->radius = step / 2.0f;
-                p->vel = vel;
-
                 // SDF Calc:
                 SDFData d = Generator::SDFCube(ppos - pos, boxSize, step);
                 if (d.mag >= 0.0f) {
                     continue;
                 }
+
+                auto *p = new Particle(ppos, color);
+                p->rigidBodyID = rb->ID;
+                p->radius = step / 2.0f;
+                p->vel = vel;
 
                 rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
                 m_particles.push_back(p);
@@ -248,15 +250,15 @@ void ParticleSystem::AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm:
             for (float k = -glm::floor(radius); k < glm::ceil(radius); k += step) {
                 glm::vec3 ppos = glm::vec3(i, j, k) + center;
 
-                auto *p = new Particle(ppos, color);
-                p->rigidBodyID = rb->ID;
-                p->radius = step / 2.0f;
-                p->vel = vel;
-
                 SDFData d = Generator::SDFBall(ppos - center, radius, step);
                 if (d.mag >= 0.0f) {
                     continue;
                 }
+
+                auto *p = new Particle(ppos, color);
+                p->rigidBodyID = rb->ID;
+                p->radius = step / 2.0f;
+                p->vel = vel;
 
                 rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
                 m_particles.push_back(p);
@@ -291,15 +293,15 @@ void ParticleSystem::AddTorus(glm::vec3 center, glm::vec3 vel, float innerRadius
             for (float k = -glm::floor(outerRadius) - 2.0f; k < glm::ceil(outerRadius) + 2.0f; k += step) {
                 glm::vec3 ppos = glm::vec3(i, j, k) + center;
 
-                auto *p = new Particle(ppos, color);
-                p->rigidBodyID = rb->ID;
-                p->radius = step / 2.0f;
-                p->vel = vel;
-
                 SDFData d = Generator::SDFTorus(ppos - center, glm::vec2(outerRadius, innerRadius), step);
                 if (d.mag >= 0.0f) {
                     continue;
                 }
+
+                auto *p = new Particle(ppos, color);
+                p->rigidBodyID = rb->ID;
+                p->radius = step / 2.0f;
+                p->vel = vel;
 
                 rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
                 m_particles.push_back(p);
@@ -322,15 +324,15 @@ void ParticleSystem::AddCylinder(glm::vec3 center, glm::vec3 vel, float height, 
             for (float k = -glm::floor(radius) - 1.0f; k < glm::ceil(radius) + 1.0f; k += step) {
                 glm::vec3 ppos = glm::vec3(i, j, k) + center;
 
-                auto *p = new Particle(ppos, color);
-                p->rigidBodyID = rb->ID;
-                p->radius = step / 2.0f;
-                p->vel = vel;
-
                 SDFData d = Generator::SDFCylinder(ppos - center, radius, height, step);
                 if (d.mag >= 0.0f) {
                     continue;
                 }
+
+                auto *p = new Particle(ppos, color);
+                p->rigidBodyID = rb->ID;
+                p->radius = step / 2.0f;
+                p->vel = vel;
 
                 rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
                 m_particles.push_back(p);
@@ -357,15 +359,15 @@ void ParticleSystem::AddCone(glm::vec3 center, glm::vec3 vel, float angle /*radi
             for (float k = -glm::floor(radius) - 1.0f; k < glm::ceil(radius) + 1.0f; k += step) {
                 glm::vec3 ppos = glm::vec3(i, j, k) + center;
 
-                auto *p = new Particle(ppos, color);
-                p->rigidBodyID = rb->ID;
-                p->radius = step / 2.0f;
-                p->vel = vel;
-
                 SDFData d = Generator::SDFCone(ppos - center, glm::vec2(sinangle, cosangle), height, step);
                 if (d.mag >= 0.0f) {
                     continue;
                 }
+
+                auto *p = new Particle(ppos, color);
+                p->rigidBodyID = rb->ID;
+                p->radius = step / 2.0f;
+                p->vel = vel;
 
                 rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
                 m_particles.push_back(p);

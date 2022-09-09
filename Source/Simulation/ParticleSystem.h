@@ -12,9 +12,9 @@
 #include "Graphics/Renderer.h"
 #include "Utils/SDFGenerator.h"
 
-#define RANDOM_POS_IN_BOUNDARIES glm::vec3(rand() % int(upperBoundary.x) - rand() % int(lowerBoundary.x), \
-                                           rand() % int(upperBoundary.y) - rand() % int(lowerBoundary.y),\
-                                           rand() % int(upperBoundary.z) - rand() % int(lowerBoundary.z))
+#define RANDOM_POS_IN_BOUNDARIES glm::vec3(rand() % int(fabsf(upperBoundary.x)) - rand() % int(fabsf(lowerBoundary.x)), \
+                                           rand() % int(fabsf(upperBoundary.y)) - rand() % int(fabsf(lowerBoundary.y)), \
+                                           rand() % int(fabsf(upperBoundary.z)) - rand() % int(fabsf(lowerBoundary.z)))
 
 #define k_distance 0.1f
 #define k_contact 1.0f
@@ -23,8 +23,8 @@
 #define GRAVITY
 #define PARTICLE_SLEEPING_EPSILON 0.001f
 
-static glm::vec3 lowerBoundary(-25.0f);
-static glm::vec3 upperBoundary( 25.0f);
+static glm::vec3 lowerBoundary( -20.0f);
+static glm::vec3 upperBoundary(  20.0f);
 using ConstraintGroup = std::vector<Constraint*>;
 
 enum ParticleSystemType {

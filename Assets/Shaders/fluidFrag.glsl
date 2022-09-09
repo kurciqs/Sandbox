@@ -36,5 +36,5 @@ void main() {
     float diffuse = max(0.0, dot(normal, lightDir));
     vec3 color = vColor * cos((0.5 / vRadius) * length(vTexCoord));
     //    vec3 color = vec3(linearizeDepth(fragDepth));
-    FragColor = vec4(color, 1.0);
+    FragColor = vec4(color, 0.2);
 }

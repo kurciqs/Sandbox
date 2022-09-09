@@ -2,6 +2,8 @@
 #include "Simulation/ParticleSystem.h"
 #define DELTA_TIME 0.02f
 
+Renderer* renderer{};
+
 int main() {
     // set the workdir to ../../ from the executable
     wchar_t exepath[MAX_PATH];
@@ -21,11 +23,12 @@ int main() {
         return -1;
     }
 
-    Renderer renderer(&window);
+//    Renderer renderer(&window);
+    renderer = new Renderer(&window);
 
     ParticleSystem particleSystem(0, ParticleSystemType::Pool);
 
-    particleSystem.AddTorus(RANDOM_POS_IN_BOUNDARIES, glm::vec3(0.0f), 2.0f, 4.0f, RANDOM_COLOR);
+//    particleSystem.AddTorus(RANDOM_POS_IN_BOUNDARIES, glm::vec3(0.0f), 2.0f, 4.0f, RANDOM_COLOR);
 
     float particleSpawnDebounce = 0.2f;
     bool runSimulation = true;
@@ -37,18 +40,18 @@ int main() {
 
         if (runSimulation)
             particleSystem.Update(DELTA_TIME);
-        particleSystem.Draw(renderer);
+        particleSystem.Draw(*renderer);
 
-        renderer.DrawLineCube(lowerBoundary, upperBoundary - lowerBoundary, glm::vec3(0.5f, 0.6f, 0.7f));
+        renderer->DrawLineCube(lowerBoundary, upperBoundary - lowerBoundary, glm::vec3(0.5f, 0.6f, 0.7f));
         // Draw the ground
-        renderer.DrawTriangle(lowerBoundary, glm::vec3(lowerBoundary.x, lowerBoundary.y, upperBoundary.z), glm::vec3(upperBoundary.x, lowerBoundary.y, upperBoundary.z), glm::vec3(0.4f));
-        renderer.DrawTriangle(lowerBoundary, glm::vec3(upperBoundary.x, lowerBoundary.y, lowerBoundary.z), glm::vec3(upperBoundary.x, lowerBoundary.y, upperBoundary.z), glm::vec3(0.4f));
-        renderer.DrawLine(glm::vec3(0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        renderer.DrawLine(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        renderer.DrawLine(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        renderer->DrawTriangle(lowerBoundary, glm::vec3(lowerBoundary.x, lowerBoundary.y, upperBoundary.z), glm::vec3(upperBoundary.x, lowerBoundary.y, upperBoundary.z), glm::vec3(0.4f));
+        renderer->DrawTriangle(lowerBoundary, glm::vec3(upperBoundary.x, lowerBoundary.y, lowerBoundary.z), glm::vec3(upperBoundary.x, lowerBoundary.y, upperBoundary.z), glm::vec3(0.4f));
+        renderer->DrawLine(glm::vec3(0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        renderer->DrawLine(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        renderer->DrawLine(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-        renderer.Update(DELTA_TIME);
-        renderer.Render();
+        renderer->Update(DELTA_TIME);
+        renderer->Render();
 
         window.CheckBasicInput();
         window.PollEvents();
@@ -64,9 +67,9 @@ int main() {
         }
         if (particleSpawnDebounce < 0.0f) {
             if (Input::isKeyDown(GLFW_KEY_F))
-                particleSystem.AddParticle(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, RANDOM_COLOR, 0.5f);
+                particleSystem.AddParticle(renderer->GetCameraPosition() + renderer->GetCameraOrientation() * 2.0f, renderer->GetCameraOrientation() * 20.0f, RANDOM_COLOR, 0.5f);
             else if (Input::isKeyDown(GLFW_KEY_E))
-                particleSystem.AddCube(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 3, 3, 3, RANDOM_COLOR);
+                particleSystem.AddCube(renderer->GetCameraPosition() + renderer->GetCameraOrientation() * 2.0f, renderer->GetCameraOrientation() * 20.0f, 3, 3, 3, RANDOM_COLOR);
             particleSpawnDebounce = 0.2f;
         }
 
@@ -75,9 +78,10 @@ int main() {
     }
 
     window.Destroy();
-    renderer.Shutdown();
+    renderer->Shutdown();
     particleSystem.Destroy();
     Window::ShutdownGlfw();
+    delete renderer;
 
     return 0;
 }

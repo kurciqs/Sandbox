@@ -19,7 +19,8 @@ Renderer::Renderer(Window *window)
         m_camera(window, glm::vec3(0.0f, 0.0f, 10.0f), 10.0f),
         m_shader("Assets/Shaders/defaultVert.glsl", "Assets/Shaders/defaultFrag.glsl"),
         m_lineShader("Assets/Shaders/lineVert.glsl", "Assets/Shaders/lineFrag.glsl"),
-        m_particleShader("Assets/Shaders/particleVert.glsl", "Assets/Shaders/particleFrag.glsl")
+        m_particleShader("Assets/Shaders/particleVert.glsl", "Assets/Shaders/particleFrag.glsl"),
+        m_fluidParticleShader("Assets/Shaders/fluidVert.glsl", "Assets/Shaders/fluidFrag.glsl")
 {
     if (!GL_init) {
         print_error("GL not initialized!", 0);
@@ -47,6 +48,12 @@ Renderer::Renderer(Window *window)
     m_particleVAO = VAO();
     m_drawParticles = false;
 
+    m_fluidParticleVBO = VBO();
+    m_fluidParticleVAO = VAO();
+    m_drawFluidParticles = false;
+
+
+
     m_quadVBO = VBO();
     std::vector<Position> quadPositions = {
             {glm::vec3(-1.0f, -1.0f, 0.0f)},
@@ -62,6 +69,10 @@ Renderer::Renderer(Window *window)
     m_particleVAO.Bind();
     m_particleVAO.LinkAttrib(m_quadVBO, 0, 3, GL_FLOAT, sizeof(Position), (void*)0);
     m_particleVAO.Unbind();
+
+    m_fluidParticleVAO.Bind();
+    m_fluidParticleVAO.LinkAttrib(m_quadVBO, 0, 3, GL_FLOAT, sizeof(Position), (void*)0);
+    m_fluidParticleVAO.Unbind();
 }
 
 bool Renderer::InitGlad() {
@@ -155,10 +166,26 @@ void Renderer::Render() {
         m_particleVAO.Unbind();
     }
 
+    if (m_drawFluidParticles) {
+        m_fluidParticleVAO.Bind();
+        m_fluidParticleShader.Bind();
+
+        m_fluidParticleShader.UploadMat4("model", glm::mat4(1.0f));
+        m_camera.UploadProjectionMatrix(m_fluidParticleShader, "proj");
+        m_camera.UploadViewMatrix(m_fluidParticleShader, "view");
+
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, (GLsizei) m_numFluidParticles);
+
+        m_fluidParticleShader.Unbind();
+        m_fluidParticleVAO.Unbind();
+    }
+
+
     m_numParticles = 0;
     m_drawBatch = false;
     m_drawLineBatch = false;
     m_drawParticles = false;
+    m_drawFluidParticles = false;
 }
 
 void Renderer::Update(float dt) {
@@ -241,15 +268,15 @@ void Renderer::DrawParticles(std::vector<Particle*>& particles) {
     std::vector<ParticleVertex> vertices;
     std::vector<ParticleVertex> fluidVertices;
 
-    for (int i = 0; i < particles.size(); i++) {
-        Particle* p = particles[i];
+    for (auto p : particles) {
         if (p->phase == Phase::Solid) {
             vertices.push_back( {p->pos, p->color, p->radius} );
         }
         else if (p->phase == Phase::Liquid) {
-            vertices.push_back( {p->pos, p->color, p->radius} );
+            fluidVertices.push_back( {p->pos, p->color, p->radius} );
         }
     }
+    // Normal
     m_numParticles = vertices.size();
 
     m_particleVBO.Bind(); // VBO
@@ -269,6 +296,31 @@ void Renderer::DrawParticles(std::vector<Particle*>& particles) {
     m_drawParticles = true;
 
     m_particleVAO.Unbind(); // ~VAO
+    // ~Normal
+
+    // Fluid
+    m_numFluidParticles = fluidVertices.size();
+
+    m_fluidParticleVBO.Bind(); // VBO
+    m_fluidParticleVBO.SetData<ParticleVertex>(fluidVertices);
+    m_fluidParticleVAO.Bind(); // VAO
+
+    m_fluidParticleVAO.LinkAttrib(m_fluidParticleVBO, 1, 3, GL_FLOAT, 2 * sizeof(glm::vec3) + sizeof(float), (void*)0);
+    m_fluidParticleVAO.DivideAttrib(1, 1);
+    m_fluidParticleVAO.LinkAttrib(m_fluidParticleVBO, 2, 3, GL_FLOAT, 2 * sizeof(glm::vec3) + sizeof(float), (void*)sizeof(glm::vec3));
+    m_fluidParticleVAO.DivideAttrib(2, 1);
+    m_fluidParticleVAO.LinkAttrib(m_fluidParticleVBO, 3, 1, GL_FLOAT, 2 * sizeof(glm::vec3) + sizeof(float), (void*)(sizeof(glm::vec3) * 2));
+    m_fluidParticleVAO.DivideAttrib(3, 1);
+
+    m_fluidParticleVBO.Unbind(); // ~VBO
+
+    // essentially makes it be called during Draw()
+    m_drawFluidParticles = true;
+
+    m_fluidParticleVAO.Unbind(); // ~VAO
+    // ~Fluid
+
+
 }
 
 void Renderer::DrawLineCube(glm::vec3 position, glm::vec3 size, glm::vec3 color) {

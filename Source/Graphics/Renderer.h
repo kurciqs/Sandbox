@@ -59,12 +59,18 @@ private:
     std::vector<Vertex> m_batchLineVertices;
     bool m_drawLineBatch;
 
-    VAO m_particleVAO;
     VBO m_quadVBO;      //
+    VAO m_particleVAO;
     VBO m_particleVBO;  // +
     Shader m_particleShader;
     bool m_drawParticles;
     GLuint m_numParticles;
+
+    VAO m_fluidParticleVAO;
+    VBO m_fluidParticleVBO;  // +
+    Shader m_fluidParticleShader;
+    bool m_drawFluidParticles;
+    GLuint m_numFluidParticles;
 
     std::vector<Vertex> m_alwaysDrawBatchVertices;
     std::vector<Vertex> m_alwaysDrawBatchLineVertices;

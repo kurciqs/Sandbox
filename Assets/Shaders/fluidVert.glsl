@@ -10,7 +10,7 @@ uniform mat4 view;
 
 out vec3 vColor;
 out float vRadius;
-out vec3 vCenter; // viewspace position of the fragment
+out vec3 viewPos; // viewspace position of the fragment
 out vec2 vTexCoord;
 
 void main() {
@@ -26,9 +26,9 @@ void main() {
     newView[0][0] = 1;   newView[1][0] = 0;   newView[2][0] = 0;
     newView[0][1] = 0;   newView[1][1] = 1;   newView[2][1] = 0;
     newView[0][2] = 0;   newView[1][2] = 0;   newView[2][2] = 1;
-
-    vCenter = (view * vec4(iOffset, 1.0)).xyz;
+    gl_PointSize = 20;
+    viewPos = (view * vec4(aPos, 1.0)).xyz;
     vTexCoord = (aPos.xy) * vRadius;
 
-    gl_Position = proj * newView * (vec4(aPos * iRadius, 1.0));
+    gl_Position = proj * view * (vec4(iOffset, 1.0));
 }

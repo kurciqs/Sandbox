@@ -167,17 +167,7 @@ void Renderer::Render() {
     }
 
     if (m_drawFluidParticles) {
-        m_fluidParticleVAO.Bind();
-        m_fluidParticleShader.Bind();
-
-        m_fluidParticleShader.UploadMat4("model", glm::mat4(1.0f));
-        m_camera.UploadProjectionMatrix(m_fluidParticleShader, "proj");
-        m_camera.UploadViewMatrix(m_fluidParticleShader, "view");
-
-        glDrawArraysInstanced(GL_TRIANGLES, 0, 6, (GLsizei) m_numFluidParticles);
-
-        m_fluidParticleShader.Unbind();
-        m_fluidParticleVAO.Unbind();
+        // fuor later
     }
 
 
@@ -269,11 +259,16 @@ void Renderer::DrawParticles(std::vector<Particle*>& particles) {
     std::vector<ParticleVertex> fluidVertices;
 
     for (auto p : particles) {
-        if (p->phase == Phase::Solid) {
+        if (m_mode == RenderMode::Circles) {
             vertices.push_back( {p->pos, p->color, p->radius} );
         }
-        else if (p->phase == Phase::Liquid) {
-            fluidVertices.push_back( {p->pos, p->color, p->radius} );
+        else {
+            // seperate them
+            if (p->phase == Phase::Solid) {
+                vertices.push_back({p->pos, p->color, p->radius});
+            } else if (p->phase == Phase::Liquid) {
+                fluidVertices.push_back({p->pos, p->color, p->radius});
+            }
         }
     }
     // Normal

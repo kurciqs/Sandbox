@@ -5,7 +5,7 @@ out vec4 FragColor;
 // maybe do that it won't render if out of window
 in vec3 vColor;
 in float vRadius;
-in vec3 vCenter; // don't care
+in vec3 viewPos;
 in vec2 vTexCoord;
 
 uniform mat4 view;
@@ -20,21 +20,21 @@ float linearizeDepth(float depth){
 
 void main() {
     vec3 normal;
-    normal.xy = vTexCoord * 2.0 - 1.0;
+    normal.xy = vTexCoord * vec2(2.0) - vec2(1.0);
     float r2 = dot(normal.xy, normal.xy);
-    if (length(vTexCoord) > vRadius) {
+    if (r2 > 1.0) {
         discard;
     }
     normal.z = sqrt(1.0 - r2);
 
-    vec4 pixelPos = vec4(vCenter + normal * vRadius, 1.0);
+    vec4 pixelPos = vec4(viewPos + normal * vRadius * 0.8, 1.0);
     vec4 clipSpacePos = proj * pixelPos;
     float fragDepth = clipSpacePos.z / clipSpacePos.w;
 
-    vec3 lightPos = vec3(0.0, 0.0, 0.0);
-    vec3 lightDir = normalize(lightPos - vCenter);
-    float diffuse = max(0.0, dot(normal, lightDir));
+//    vec3 lightPos = vec3(0.0, 0.0, 0.0);
+//    vec3 lightDir = normalize(lightPos - vCenter);
+//    float diffuse = max(0.0, dot(normal, lightDir));
+//    vec3 color = vColor * cos((0.5 / vRadius) * length(vTexCoord));
     vec3 color = vColor * cos((0.5 / vRadius) * length(vTexCoord));
-    //    vec3 color = vec3(linearizeDepth(fragDepth));
-    FragColor = vec4(color, 0.2);
+    FragColor = vec4(color, 1.0);
 }

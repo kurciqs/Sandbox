@@ -9,6 +9,7 @@
 #include "Simulation/Constraints/PositionConstraint.h"
 #include "Simulation/Constraints/RigidShapeConstraint.h"
 #include "Simulation/Constraints/RigidContactConstraint.h"
+#include "Simulation/Constraints/FluidConstraint.h"
 #include "Graphics/Renderer.h"
 #include "Utils/SDFGenerator.h"
 
@@ -23,13 +24,14 @@
 #define GRAVITY
 #define PARTICLE_SLEEPING_EPSILON 0.001f
 
-static glm::vec3 lowerBoundary( -20.0f);
-static glm::vec3 upperBoundary(  20.0f);
+static glm::vec3 lowerBoundary( -5.0f);
+static glm::vec3 upperBoundary(  5.0f);
 using ConstraintGroup = std::vector<Constraint*>;
 
 enum ParticleSystemType {
     Testing,
-    Pool
+    Pool,
+    Fluid
 };
 
 enum ConstraintGroupEnum {

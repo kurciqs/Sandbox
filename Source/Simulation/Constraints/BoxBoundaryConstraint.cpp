@@ -46,7 +46,7 @@ void BoxBoundaryConstraint::Project() {
 
     glm::vec3 dir = -glm::normalize( glm::vec3(xgrad, ygrad, zgrad) );
 
-    if (!p1->fixed) p1->cpos += SOR_COEF * dir * d * m_stiffness / (float)p1->num_constraints;
+    if (!p1->fixed) p1->cpos += SOR_COEF * dir * d * m_stiffness;
 }
 
 void BoxBoundaryConstraint::Draw(Renderer &renderer) {

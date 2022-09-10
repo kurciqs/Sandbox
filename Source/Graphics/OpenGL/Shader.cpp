@@ -163,7 +163,7 @@ void Shader::compileErrors(unsigned int shader, const char *type, const char* fi
         if (hasCompiled == GL_FALSE)
         {
             glGetProgramInfoLog(shader, 1024, nullptr, infoLog);
-            print_error("SHADER_LINKING_ERROR for files %s/.vert, type %s\n%s\n", filename, type, infoLog);
+            print_error("SHADER_LINKING_ERROR for files %s.frag/.vert, type %s\n%s\n", filename, type, infoLog);
         }
     }
 }

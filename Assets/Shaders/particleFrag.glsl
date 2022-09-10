@@ -25,7 +25,7 @@ void main() {
     if (length(vTexCoord) > vRadius) {
         discard;
     }
-    normal.z = sqrt(1.0 - r2);
+    normal.z = -sqrt(1.0 - r2);
 
     vec4 pixelPos = vec4(vCenter + normal * vRadius, 1.0);
     vec4 clipSpacePos = proj * pixelPos;

@@ -12,6 +12,11 @@
 
 static bool GL_init = false;
 
+enum RenderMode {
+    Circles,
+    Mesh
+};
+
 class Renderer {
 public:
     explicit Renderer(Window* window);
@@ -44,6 +49,8 @@ public:
 private:
     void Flush();
     void UploadVertices();
+
+    RenderMode m_mode = RenderMode::Circles;
 
     Camera m_camera;
 

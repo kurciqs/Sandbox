@@ -50,6 +50,28 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
 
         }
             break;
+        case ParticleSystemType::Fluid:
+        {
+            m_constraints.emplace_back();
+            m_constraints.emplace_back();
+            m_constraints.emplace_back();
+
+            std::vector<int> fluidParticles;
+            for (int i = 0; i < numParticles; i++) {
+                auto* p = new Particle( RANDOM_POS_IN_BOUNDARIES, glm::vec3(0.1f, 0.4f, 0.8f) );
+                p->phase = Phase::Liquid;
+                fluidParticles.push_back((int)m_particles.size());
+                m_particles.push_back(p);
+            }
+
+            m_constraints[STANDARD].push_back( new FluidConstraint(m_particles, fluidParticles, 1.0f, 10.0f) );
+
+
+            for (Particle* p: m_particles) {
+                m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
+            }
+        }
+            break;
         default:
             break;
     }

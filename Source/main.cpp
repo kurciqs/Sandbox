@@ -23,10 +23,11 @@ int main() {
         return -1;
     }
 
+    glEnable(GL_PROGRAM_POINT_SIZE);
 //    Renderer renderer(&window);
     renderer = new Renderer(&window);
 
-    ParticleSystem particleSystem(0, ParticleSystemType::Pool);
+    ParticleSystem particleSystem(200, ParticleSystemType::Fluid);
 
 //    particleSystem.AddTorus(RANDOM_POS_IN_BOUNDARIES, glm::vec3(0.0f), 2.0f, 4.0f, RANDOM_COLOR);
 

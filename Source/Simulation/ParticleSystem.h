@@ -48,6 +48,7 @@ public:
     void Draw(Renderer& renderer);
     void Clear();
     void Destroy();
+    void ApplyGForce(glm::vec3 f);
 
     void AddParticle(glm::vec3 pos, glm::vec3 vel, glm::vec3 color, float r);
     void AddObject(glm::vec3 offset, const std::string& fileToObj, glm::vec3 color = glm::vec3(-1.0f), glm::vec3 vel = glm::vec3(0.0f));

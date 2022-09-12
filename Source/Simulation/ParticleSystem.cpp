@@ -64,7 +64,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
                 m_particles.push_back(p);
             }
 
-            m_constraints[STANDARD].push_back( new FluidConstraint(m_particles, fluidParticles, 1.0f, 10.0f) );
+            m_constraints[STANDARD].push_back( new FluidConstraint(m_particles, fluidParticles, 1.0f, 0.75f) );
 
 
             for (Particle* p: m_particles) {
@@ -123,13 +123,13 @@ void ParticleSystem::Update(float dt) {
         // (7) dumb, I know
         for (int j = i + 1; j < m_particles.size(); j++) {
             Particle* p2 = m_particles[j];
-            float dist = glm::fastDistance(p1->cpos, p2->cpos);
+            float dist = glm::distance(p1->cpos, p2->cpos);
             if (dist < p1->radius + p2->radius) {
                 // (8)
-                if (p1->rigidBodyID == -1 || p2->rigidBodyID == -1) {
+                if (p1->rigidBodyID == -1 || p2->rigidBodyID == -1 && p1->phase == Phase::Solid && p2->phase == Phase::Solid) {
                     m_constraints[CONTACT].push_back( new ContactConstraint(p1, p2, k_contact) );
                 }
-                else if (p1->rigidBodyID != p2->rigidBodyID) {
+                else if (p1->rigidBodyID != p2->rigidBodyID && p1->phase == Phase::Solid && p2->phase == Phase::Solid) {
                     SDFData d1 = m_rigidBodies[p1->rigidBodyID]->GetSDFData(i);
                     SDFData d2 = m_rigidBodies[p2->rigidBodyID]->GetSDFData(j);
                     m_constraints[CONTACT].push_back( new RigidContactConstraint(p1, p2, d1, d2, k_contact) );
@@ -401,4 +401,8 @@ void ParticleSystem::AddCone(glm::vec3 center, glm::vec3 vel, float angle /*radi
     rb->CalculateOffsets();
     m_rigidBodies.push_back(rb);
     m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
+}
+
+void ParticleSystem::ApplyGForce(glm::vec3 f) {
+    m_globalForce += f;
 }

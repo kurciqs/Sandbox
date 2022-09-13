@@ -64,7 +64,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
                 m_particles.push_back(p);
             }
 
-            m_constraints[STANDARD].push_back( new FluidConstraint(m_particles, fluidParticles, 1.0f, 0.75f) );
+            m_constraints[STANDARD].push_back( new FluidConstraint(m_particles, fluidParticles, 1.0f, 0.45f) );
 
 
             for (Particle* p: m_particles) {

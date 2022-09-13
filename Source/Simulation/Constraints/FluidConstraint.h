@@ -3,15 +3,28 @@
 
 #include "Simulation/Constraint.h"
 
-#define H 2.0f
-#define H2 4.0f
-#define H6 64.0f
-#define H9 512.0f
+#define H 3.5f
+#define H2 12.25f
+#define H6 1838.265625f
+#define H9 78815.6386719f
+
+//#define H 5.f
+//#define H6 15625.f
+//#define H9 1953125.f
+
+//#define H 4.f
+//#define H6 4096.f
+//#define H9 262144.f
+
+//#define H 2.0f
+//#define H2 4.0f
+//#define H6 64.0f
+//#define H9 512.0f
 
 #define EPSILON_RELAX 0.01f
 
 #define K_CORR 0.1f
-#define N_CORR 4
+#define N_CORR 4.0f
 #define MAG_Q_CORR 0.2f
 
 #define S_SOLID 0.0f
@@ -30,7 +43,8 @@ private:
 
     std::vector<std::vector<int>> m_neighbours;
     std::vector<int> m_particleIndices;
-    std::vector<float> m_lambdas;
+    std::unordered_map<int, float> m_lambdas;
+    std::vector<glm::vec3> m_deltas;
     float m_density;
 };
 

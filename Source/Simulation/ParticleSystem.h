@@ -24,8 +24,8 @@
 #define GRAVITY
 #define PARTICLE_SLEEPING_EPSILON 0.001f
 
-static glm::vec3 lowerBoundary( -5.0f);
-static glm::vec3 upperBoundary(  5.0f);
+static glm::vec3 lowerBoundary( -20.f);
+static glm::vec3 upperBoundary(  20.f);
 using ConstraintGroup = std::vector<Constraint*>;
 
 enum ParticleSystemType {
@@ -49,6 +49,7 @@ public:
     void Clear();
     void Destroy();
     void ApplyGForce(glm::vec3 f);
+    void SetGlobalForce(glm::vec3 g);
 
     void AddParticle(glm::vec3 pos, glm::vec3 vel, glm::vec3 color, float r);
     void AddObject(glm::vec3 offset, const std::string& fileToObj, glm::vec3 color = glm::vec3(-1.0f), glm::vec3 vel = glm::vec3(0.0f));

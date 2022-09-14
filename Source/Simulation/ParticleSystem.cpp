@@ -25,28 +25,22 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             m_constraints.emplace_back();
             m_constraints.emplace_back();
 
-            for (int i = 0; i < numParticles; i++) {
-                auto* p = new Particle( RANDOM_POS_IN_BOUNDARIES, RANDOM_COLOR );
-                m_particles.push_back(p);
-            }
-
-
-            for (Particle* p: m_particles) {
-                m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
-            }
-
             // the pool object
             AddObject(glm::vec3(0.0f, lowerBoundary.y + 2.0f, 0.0f), "Assets/Models/Test.obj");
 
             // this would be the particles, which represent a fluid
-            for (int i = 0; i < 150; i++) {
+            std::vector<int> indices;
+            for (int i = 0; i < numParticles; i++) {
                 auto *p = new Particle(glm::vec3(rand() % 6 - rand() % 6, -rand() % 15 - 5, rand() % 6 - rand() % 6), glm::vec3(0.1f, 0.4f, 0.8f));
                 p->radius = 0.5f;
                 p->phase = Phase::Liquid;
-
+                indices.push_back((int)m_particles.size());
                 m_particles.push_back(p);
                 m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
             }
+
+            m_constraints[STANDARD].push_back( new FluidConstraint(m_particles, indices, 1.0f, 1.0f) );
+
 
         }
             break;
@@ -64,7 +58,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
                 m_particles.push_back(p);
             }
 
-            m_constraints[STANDARD].push_back( new FluidConstraint(m_particles, fluidParticles, 1.0f, 0.45f) );
+            m_constraints[STANDARD].push_back( new FluidConstraint(m_particles, fluidParticles, 1.0f, 1.0f) );
 
 
             for (Particle* p: m_particles) {
@@ -123,10 +117,10 @@ void ParticleSystem::Update(float dt) {
         // (7) dumb, I know
         for (int j = i + 1; j < m_particles.size(); j++) {
             Particle* p2 = m_particles[j];
-            float dist = glm::distance(p1->cpos, p2->cpos);
+            float dist = glm::fastDistance(p1->cpos, p2->cpos);
             if (dist < p1->radius + p2->radius) {
                 // (8)
-                if (p1->rigidBodyID == -1 || p2->rigidBodyID == -1 && p1->phase == Phase::Solid && p2->phase == Phase::Solid) {
+                if ((p1->rigidBodyID == -1 || p2->rigidBodyID == -1) && (p1->phase == Phase::Solid || p2->phase == Phase::Solid)) {
                     m_constraints[CONTACT].push_back( new ContactConstraint(p1, p2, k_contact) );
                 }
                 else if (p1->rigidBodyID != p2->rigidBodyID && p1->phase == Phase::Solid && p2->phase == Phase::Solid) {
@@ -405,4 +399,8 @@ void ParticleSystem::AddCone(glm::vec3 center, glm::vec3 vel, float angle /*radi
 
 void ParticleSystem::ApplyGForce(glm::vec3 f) {
     m_globalForce += f;
+}
+
+void ParticleSystem::SetGlobalForce(glm::vec3 g) {
+    m_globalForce = g;
 }

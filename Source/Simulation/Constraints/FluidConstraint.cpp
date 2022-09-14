@@ -4,10 +4,10 @@ FluidConstraint::FluidConstraint(std::vector<Particle*>& allParticles, const std
     m_stiffness = 1.0f - powf((1.0f - k), 1.0f / SOLVER_ITERATIONS);
     m_density = density;
 
-    m_particles = allParticles;
+    m_allParticles = &allParticles;
     for (int i : fluidPartilces) {
         m_particleIndices.push_back(i);
-        m_particles[i]->num_constraints++;
+        m_allParticles->at(i)->num_constraints++;
         m_neighbours.emplace_back(); // empty vector
         m_lambdas.emplace(i, 0.0f);
         m_deltas.emplace_back(0.0f);
@@ -16,24 +16,24 @@ FluidConstraint::FluidConstraint(std::vector<Particle*>& allParticles, const std
 
 FluidConstraint::~FluidConstraint() {
     for (int i : m_particleIndices) {
-        m_particles[i]->num_constraints--;
+        m_allParticles->at(i)->num_constraints--;
     }
 }
 
 void FluidConstraint::Project() {
-    // NOTE: m_particles contains all of them
+    // NOTE: m_allParticles contains all of them
     for (int localInd = 0; localInd < m_particleIndices.size(); localInd++) {
         m_neighbours[localInd].clear();
         int i = m_particleIndices[localInd];  // fluid particle index (global)
-        Particle *p_i = m_particles[i];
+        Particle *p_i = m_allParticles->at(i);
 
         float density_i = 0.0f; // roh_i
         float denom_i = 0.0f;
 
-        for (int j = 0; j < m_particles.size(); j++) { // loop through all, find neighbours
+        for (int j = 0; j < m_allParticles->size(); j++) { // loop through all, find neighbours
 
             if (i != j) {
-                Particle *p_j = m_particles[j];
+                Particle *p_j = m_allParticles->at(j);
 
                 if (p_j->fixed) continue;
 
@@ -73,14 +73,14 @@ void FluidConstraint::Project() {
         int i = m_particleIndices[localInd];  // fluid particle index (global)
 
         float lambda_i = m_lambdas[i];
-        Particle *p_i = m_particles[i];
+        Particle *p_i = m_allParticles->at(i);
 
         for (int localInd2 = 0; localInd2 < m_neighbours[localInd].size(); localInd2++) {
             int j = m_neighbours[localInd][localInd2];  // index to localInd's neighbour number localInd2 (global)
 
             if (i == j) continue;
 
-            Particle *p_j = m_particles[j];
+            Particle *p_j = m_allParticles->at(j);
             glm::vec3 diff = p_i->cpos - p_j->cpos;
 
             float lambda_j = m_lambdas[j];
@@ -96,16 +96,15 @@ void FluidConstraint::Project() {
 
     for (int localInd = 0; localInd < m_particleIndices.size(); localInd++) {
         int i = m_particleIndices[localInd];
-        Particle* p_i = m_particles[i];
+        Particle* p_i = m_allParticles->at(i);
         if (!p_i->fixed) p_i->cpos += m_deltas[localInd] / ((float) p_i->num_constraints + (float) m_neighbours[localInd].size());
     }
 }
 
 void FluidConstraint::Draw(Renderer &renderer) {
-
+    printf("%d  %d\n", (int)m_particleIndices.size(), (int)m_allParticles->size());
 }
 
-// TODO: write thsi more coherently
 float FluidConstraint::poly6(float dist) {
     dist = glm::clamp(dist, 0.0f, H);
     float term2 = (H * H - dist * dist);
@@ -122,8 +121,8 @@ glm::vec3 FluidConstraint::spikyGrad(const glm::vec3 &r, float dist) {
 
 glm::vec3 FluidConstraint::grad(int k, int j) {
     int i = m_particleIndices[k];
-    Particle* p_i = m_particles[i];
-    Particle* p_j = m_particles[j];
+    Particle* p_i = m_allParticles->at(i);
+    Particle* p_j = m_allParticles->at(j);
 
     glm::vec3 diff = p_i->cpos - p_j->cpos;
     float len = glm::length(diff);
@@ -135,7 +134,7 @@ glm::vec3 FluidConstraint::grad(int k, int j) {
     }
     else {
         for (int n: m_neighbours[k]) {
-            p_j = m_particles[n];
+            p_j = m_allParticles->at(n);
             diff = p_i->cpos - p_j->cpos;
             len = glm::length(diff);
             glm::vec3 sg = spikyGrad(diff, len);

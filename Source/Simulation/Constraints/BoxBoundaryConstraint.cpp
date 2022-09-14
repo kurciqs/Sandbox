@@ -44,7 +44,14 @@ void BoxBoundaryConstraint::Project() {
     float ygrad = sign * y0 > sign * y1 ? (y1 - d) : -(y0 - d);
     float zgrad = sign * z0 > sign * z1 ? (z1 - d) : -(z0 - d);
 
+    if (xgrad == 0.0f && ygrad == 0.0f && zgrad == 0.0f) {
+        return;
+    }
     glm::vec3 dir = -glm::normalize( glm::vec3(xgrad, ygrad, zgrad) );
+
+    if (glm::isnan(dir.x) || glm::isnan(dir.y) || glm::isnan(dir.z)) {
+        print_error("NaN detected in BoxBoundaryConstraint!!!!", 0);
+    }
 
     if (!p1->fixed) p1->cpos += SOR_COEF * dir * d * m_stiffness;
 }

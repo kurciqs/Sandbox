@@ -66,5 +66,5 @@ target_link_libraries(${PROJECT_NAME} tinyobjloader)
 add_subdirectory(Libraries/tmd)
 target_link_libraries(${PROJECT_NAME} tmd)
 
-#add_subdirectory(Libraries/imgui)
-#target_link_libraries(${PROJECT_NAME} imgui)
+add_subdirectory(Libraries/imgui)
+target_link_libraries(${PROJECT_NAME} imgui)

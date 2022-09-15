@@ -115,11 +115,12 @@ void RigidBody::UpdateMatrix() {
 
         glm::vec3 p = pt->cpos - centerOfMass;
         glm::vec3 q = offsets[i];
+        glm::mat3 incr = pt->mass * glm::mat3(p.x * q.x, p.y * q.x, p.z * q.x,
+                                            p.x * q.y, p.y * q.y, p.z * q.y,
+                                            p.x * q.z, p.y * q.z, p.z * q.z
+        ); // m * p * qT
 
-        A += pt->mass * glm::mat3(p.x * q.x, p.y * q.x, p.z * q.x,
-                                  p.x * q.y, p.y * q.y, p.z * q.y,
-                                  p.x * q.z, p.y * q.z, p.z * q.z
-                                  ); // m * p * qT
+        A += incr;
     }
 
     glm::mat3 ATA = glm::transpose(A) * A; // A^T * A

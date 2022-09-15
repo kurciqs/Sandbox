@@ -4,9 +4,6 @@ RigidShapeConstraint::RigidShapeConstraint(RigidBody* rb, float k) {
     m_stiffness = 1.0f - powf((1.0f - k), 1.0f / SOLVER_ITERATIONS);
     m_rb = rb;
     m_particles = m_rb->particles; // maybe too optimal
-    for (int i = 0; i < m_particles.size(); i++) {
-        m_distances.push_back(0.0f);
-    }
     IncrementCounts();
 }
 
@@ -16,6 +13,7 @@ void RigidShapeConstraint::Project() {
         Particle* p = m_rb->particles[i];
 
         glm::vec3 target = m_rb->centerOfMass + m_rb->rotation * m_rb->offsets[i];
+
         if (!p->fixed) p->cpos += SOR_COEF * (target - p->cpos) * m_stiffness;
     }
 }

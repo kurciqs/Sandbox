@@ -25,10 +25,8 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             m_constraints.emplace_back();
             m_constraints.emplace_back();
 
-            // the pool object
             AddObject(glm::vec3(0.0f, lowerBoundary.y + 2.0f, 0.0f), "Assets/Models/Test.obj");
 
-            // this would be the particles, which represent a fluid
             std::vector<int> indices;
             for (int i = 0; i < numParticles; i++) {
                 auto *p = new Particle(glm::vec3(rand() % 6 - rand() % 6, -rand() % 15 - 5, rand() % 6 - rand() % 6), glm::vec3(0.1f, 0.4f, 0.8f));
@@ -40,8 +38,6 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             }
 
             m_constraints[STANDARD].push_back( new FluidConstraint(m_particles, indices, 1.0f, 1.0f) );
-
-
         }
             break;
         case ParticleSystemType::Fluid:
@@ -59,7 +55,6 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             }
 
             m_constraints[STANDARD].push_back( new FluidConstraint(m_particles, fluidParticles, 1.0f, 1.0f) );
-
 
             for (Particle* p: m_particles) {
                 m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );

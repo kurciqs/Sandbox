@@ -57,7 +57,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             m_constraints[STANDARD].push_back( new FluidConstraint(m_particles, fluidParticles, 1.0f, 1.0f) );
 
             for (Particle* p: m_particles) {
-                m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
+                m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary / 4.0f, upperBoundary / 4.0f, 1.0f) );
             }
         }
             break;
@@ -300,7 +300,7 @@ void ParticleSystem::AddTorus(glm::vec3 center, glm::vec3 vel, float innerRadius
     float step = 1.0f;
 
     for (float i = -glm::floor(outerRadius) - 2.0f; i < glm::ceil(outerRadius) + 2.0f; i += step) {
-        for (float j = -glm::floor(outerRadius / 2.0f) - 2.0f; j < glm::ceil(outerRadius / 2.0f) + 2.0f; j += step) {
+        for (float j = -glm::floor(outerRadius) - 2.0f; j < glm::ceil(outerRadius) + 2.0f; j += step) {
             for (float k = -glm::floor(outerRadius) - 2.0f; k < glm::ceil(outerRadius) + 2.0f; k += step) {
                 glm::vec3 ppos = glm::vec3(i, j, k) + center;
 

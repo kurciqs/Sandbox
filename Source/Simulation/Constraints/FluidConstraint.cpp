@@ -73,6 +73,7 @@ void FluidConstraint::Project() {
         int i = m_particleIndices[localInd];  // fluid particle index (global)
 
         float lambda_i = m_lambdas[i];
+        glm::vec3 omega(0.0f);
         Particle *p_i = m_allParticles->at(i);
 
         for (int localInd2 = 0; localInd2 < m_neighbours[localInd].size(); localInd2++) {
@@ -89,9 +90,32 @@ void FluidConstraint::Project() {
 
             glm::vec3 incr = (lambda_i + lambda_j + scorr) * spikyGrad(diff, len);
             corr += incr;
+
+            omega += glm::cross(((p_j->cpos - p_j->pos) - (p_i->cpos - p_i->pos)), spikyGrad(p_i->cpos - p_j->cpos, glm::length(p_i->cpos - p_j->cpos)));
         }
 
         m_deltas[localInd] = corr / m_density;
+
+        float omegaLength = glm::fastLength(omega);
+        if (omegaLength == 0.0f) {
+            return;
+        }
+
+        glm::vec3 eta(0.0f);
+        for (int localInd2 = 0; localInd2 < m_neighbours[localInd].size(); localInd2++) {
+            int j = m_neighbours[localInd][localInd2];  // index to localInd's neighbour number localInd2 (global)
+            Particle *p_j = m_allParticles->at(j);
+                glm::vec3 diff = p_i->cpos - p_j->cpos;
+                float l = glm::fastLength(diff);
+                eta += spikyGrad(diff, l) * omegaLength;
+        }
+
+        if (eta.x == 0.0f && eta.y == 0.0f && eta.z == 0.0f) {
+            return;
+        }
+        glm::vec3 N = glm::fastNormalize(eta);
+        float epsilon = 0.1f;
+        p_i->ApplyForce(epsilon * (glm::cross(N, eta)));
     }
 
     for (int localInd = 0; localInd < m_particleIndices.size(); localInd++) {

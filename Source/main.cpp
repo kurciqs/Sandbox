@@ -40,17 +40,16 @@ int main() {
     ImFont* mainFont = io.Fonts->AddFontFromFileTTF(R"(Assets/Fonts/RandyGG.ttf)", 17.0f);
     IM_ASSERT(mainFont != nullptr);
 
-    ParticleSystem particleSystem(500, ParticleSystemType::Pool);
+    ParticleSystem particleSystem(500, ParticleSystemType::Fluid);
 
     float particleSpawnDebounce = 0.2f;
-    bool runSimulation = true;
+    bool runSimulation = false;
     float runSimulationDebounce = 0.1f;
-    bool menu = false;
+    bool menu = true;
     float menuSelectDebounce = 0.5f;
 
     const char* spawnObjectLabels[5] = {"Cube", "Cone", "Cylinder", "Torus", "Ball"};
     int spawnObjectSelected = 0;
-    const char* spawnObjectPreview = " ";
     char spawnObjectPath[MAX_PATH] = " ";
 
     glm::vec3 gravity(0.0f, -9.8f, 0.0f);
@@ -84,17 +83,31 @@ int main() {
         if (menu) {
             ImGui::PushFont(mainFont);
 
-            ImGui::Begin("Simulation parameters");
+            ImGui::Begin("Simulation parameters", nullptr, ImGuiWindowFlags_NoTitleBar);
 
-            // Text that appears in the window
-            ImGui::Text("Press TAB to exit the menu.");
-            ImGui::SliderFloat3("Gravity", &gravity[0], -10.0f, 10.0f);
+            if (ImGui::CollapsingHeader("Controls")) {
+                ImGui::Text("Press WASD to move, Space/LShift to ascend/descend.");
+                ImGui::Text("Press E to spawn object.");
+                ImGui::Text("Press F to spawn single particle.");
+                ImGui::Text("Press T to stop the simulation.");
+                ImGui::Text("Press TAB to exit the menu.");
+                ImGui::Text("Press ESC to exit the application");
+                ImGui::Text("Input path to an obj file into the text box and\npress the Load button to load it into the app.");
+            }
 
-            ImGui::Combo("Select Object to spawn", &spawnObjectSelected, spawnObjectLabels, IM_ARRAYSIZE(spawnObjectLabels));
+            if (ImGui::CollapsingHeader("Settings")) {
+                ImGui::SliderFloat3("Gravity", &gravity[0], -10.0f, 10.0f);
 
-            ImGui::InputText("Load Model", spawnObjectPath, IM_ARRAYSIZE(spawnObjectPath));
+                ImGui::Combo("Select Object", &spawnObjectSelected, spawnObjectLabels, IM_ARRAYSIZE(spawnObjectLabels));
+
+                ImGui::InputText("", spawnObjectPath, IM_ARRAYSIZE(spawnObjectPath));
+                ImGui::SameLine();
+                if (ImGui::Button("Load"))
+                    particleSystem.AddObject(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, spawnObjectPath);
+            }
 
             ImGui::End();
+//            ImGui::ShowDemoWindow();
             ImGui::PopFont();
         }
 
@@ -123,14 +136,13 @@ int main() {
                             particleSystem.AddCube(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 3, 3, 3, RANDOM_COLOR);
                             break;
                         case 1:
-                            particleSystem.AddCone(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, glm::radians(45.0f), 4.0f,
-                                                   RANDOM_COLOR);
+                            particleSystem.AddCone(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, glm::radians(45.0f), 4.0f,RANDOM_COLOR);
                             break;
                         case 2:
                             particleSystem.AddCylinder(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 5.0f, 2.5f, RANDOM_COLOR);
                             break;
                         case 3:
-                            particleSystem.AddTorus(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 1.0f, 4.5f, RANDOM_COLOR);
+                            particleSystem.AddTorus(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 1.25f, 3.0f, RANDOM_COLOR);
                             break;
                         case 4:
                             particleSystem.AddBall(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 3.0f, RANDOM_COLOR);
@@ -143,12 +155,10 @@ int main() {
             }
         }
 
-
         if (menuSelectDebounce < 0.0f && Input::isKeyDown(GLFW_KEY_TAB)) {
             menu = !menu;
             menuSelectDebounce = 0.5f;
         }
-
 
         particleSpawnDebounce -= DELTA_TIME;
         runSimulationDebounce -= DELTA_TIME;

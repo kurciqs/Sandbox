@@ -20,6 +20,6 @@ namespace Generator {
     SDFData SDFCylinder(glm::vec3 p, float h, float r, float step);
     SDFData SDFCone(glm::vec3 p, glm::vec2 c, float h, float step); // // c is the sin/cos of the angle, h is height
 
-    std::vector<RigidBody*> RigidBodiesFromOBJ(const std::string& path, int rigidBodyID, int firstParticleIndex, glm::vec3 offset, glm::vec3 color = glm::vec3(-1.0f), glm::vec3 vel = glm::vec3(0.0f));
+    std::vector<RigidBody*> RigidBodiesFromOBJ(const std::string& path, int rigidBodyID, int firstParticleIndex, glm::vec3 offset, glm::vec3 color = glm::vec3(-1.0f), glm::vec3 vel = glm::vec3(0.0f), float mass = 1.0f);
 }
 #endif //SANDBOX_SDFGENERATOR_H

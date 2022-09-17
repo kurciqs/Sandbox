@@ -14,7 +14,7 @@ void RigidShapeConstraint::Project() {
 
         glm::vec3 target = m_rb->centerOfMass + m_rb->rotation * m_rb->offsets[i];
 
-        if (!p->fixed) p->cpos += SOR_COEF * (target - p->cpos) * m_stiffness;
+        if (!p->fixed) p->cpos += (target - p->cpos) * m_stiffness;
     }
 }
 

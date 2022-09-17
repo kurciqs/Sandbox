@@ -27,15 +27,19 @@
 #define N_CORR 4.0f
 #define MAG_Q_CORR 0.2f
 
-#define S_SOLID 0.2f
+#define VORTICITY_COEF 0.1f
+
+#define S_SOLID 0.0f
 
 class FluidConstraint : public Constraint {
 public:
-    FluidConstraint(std::vector<Particle*>& allParticles, const std::vector<int>& fluidPartilces, float k, float density);
+    FluidConstraint(int ID, std::vector<Particle*>& allParticles, const std::vector<int>& fluidPartilces, float k, float density, float viscosityMag);
     virtual ~FluidConstraint();
 
     void Project() override;
     void Draw(Renderer& renderer) override;
+    void AddParticle(int index);
+    int m_ID;
 private:
     float poly6(float r2);
     glm::vec3 spikyGrad(const glm::vec3& r, float r2);
@@ -47,6 +51,7 @@ private:
     std::vector<glm::vec3> m_deltas;
     std::vector<Particle*>* m_allParticles;
     float m_density;
+    float m_viscosityMag;
 };
 
 

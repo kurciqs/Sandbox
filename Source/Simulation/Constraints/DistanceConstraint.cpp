@@ -23,8 +23,8 @@ void DistanceConstraint::Project() {
     //  ((|p1 −p2| −d)/w1+w2)* ((p1 - p2)/(|p1 − p2|))
     glm::vec3 delta = (distance - m_restDistance) / GetInvMassSum() * (diff / distance) * m_stiffness;
 
-    if (!p1->fixed) p1->cpos += SOR_COEF * -delta * p1->invMass / (float)p1->num_constraints;
-    if (!p2->fixed) p2->cpos += SOR_COEF * delta * p2->invMass / (float)p2->num_constraints;
+    if (!p1->fixed) p1->cpos += -delta * p1->invMass;
+    if (!p2->fixed) p2->cpos += delta * p2->invMass;
 }
 
 void DistanceConstraint::Draw(Renderer& renderer) {

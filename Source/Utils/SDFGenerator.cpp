@@ -44,7 +44,7 @@ namespace Generator {
         return {glm::normalize(glm::vec3(xgrad, ygrad, zgrad)), d};
     }
 
-    std::vector<RigidBody*> RigidBodiesFromOBJ(const std::string& path, int rigidBodyID, int firstParticleIndex, glm::vec3 offset, glm::vec3 color, glm::vec3 vel) {
+    std::vector<RigidBody*> RigidBodiesFromOBJ(const std::string& path, int rigidBodyID, int firstParticleIndex, glm::vec3 offset, glm::vec3 color, glm::vec3 vel, float mass) {
         tinyobj::ObjReaderConfig reader_config;
         reader_config.mtl_search_path = "Assets/Models/"; // Path to material files
 
@@ -159,7 +159,7 @@ namespace Generator {
                         glm::vec3 p(i, j, k);
                         SDFData d = GetData(p);
                         if (d.mag < 0.0f) {
-                            auto* pt = new Particle(p + offset, color);
+                            auto* pt = new Particle(p + offset, color, mass);
                             pt->radius = step / 2.0f;
                             auto dataAtPos = sdfAndMats[p];
                             if (color == glm::vec3(-1.0f)) {

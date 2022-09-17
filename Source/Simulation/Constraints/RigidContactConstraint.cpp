@@ -60,8 +60,8 @@ void RigidContactConstraint::Project() {
     float oneOverWSum = 1.0f / GetInvMassSum();
     glm::vec3 dlt = oneOverWSum * mag * contactNormal;
 
-    if (!p1->fixed) p1->cpos -= dlt * p1->invMass / (float)p1->num_constraints;
-    if (!p2->fixed) p2->cpos += dlt * p2->invMass / (float)p2->num_constraints;
+    if (!p1->fixed) p1->cpos -= dlt * p1->invMass;
+    if (!p2->fixed) p2->cpos += dlt * p2->invMass;
 
     glm::vec3 frictionNormal = glm::normalize(contactNormal);
     glm::vec3 velocityDiff = (p1->cpos - p1->pos) - (p2->cpos - p2->pos);

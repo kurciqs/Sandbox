@@ -53,7 +53,23 @@ void BoxBoundaryConstraint::Project() {
         print_error("NaN detected in BoxBoundaryConstraint!!!!", 0);
     }
 
-    if (!p1->fixed) p1->cpos += SOR_COEF * dir * d * m_stiffness;
+    glm::vec3 corr = dir * d;
+    if (!p1->fixed) p1->cpos += corr * m_stiffness;
+
+    glm::vec3 dpt = corr - glm::dot(corr, -dir) * -dir;
+    float ldpt = glm::length(dpt);
+
+    if (ldpt < EPSILON) {
+        return;
+    }
+
+    // Choose between static and kinetic friction
+    if (ldpt*ldpt < STATIC_FRICTION_COEF * p1->radius * p1->radius) {
+        p1->cpos -= dpt;
+    }
+    else {
+        p1->cpos -= dpt * glm::min(glm::sqrt(KINETIC_FRICTION_COEF) * d / ldpt, 1.0f);
+    }
 }
 
 void BoxBoundaryConstraint::Draw(Renderer &renderer) {

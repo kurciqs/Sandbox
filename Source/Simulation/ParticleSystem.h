@@ -21,7 +21,6 @@
 #define k_contact 1.0f
 #define k_shape 1.0f
 
-#define GRAVITY
 #define PARTICLE_SLEEPING_EPSILON 0.001f
 
 static glm::vec3 lowerBoundary( -20.f);
@@ -37,6 +36,7 @@ enum ParticleSystemType {
 enum ConstraintGroupEnum {
     CONTACT,
     SHAPE,
+    FLUID,
     STANDARD
 };
 
@@ -48,23 +48,22 @@ public:
     void Draw(Renderer& renderer);
     void Clear();
     void Destroy();
-    void ApplyGForce(glm::vec3 f);
     void SetGlobalForce(glm::vec3 g);
 
     void AddParticle(glm::vec3 pos, glm::vec3 vel, glm::vec3 color, float r);
-    void AddObject(glm::vec3 offset, const std::string& fileToObj, glm::vec3 color = glm::vec3(-1.0f), glm::vec3 vel = glm::vec3(0.0f));
+    void AddObject(glm::vec3 offset, const std::string& fileToObj, glm::vec3 color = glm::vec3(-1.0f), glm::vec3 vel = glm::vec3(0.0f), float mass = 1.0f);
 
-    void AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height, int depth, glm::vec3 color);
-    void AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm::vec3 color);
-    void AddTorus(glm::vec3 center, glm::vec3 vel, float innerRadius, float outerRadius, glm::vec3 color);
-    void AddCylinder(glm::vec3 center, glm::vec3 vel, float height, float radius, glm::vec3 color);
-    void AddCone(glm::vec3 center, glm::vec3 vel, float angle, float height, glm::vec3 color);
+    void AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height, int depth, glm::vec3 color, float mass = 1.0f);
+    void AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm::vec3 color, float mass = 1.0f);
+    void AddTorus(glm::vec3 center, glm::vec3 vel, float innerRadius, float outerRadius, glm::vec3 color, float mass = 1.0f);
+    void AddCylinder(glm::vec3 center, glm::vec3 vel, float height, float radius, glm::vec3 color, float mass = 1.0f);
+    void AddCone(glm::vec3 center, glm::vec3 vel, float angle, float height, glm::vec3 color, float mass = 1.0f);
 private:
     std::vector<Particle*> m_particles;
     std::vector<ConstraintGroup> m_constraints;
 
     std::vector<RigidBody*> m_rigidBodies;
-
+    int m_numFluids = 0;
     glm::vec3 m_globalForce{0.0f, -9.8f, 0.0f}; // gravity
 };
 

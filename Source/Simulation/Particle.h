@@ -4,7 +4,6 @@
 #include "glm/vec3.hpp"
 #include <cmath>
 #include "Utils/Utils.h"
-#define SOR_COEF 1.0f
 #define STATIC_FRICTION_COEF 0.1f
 #define KINETIC_FRICTION_COEF 0.25f
 
@@ -23,6 +22,7 @@ struct Particle {
     glm::vec3 vel{0.0f};
     glm::vec3 color{1.0f};
     glm::vec3 force{0.0f};
+    glm::vec3 viscosity{0.0f};
     float radius;
     float mass;
     float invMass;

@@ -21,6 +21,12 @@
 #define H6 64.0f
 #define H9 512.0f
 
+//#define H 0.1f
+//#define H2 0.01f
+//#define H6 1e-06f
+//#define H9 1e-09f
+
+
 #define EPSILON_RELAX 0.01f
 
 #define K_CORR 0.1f

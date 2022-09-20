@@ -39,7 +39,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
                 m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
             }
 
-            m_constraints[STANDARD].push_back( new FluidConstraint(m_numFluids++, m_particles, indices, 1.0f, 1.0f, 0.05f) );
+            m_constraints[STANDARD].push_back( new FluidConstraint(m_numFluids++, m_particles, indices, 0.5f, 1.0f, 0.05f) );
         }
             break;
         case ParticleSystemType::Fluid:
@@ -66,7 +66,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
                                                                                        lowerBoundary.y,
                                                                                        lowerBoundary.z / invContainerSize),
                                                                              glm::vec3(upperBoundary.x / invContainerSize,
-                                                                                       lowerBoundary.y + upperBoundary.y / invContainerSize,
+                                                                                       0.0f,
                                                                                        upperBoundary.z / invContainerSize),
                                                                                        1.0f) );
             }

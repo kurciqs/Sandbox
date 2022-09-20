@@ -67,7 +67,11 @@ void FluidConstraint::Project() {
         glm::vec3 corr(0.0f);
         for (int j: m_neighbours[k]) {
             Particle* p_j = m_allParticles->at(j);
+            if (p_j->phase == Solid) {
+                continue;
+            }
             float lambda_j = m_lambdas[j];
+
             glm::vec3 diff = p_i->cpos - p_j->cpos;
 
             float scorr = -K_CORR * glm::pow(poly6(diff) / corrW, N_CORR);

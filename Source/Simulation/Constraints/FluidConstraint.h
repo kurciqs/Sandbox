@@ -35,7 +35,7 @@
 
 #define VORTICITY_COEF 0.1f
 
-#define S_SOLID 0.f
+#define S_SOLID 0.1f
 
 static float k_Poly6 = (315.0f / (64.0f * (float)M_PI * H9));
 static float k_SpikyGrad = (45.0f / ((float)M_PI * H6));

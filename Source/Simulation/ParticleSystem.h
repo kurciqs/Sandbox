@@ -30,7 +30,8 @@ using ConstraintGroup = std::vector<Constraint*>;
 enum ParticleSystemType {
     Testing,
     Pool,
-    Fluid
+    Fluid,
+    Cloth
 };
 
 enum ConstraintGroupEnum {

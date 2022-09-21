@@ -27,9 +27,9 @@ void FluidConstraint::Project() {
     for (int k = 0; k < m_particleIndices.size(); k++) {
         m_neighbours[k].clear();
         int i = m_particleIndices[k];
-        Particle* p_i = m_allParticles->at(i);
+        Particle *p_i = m_allParticles->at(i);
         for (int j = 0; j < m_allParticles->size(); j++) {
-            Particle* p_j = m_allParticles->at(j);
+            Particle *p_j = m_allParticles->at(j);
             glm::vec3 diff = p_i->cpos - p_j->cpos;
             float d2 = glm::dot(diff, diff);
             if (d2 < H2) {
@@ -41,11 +41,11 @@ void FluidConstraint::Project() {
     m_lambdas.clear();
     for (int k = 0; k < m_particleIndices.size(); k++) {
         int i = m_particleIndices[k];
-        Particle* p_i = m_allParticles->at(i);
+        Particle *p_i = m_allParticles->at(i);
         float density_i = 0.0f;
         float denom_i = 0.0f;
         for (int j: m_neighbours[k]) {
-            Particle* p_j = m_allParticles->at(j);
+            Particle *p_j = m_allParticles->at(j);
 
             glm::vec3 r = p_i->cpos - p_j->cpos;
             density_i += (p_j->phase == Phase::Solid ? S_SOLID : 1.0f) * p_j->mass * poly6(r);
@@ -60,13 +60,13 @@ void FluidConstraint::Project() {
 
     for (int k = 0; k < m_particleIndices.size(); k++) {
         int i = m_particleIndices[k];
-        Particle* p_i = m_allParticles->at(i);
+        Particle *p_i = m_allParticles->at(i);
         float lambda_i = m_lambdas[i];
 
         const float corrW = poly6(glm::vec3(MAG_Q_CORR, 0.0f, 0.0f) * H);
         glm::vec3 corr(0.0f);
         for (int j: m_neighbours[k]) {
-            Particle* p_j = m_allParticles->at(j);
+            Particle *p_j = m_allParticles->at(j);
             if (p_j->phase == Solid) {
                 continue;
             }
@@ -85,38 +85,27 @@ void FluidConstraint::Project() {
         int i = m_particleIndices[k];
         Particle *p_i = m_allParticles->at(i);
         glm::vec3 delta = m_stiffness * m_deltas[k];
-//        printVec3(delta);
-        if (!p_i->fixed) p_i->cpos += delta / (float)m_neighbours[k].size();
+        if (!p_i->fixed) p_i->cpos += delta / (float) m_neighbours[k].size();
     }
 
     // viscosity / vorticity
 
-   /* for (int localInd = 0; localInd < m_particleIndices.size(); localInd++) {
-        glm::vec3 corr(0.0f);
-        int i = m_particleIndices[localInd];  // fluid particle index (global)
-
-        glm::vec3 omega(0.0f);
-        glm::vec3 viscosity(0.0f);
+//    std::unordered_map<int, float> densities;
+    for (int k = 0; k < m_particleIndices.size(); k++) {
+        int i = m_particleIndices[k];
         Particle *p_i = m_allParticles->at(i);
 
-        for (int localInd2 = 0; localInd2 < m_neighbours[localInd].size(); localInd2++) {
-            int j = m_neighbours[localInd][localInd2];  // index to localInd's neighbour number localInd2 (global)
-
-            if (i == j) continue;
-
+        glm::vec3 omega(0.0f);
+        glm::vec3 vnew(0.0f);
+        for (int j: m_neighbours[k]) {
             Particle *p_j = m_allParticles->at(j);
-            if (p_j->phase == Phase::Liquid) {
-                glm::vec3 velDiff = ((p_j->cpos - p_j->pos) - (p_i->cpos - p_i->pos));
-                glm::vec3 posDiff = p_i->cpos - p_j->cpos;
-                float posDiffLength = glm::length(posDiff);
 
-                omega += glm::cross(velDiff, spikyGrad(posDiff, posDiffLength));
-
-                viscosity += velDiff * poly6(posDiffLength);
-            }
+//            vnew += (p_i->mass / densities[j]) * poly6(p_i->cpos - p_j->cpos) * (p_j->vel - p_i->vel);
+            vnew += poly6(p_i->cpos - p_j->cpos) * (p_j->vel - p_i->vel);
+            omega += glm::cross((p_j->vel - p_i->vel), spikyGrad((p_i->cpos - p_j->cpos)));
         }
 
-//        p_i->viscosity = viscosity * m_viscosityMag;
+        p_i->viscosity = vnew * m_viscosityMag;
 
         float omegaLength = glm::fastLength(omega);
         if (omegaLength == 0.0f) {
@@ -124,22 +113,21 @@ void FluidConstraint::Project() {
         }
 
         glm::vec3 eta(0.0f);
-        for (int localInd2 = 0; localInd2 < m_neighbours[localInd].size(); localInd2++) {
-            int j = m_neighbours[localInd][localInd2];  // index to localInd's neighbour number localInd2 (global)
+        for (int j: m_neighbours[k]) {
             Particle *p_j = m_allParticles->at(j);
-            if (p_j->phase == Phase::Liquid) {
-                glm::vec3 diff = p_i->cpos - p_j->cpos;
-                float l = glm::fastLength(diff);
-                eta += spikyGrad(diff, l) * omegaLength;
+            if (p_j->phase == Solid) {
+                continue;
             }
+            glm::vec3 diff = p_i->cpos - p_j->cpos;
+            eta += spikyGrad(diff) * omegaLength;
         }
 
         if (eta.x == 0.0f && eta.y == 0.0f && eta.z == 0.0f) {
             return;
         }
         glm::vec3 N = glm::fastNormalize(eta);
-//        p_i->ApplyForce(VORTICITY_COEF * (glm::cross(N, eta)));
-    }*/
+        p_i->ApplyForce(VORTICITY_COEF * (glm::cross(N, eta)));
+    }
 }
 
 void FluidConstraint::Draw(Renderer &renderer) {
@@ -152,7 +140,7 @@ void FluidConstraint::Draw(Renderer &renderer) {
 }
 
 float FluidConstraint::poly6(const glm::vec3& r) {
-    float rlen = glm::length(r);
+    float rlen = glm::fastLength(r);
     if (rlen > H || rlen == 0.0f) {
         return 0.0f;
     }
@@ -162,7 +150,7 @@ float FluidConstraint::poly6(const glm::vec3& r) {
 }
 
 glm::vec3 FluidConstraint::spikyGrad(const glm::vec3 &r) {
-    float rlen = glm::length(r);
+    float rlen = glm::fastLength(r);
     if (rlen > H) {
         return glm::vec3(0.0f);
     }

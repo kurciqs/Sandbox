@@ -15,6 +15,10 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
                 m_particles.push_back(p);
             }
 
+            for (float i = -10.0f; i < 10.0f; i += 4.0f) {
+                AddTorus(glm::vec3(0.0f, i, 0.0f), glm::vec3(0.0f), 1.25f, 3.0f, glm::vec3(0.1f, 0.3f, 0.9f) + RANDOM_COLOR / 3.0f);
+            }
+
             for (Particle* p: m_particles) {
                 m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
             }
@@ -39,7 +43,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
                 m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
             }
 
-            m_constraints[STANDARD].push_back( new FluidConstraint(m_numFluids++, m_particles, indices, 0.5f, 1.0f, 0.05f) );
+            m_constraints[STANDARD].push_back( new FluidConstraint(m_numFluids++, m_particles, indices, 0.5f, 1.0f, 0.0001f) );
         }
             break;
         case ParticleSystemType::Fluid:
@@ -50,7 +54,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             m_constraints.emplace_back();
 
             std::vector<int> fluidParticles;
-            float invContainerSize = 3.5f;
+            float invContainerSize = 3.25f;
             for (int i = 0; i < numParticles; i++) {
                 auto* p = new Particle( (RANDOM_COLOR - RANDOM_COLOR) * 2.0f + glm::vec3(0.0f, lowerBoundary.y + upperBoundary.y / (invContainerSize * 2.0f), 0.0f), glm::vec3(0.1f, 0.4f, 0.8f) );
                 p->phase = Phase::Liquid;
@@ -69,6 +73,43 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
                                                                                        0.0f,
                                                                                        upperBoundary.z / invContainerSize),
                                                                                        1.0f) );
+            }
+        }
+            break;
+        case ParticleSystemType::Cloth:
+        {
+            m_constraints.emplace_back();
+            m_constraints.emplace_back();
+            m_constraints.emplace_back();
+            m_constraints.emplace_back();
+
+            float clothWidth = 4.0f;
+            float clothHeight = 6.0f;
+
+            std::vector<glm::vec3> vertices;
+            for (float x = -clothWidth / 2.0f; x < clothWidth / 2.0f; x += 1.0f) {
+                for (float y = -clothHeight / 2.0f; y < clothHeight / 2.0f; y += 1.0f) {
+                    vertices.emplace_back(x, y, 0.0f);
+                }
+            }
+
+            for (int i = 0; i < int(clothWidth * clothHeight); i++) {
+                auto* p = new Particle( vertices[i], glm::vec3(0.1f, 0.8f, 0.1f) );
+                p->fixed = (int)((float)i - clothHeight + 1.0f) % (int)clothHeight == 0;
+                m_particles.push_back(p);
+            }
+
+            for (int i = 0; i < m_particles.size(); i++) {
+                if (i == (int)((clothWidth - 1.0f) * clothHeight)) {
+                    m_particles[i]->fixed = true;
+                }
+                else if (i % (int)clothHeight == 0) {
+                    m_particles[i]->fixed = true;
+                }
+            }
+
+            for (Particle* p: m_particles) {
+                m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
             }
         }
             break;
@@ -317,7 +358,7 @@ void ParticleSystem::AddTorus(glm::vec3 center, glm::vec3 vel, float innerRadius
         for (float j = -glm::floor(outerRadius) - 2.0f; j < glm::ceil(outerRadius) + 2.0f; j += step) {
             for (float k = -glm::floor(outerRadius) - 2.0f; k < glm::ceil(outerRadius) + 2.0f; k += step) {
                 glm::vec3 ppos = glm::vec3(i, j, k) + center;
-
+//                printVec3(ppos);
                 SDFData d = Generator::SDFTorus(ppos - center, glm::vec2(outerRadius, innerRadius), step);
                 if (d.mag >= 0.0f) {
                     continue;

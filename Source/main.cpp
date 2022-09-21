@@ -40,7 +40,7 @@ int main() {
     ImFont* mainFont = io.Fonts->AddFontFromFileTTF(R"(Assets/Fonts/RandyGG.ttf)", 17.0f);
     IM_ASSERT(mainFont != nullptr);
 
-    ParticleSystem particleSystem(500, ParticleSystemType::Pool);
+    ParticleSystem particleSystem(500, ParticleSystemType::Cloth);
 
     float particleSpawnDebounce = 0.2f;
     bool runSimulation = false;
@@ -54,7 +54,7 @@ int main() {
     float spawnObjectMass = 1.0f;
     glm::vec3 spawnObjectColor = RANDOM_COLOR;
 
-    glm::vec3 gravity(0.0f, -9.8f, 0.0f);
+    glm::vec3 gravity(0.0f, -10.0f, 0.0f);
 
     renderer.Update(DELTA_TIME);
     while (!window.ShouldClose()) {
@@ -89,16 +89,6 @@ int main() {
 
             ImGui::Begin("Simulation parameters", nullptr, ImGuiWindowFlags_NoTitleBar);
 
-            if (ImGui::CollapsingHeader("Controls")) {
-                ImGui::Text("Press WASD to move, Space/LShift to ascend/descend.");
-                ImGui::Text("Press E to spawn object.");
-                ImGui::Text("Press F to spawn single particle.");
-                ImGui::Text("Press T to stop the simulation.");
-                ImGui::Text("Press TAB to exit the menu.");
-                ImGui::Text("Press ESC to exit the application");
-                ImGui::Text("Input path to an obj file into the text box and\npress the Load button to load it into the app.");
-            }
-
             if (ImGui::CollapsingHeader("Options")) {
                 ImGui::SliderFloat3("Gravity", &gravity[0], -10.0f, 10.0f);
                 if (ImGui::CollapsingHeader("Spawn object")) {
@@ -111,6 +101,16 @@ int main() {
                     if (ImGui::Button("Load"))
                         particleSystem.AddObject(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, spawnObjectPath);
                 }
+            }
+
+            if (ImGui::CollapsingHeader("Controls")) {
+                ImGui::Text("Press WASD to move, Space/LShift to ascend/descend.");
+                ImGui::Text("Press E to spawn object.");
+                ImGui::Text("Press F to spawn single particle.");
+                ImGui::Text("Press T to stop the simulation.");
+                ImGui::Text("Press TAB to exit the menu.");
+                ImGui::Text("Press ESC to exit the application");
+                ImGui::Text("Input path to an obj file into the text box and\npress the Load button to load it into the app.");
             }
 
             ImGui::End();

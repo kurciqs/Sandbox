@@ -59,12 +59,13 @@ public:
     void AddTorus(glm::vec3 center, glm::vec3 vel, float innerRadius, float outerRadius, glm::vec3 color, float mass = 1.0f);
     void AddCylinder(glm::vec3 center, glm::vec3 vel, float height, float radius, glm::vec3 color, float mass = 1.0f);
     void AddCone(glm::vec3 center, glm::vec3 vel, float angle, float height, glm::vec3 color, float mass = 1.0f);
+    void EmitFluidParticle(int ID, glm::vec3 pos, glm::vec3 vel, glm::vec3 color);
+    void UpdateFluidViscosity(float v);
 private:
     std::vector<Particle*> m_particles;
     std::vector<ConstraintGroup> m_constraints;
 
     std::vector<RigidBody*> m_rigidBodies;
-    int m_numFluids = 0;
     glm::vec3 m_globalForce{0.0f, -9.8f, 0.0f}; // gravity
 };
 

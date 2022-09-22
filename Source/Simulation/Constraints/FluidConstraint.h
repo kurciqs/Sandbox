@@ -49,6 +49,7 @@ public:
     void Draw(Renderer& renderer) override;
     void AddParticle(int index);
     int m_ID;
+    float m_viscosityMag;
 private:
     float poly6(const glm::vec3& r);
     glm::vec3 spikyGrad(const glm::vec3& r);
@@ -60,7 +61,6 @@ private:
     std::vector<glm::vec3> m_deltas;
     std::vector<Particle*>* m_allParticles;
     float m_density;
-    float m_viscosityMag;
 };
 
 

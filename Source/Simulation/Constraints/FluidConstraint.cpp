@@ -179,7 +179,7 @@ glm::vec3 FluidConstraint::grad(int k, int j) {
 
 void FluidConstraint::AddParticle(int index) {
     m_particleIndices.push_back(index);
-    m_allParticles->at(index)->num_constraints++;
+//    m_allParticles->at(index)->num_constraints++; // TODO
     m_neighbours.emplace_back(); // empty vector
     m_lambdas.emplace(index, 0.0f);
     m_deltas.emplace_back(0.0f);

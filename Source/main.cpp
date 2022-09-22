@@ -40,7 +40,7 @@ int main() {
     ImFont* mainFont = io.Fonts->AddFontFromFileTTF(R"(Assets/Fonts/RandyGG.ttf)", 17.0f);
     IM_ASSERT(mainFont != nullptr);
 
-    ParticleSystem particleSystem(500, ParticleSystemType::Cloth);
+    ParticleSystem particleSystem(400, ParticleSystemType::Pool);
 
     float particleSpawnDebounce = 0.2f;
     bool runSimulation = false;
@@ -141,6 +141,8 @@ int main() {
             if (particleSpawnDebounce < 0.0f) {
                 if (Input::isKeyDown(GLFW_KEY_F))
                     particleSystem.AddParticle(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, spawnObjectColor, 0.5f);
+                else if (Input::isKeyDown(GLFW_KEY_Q))
+                    particleSystem.EmitFluidParticle(0, renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, spawnObjectColor);
                 else if (Input::isKeyDown(GLFW_KEY_E)) {
                     switch (spawnObjectSelected) {
                         case 0:

@@ -43,7 +43,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
                 m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
             }
 
-            m_constraints[STANDARD].push_back( new FluidConstraint(m_numFluids++, m_particles, indices, 0.5f, 1.0f, 0.0001f) );
+            m_constraints[FLUID].push_back( new FluidConstraint(m_constraints[FLUID].size(), m_particles, indices, 0.5f, 1.0f, 0.0001f) );
         }
             break;
         case ParticleSystemType::Fluid:
@@ -62,7 +62,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
                 m_particles.push_back(p);
             }
 
-            m_constraints[FLUID].push_back( new FluidConstraint(m_numFluids++, m_particles, fluidParticles, 1.0f, 1.0f, 0.01f) );
+            m_constraints[FLUID].push_back( new FluidConstraint(m_constraints[FLUID].size(), m_particles, fluidParticles, 1.0f, 1.0f, 0.01f) );
 
             for (Particle* p: m_particles) {
                 m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p,
@@ -456,4 +456,18 @@ void ParticleSystem::AddCone(glm::vec3 center, glm::vec3 vel, float angle /*radi
 
 void ParticleSystem::SetGlobalForce(glm::vec3 g) {
     m_globalForce = g;
+}
+
+void ParticleSystem::EmitFluidParticle(int ID, glm::vec3 pos, glm::vec3 vel, glm::vec3 color) {
+    if (ID >= m_constraints[FLUID].size()) {
+        return;
+    }
+
+    auto* fluidConstraint = (FluidConstraint*)m_constraints[FLUID][ID];
+    auto* p = new Particle( pos, color );
+    p->vel = vel;
+    p->phase = Phase::Liquid;
+
+    fluidConstraint->AddParticle((int)m_particles.size());
+    m_particles.push_back(p);
 }

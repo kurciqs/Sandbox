@@ -75,9 +75,9 @@ int main() {
         // Draw the ground
         renderer.DrawTriangle(lowerBoundary, glm::vec3(lowerBoundary.x, lowerBoundary.y, upperBoundary.z), glm::vec3(upperBoundary.x, lowerBoundary.y, upperBoundary.z), glm::vec3(0.4f));
         renderer.DrawTriangle(lowerBoundary, glm::vec3(upperBoundary.x, lowerBoundary.y, lowerBoundary.z), glm::vec3(upperBoundary.x, lowerBoundary.y, upperBoundary.z), glm::vec3(0.4f));
-        renderer.DrawLine(glm::vec3(0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        renderer.DrawLine(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        renderer.DrawLine(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+//        renderer.DrawLine(glm::vec3(0.0f), glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+//        renderer.DrawLine(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+//        renderer.DrawLine(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
         if (!menu) {
             renderer.Update(DELTA_TIME);
@@ -101,12 +101,16 @@ int main() {
                     if (ImGui::Button("Load"))
                         particleSystem.AddObject(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, spawnObjectPath);
                 }
+                if (ImGui::CollapsingHeader("Emit fluid")) {
+                    // TODO
+                }
             }
 
             if (ImGui::CollapsingHeader("Controls")) {
                 ImGui::Text("Press WASD to move, Space/LShift to ascend/descend.");
                 ImGui::Text("Press E to spawn object.");
                 ImGui::Text("Press F to spawn single particle.");
+                ImGui::Text("Press Q to emit fluid.");
                 ImGui::Text("Press T to stop the simulation.");
                 ImGui::Text("Press TAB to exit the menu.");
                 ImGui::Text("Press ESC to exit the application");

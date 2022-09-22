@@ -17,6 +17,7 @@
 ![Stacked Donuts](Assets/Images/Donuts.png "Stacked Donuts")
 ![Fluid](Assets/Images/Fluid.png "Fluid")
 ![UI_Showcase](Assets/Images/UI_Showcase.png "UI_Showcase")
+![Cloth](Assets/Images/Cloth.png "Cloth")
 
 ### References
 *  M. Macklin, M. Müller, N. Chentanez and T.Y. Kim, "Unified particle physics for real-time applications", ACM Trans. Graph. 33, 4, 2014

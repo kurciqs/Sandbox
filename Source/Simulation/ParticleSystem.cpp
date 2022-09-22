@@ -83,8 +83,8 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             m_constraints.emplace_back();
             m_constraints.emplace_back();
 
-            float clothWidth = 4.0f;
-            float clothHeight = 6.0f;
+            float clothWidth = 7.0f;
+            float clothHeight = 9.0f;
 
             std::vector<glm::vec3> vertices;
             for (float x = -clothWidth / 2.0f; x < clothWidth / 2.0f; x += 1.0f) {
@@ -94,17 +94,24 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             }
 
             for (int i = 0; i < int(clothWidth * clothHeight); i++) {
-                auto* p = new Particle( vertices[i], glm::vec3(0.1f, 0.8f, 0.1f) );
+                auto* p = new Particle( vertices[i], glm::vec3(0.03f, 0.5f, 0.34f) );
                 p->fixed = (int)((float)i - clothHeight + 1.0f) % (int)clothHeight == 0;
                 m_particles.push_back(p);
             }
 
             for (int i = 0; i < m_particles.size(); i++) {
                 if (i == (int)((clothWidth - 1.0f) * clothHeight)) {
-                    m_particles[i]->fixed = true;
+                    continue;
                 }
                 else if (i % (int)clothHeight == 0) {
-                    m_particles[i]->fixed = true;
+                    m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i + (int)clothHeight], 0.5f, 1.0f));
+                }
+                else if (i > (int)((clothWidth - 1.0f) * clothHeight)) {
+                    m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i - 1], 0.5f, 1.0f));
+                }
+                else {
+                    m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i + (int)clothHeight], 0.5f, 1.0f));
+                    m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i - 1], 0.5f, 1.0f));
                 }
             }
 

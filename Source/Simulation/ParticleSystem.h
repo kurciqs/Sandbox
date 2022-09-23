@@ -52,15 +52,17 @@ public:
     void SetGlobalForce(glm::vec3 g);
 
     void AddParticle(glm::vec3 pos, glm::vec3 vel, glm::vec3 color, float r);
-    void AddObject(glm::vec3 offset, const std::string& fileToObj, glm::vec3 color = glm::vec3(-1.0f), glm::vec3 vel = glm::vec3(0.0f), float mass = 1.0f);
+    void AddObject(glm::vec3 offset, const std::string& fileToObj, float mass = 1.0f, bool fixed = false, glm::vec3 color = glm::vec3(-1.0f), glm::vec3 vel = glm::vec3(0.0f));
 
-    void AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height, int depth, glm::vec3 color, float mass = 1.0f);
-    void AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm::vec3 color, float mass = 1.0f);
-    void AddTorus(glm::vec3 center, glm::vec3 vel, float innerRadius, float outerRadius, glm::vec3 color, float mass = 1.0f);
-    void AddCylinder(glm::vec3 center, glm::vec3 vel, float height, float radius, glm::vec3 color, float mass = 1.0f);
-    void AddCone(glm::vec3 center, glm::vec3 vel, float angle, float height, glm::vec3 color, float mass = 1.0f);
-    void EmitFluidParticle(int ID, glm::vec3 pos, glm::vec3 vel, glm::vec3 color);
-    void UpdateFluidViscosity(float v);
+    void AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height, int depth, glm::vec3 color, float mass = 1.0f, bool fixed = false);
+    void AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm::vec3 color, float mass = 1.0f, bool fixed = false);
+    void AddTorus(glm::vec3 center, glm::vec3 vel, float innerRadius, float outerRadius, glm::vec3 color, float mass = 1.0f, bool fixed = false);
+    void AddCylinder(glm::vec3 center, glm::vec3 vel, float height, float radius, glm::vec3 color, float mass = 1.0f, bool fixed = false);
+    void AddCone(glm::vec3 center, glm::vec3 vel, float angle, float height, glm::vec3 color, float mass = 1.0f, bool fixed = false);
+    int AddFluid(int numParticles, float spawnRadius, glm::vec3 offset, glm::vec3 color, float viscosity);
+    void EmitFluidParticle(int ID, glm::vec3 pos, glm::vec3 vel);
+    void UpdateFluidViscosity(int ID, float v);
+    int GetFluidAmount();
 private:
     std::vector<Particle*> m_particles;
     std::vector<ConstraintGroup> m_constraints;

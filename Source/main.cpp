@@ -40,9 +40,10 @@ int main() {
     ImFont* mainFont = io.Fonts->AddFontFromFileTTF(R"(Assets/Fonts/RandyGG.ttf)", 17.0f);
     IM_ASSERT(mainFont != nullptr);
 
-    ParticleSystem particleSystem(400, ParticleSystemType::Pool);
+    ParticleSystem particleSystem(200, ParticleSystemType::Cloth);
 
     float particleSpawnDebounce = 0.2f;
+    float fluidSpawnDebounce = 0.2f;
     bool runSimulation = false;
     float runSimulationDebounce = 0.1f;
     bool menu = true;
@@ -52,7 +53,15 @@ int main() {
     int spawnObjectSelected = 0;
     char spawnObjectPath[MAX_PATH] = "";
     float spawnObjectMass = 1.0f;
+    bool spawnObjectFixed = false;
     glm::vec3 spawnObjectColor = RANDOM_COLOR;
+
+    float spawnFluidViscosity = 0.01f;
+    int spawnFluidParticleSize = 100;
+    glm::vec3 spawnFluidOffset(0.0f);
+    glm::vec3 spawnFluidColor = RANDOM_COLOR;
+
+    int emitFluidID = -1;
 
     glm::vec3 gravity(0.0f, -10.0f, 0.0f);
 
@@ -95,14 +104,26 @@ int main() {
                     ImGui::Combo("Select object", &spawnObjectSelected, spawnObjectLabels, IM_ARRAYSIZE(spawnObjectLabels));
                     ImGui::SliderFloat("Object mass", &spawnObjectMass, 0.1f, 25.0f);
                     ImGui::ColorEdit3("Object color", &spawnObjectColor[0]);
-
+                    ImGui::Checkbox("Object fixed", &spawnObjectFixed);
                     ImGui::InputText("", spawnObjectPath, IM_ARRAYSIZE(spawnObjectPath));
                     ImGui::SameLine();
                     if (ImGui::Button("Load"))
-                        particleSystem.AddObject(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, spawnObjectPath);
+                        particleSystem.AddObject(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, spawnObjectPath, spawnObjectMass, spawnObjectFixed);
                 }
                 if (ImGui::CollapsingHeader("Emit fluid")) {
-                    // TODO
+                    if (particleSystem.GetFluidAmount() > 0)
+                        ImGui::SliderInt("Choose fluid ID to emit", &emitFluidID, 0, particleSystem.GetFluidAmount() - 1 );
+                    else
+                        ImGui::SliderInt("Choose fluid ID to emit", &emitFluidID, -1, -1 );
+                }
+                if (ImGui::CollapsingHeader("Spawn fluid")) {
+                    ImGui::ColorEdit3("Fluid color", &spawnFluidColor[0]);
+                    ImGui::SliderFloat3("Fluid offset", &spawnFluidOffset[0], glm::compMin(lowerBoundary), glm::compMin(upperBoundary));
+                    ImGui::SliderFloat("Fluid viscosity", &spawnFluidViscosity, 0.0f, 1.25f);
+                    ImGui::SliderInt("Fluid particle amount", &spawnFluidParticleSize, 0, 500);
+
+                    if (ImGui::Button("Spawn"))
+                        particleSystem.AddFluid(spawnFluidParticleSize, 5.0f, spawnFluidOffset, spawnFluidColor, spawnFluidViscosity);
                 }
             }
 
@@ -138,27 +159,33 @@ int main() {
                 runSimulation = !runSimulation;
                 runSimulationDebounce = 0.5f;
             }
+            if (Input::isKeyDown(GLFW_KEY_Q) && fluidSpawnDebounce < 0.0f) {
+                for (float i = -1.0f; i <= 1.0f; i += 1.0f) {
+                    for (float j = -1.0f; j <= 1.0f; j += 1.0f) {
+                        particleSystem.EmitFluidParticle(emitFluidID, renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f + glm::vec3(i, j, 0.0f), renderer.GetCameraOrientation() * 20.0f);
+                    }
+                }
+                fluidSpawnDebounce = 0.05f;
+            }
             if (particleSpawnDebounce < 0.0f) {
                 if (Input::isKeyDown(GLFW_KEY_F))
                     particleSystem.AddParticle(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, spawnObjectColor, 0.5f);
-                else if (Input::isKeyDown(GLFW_KEY_Q))
-                    particleSystem.EmitFluidParticle(0, renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, spawnObjectColor);
                 else if (Input::isKeyDown(GLFW_KEY_E)) {
                     switch (spawnObjectSelected) {
                         case 0:
-                            particleSystem.AddCube(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 3, 3, 3, spawnObjectColor, spawnObjectMass);
+                            particleSystem.AddCube(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 3, 3, 3, spawnObjectColor, spawnObjectMass, spawnObjectFixed);
                             break;
                         case 1:
-                            particleSystem.AddCone(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, glm::radians(30.0f), 6.0f,spawnObjectColor, spawnObjectMass);
+                            particleSystem.AddCone(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, glm::radians(30.0f), 6.0f,spawnObjectColor, spawnObjectMass, spawnObjectFixed);
                             break;
                         case 2:
-                            particleSystem.AddCylinder(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 5.0f, 2.5f, spawnObjectColor, spawnObjectMass);
+                            particleSystem.AddCylinder(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 5.0f, 2.5f, spawnObjectColor, spawnObjectMass, spawnObjectFixed);
                             break;
                         case 3:
-                            particleSystem.AddTorus(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 1.25f, 3.0f, spawnObjectColor, spawnObjectMass);
+                            particleSystem.AddTorus(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 1.25f, 3.0f, spawnObjectColor, spawnObjectMass, spawnObjectFixed);
                             break;
                         case 4:
-                            particleSystem.AddBall(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 3.0f, spawnObjectColor, spawnObjectMass);
+                            particleSystem.AddBall(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f, 3.0f, spawnObjectColor, spawnObjectMass, spawnObjectFixed);
                             break;
                         default:
                             break;
@@ -174,6 +201,7 @@ int main() {
         }
 
         particleSpawnDebounce -= DELTA_TIME;
+        fluidSpawnDebounce -= DELTA_TIME;
         runSimulationDebounce -= DELTA_TIME;
         menuSelectDebounce -= DELTA_TIME;
     }

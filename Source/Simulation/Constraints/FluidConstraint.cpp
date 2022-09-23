@@ -1,15 +1,17 @@
 #include "FluidConstraint.h"
 
-FluidConstraint::FluidConstraint(int ID, std::vector<Particle*>& allParticles, const std::vector<int>& fluidPartilces, float k, float density, float viscosityMag) {
+FluidConstraint::FluidConstraint(int ID, std::vector<Particle*>& allParticles, const std::vector<int>& fluidPartilces, glm::vec3 color, float k, float density, float viscosityMag) {
     m_stiffness = 1.0f - powf((1.0f - k), 1.0f / SOLVER_ITERATIONS);
     m_density = density;
     m_viscosityMag = viscosityMag;
     m_ID = ID;
 
+    m_color = color;
     m_allParticles = &allParticles;
     for (int i : fluidPartilces) {
         m_particleIndices.push_back(i);
         m_allParticles->at(i)->num_constraints++;
+        m_allParticles->at(i)->color = m_color;
         m_neighbours.emplace_back(); // empty vector
         m_lambdas.emplace(i, 0.0f);
         m_deltas.emplace_back(0.0f);

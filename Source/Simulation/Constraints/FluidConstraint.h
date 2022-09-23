@@ -42,7 +42,7 @@ static float k_SpikyGrad = (45.0f / ((float)M_PI * H6));
 
 class FluidConstraint : public Constraint {
 public:
-    FluidConstraint(int ID, std::vector<Particle*>& allParticles, const std::vector<int>& fluidPartilces, float k, float density, float viscosityMag);
+    FluidConstraint(int ID, std::vector<Particle*>& allParticles, const std::vector<int>& fluidPartilces, glm::vec3 color, float k, float density, float viscosityMag);
     virtual ~FluidConstraint();
 
     void Project() override;
@@ -50,6 +50,7 @@ public:
     void AddParticle(int index);
     int m_ID;
     float m_viscosityMag;
+    glm::vec3 m_color;
 private:
     float poly6(const glm::vec3& r);
     glm::vec3 spikyGrad(const glm::vec3& r);

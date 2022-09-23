@@ -31,19 +31,22 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             m_constraints.emplace_back();
             m_constraints.emplace_back();
 
-            AddObject(glm::vec3(0.0f, lowerBoundary.y + 0.5f, 0.0f), "Assets/Models/Test.obj", glm::vec3(-1.0f), glm::vec3(0.0f), 10.0f);
+            // add fixed pool
+            AddObject(glm::vec3(0.0f, lowerBoundary.y + 0.5f, 0.0f), "Assets/Models/Test.obj", 1.0f, true, glm::vec3(-1.0f), glm::vec3(0.0f));
 
-            std::vector<int> indices;
-            for (int i = 0; i < numParticles; i++) {
-                auto *p = new Particle(glm::vec3(rand() % 6 - rand() % 6, -(rand() % 15) - 5, rand() % 6 - rand() % 6), glm::vec3(0.1f, 0.4f, 0.8f));
-                p->radius = 0.5f;
-                p->phase = Phase::Liquid;
-                indices.push_back((int)m_particles.size());
-                m_particles.push_back(p);
-                m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
-            }
+//            std::vector<int> indices;
+//            for (int i = 0; i < numParticles; i++) {
+//                auto *p = new Particle(glm::vec3(rand() % 6 - rand() % 6, -(rand() % 15) - 5, rand() % 6 - rand() % 6), glm::vec3(0.1f, 0.4f, 0.8f));
+//                p->radius = 0.5f;
+//                p->phase = Phase::Liquid;
+//                indices.push_back((int)m_particles.size());
+//                m_particles.push_back(p);
+//                m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
+//            }
 
-            m_constraints[FLUID].push_back( new FluidConstraint(m_constraints[FLUID].size(), m_particles, indices, 0.5f, 1.0f, 0.0001f) );
+//            m_constraints[FLUID].push_back( new FluidConstraint(m_constraints[FLUID].size(), m_particles, indices, 0.5f, 1.0f, 0.01f) );
+
+            AddFluid(numParticles, 5.0f, glm::vec3(0.0f), glm::vec3(0.5f, 0.9f, 0.3f), 0.01f);
         }
             break;
         case ParticleSystemType::Fluid:
@@ -53,16 +56,18 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             m_constraints.emplace_back();
             m_constraints.emplace_back();
 
-            std::vector<int> fluidParticles;
+//            std::vector<int> fluidParticles;
             float invContainerSize = 3.25f;
-            for (int i = 0; i < numParticles; i++) {
-                auto* p = new Particle( (RANDOM_COLOR - RANDOM_COLOR) * 2.0f + glm::vec3(0.0f, lowerBoundary.y + upperBoundary.y / (invContainerSize * 2.0f), 0.0f), glm::vec3(0.1f, 0.4f, 0.8f) );
-                p->phase = Phase::Liquid;
-                fluidParticles.push_back((int)m_particles.size());
-                m_particles.push_back(p);
-            }
+//            for (int i = 0; i < numParticles; i++) {
+//                auto* p = new Particle( (RANDOM_COLOR - RANDOM_COLOR) * 2.0f + glm::vec3(0.0f, lowerBoundary.y + upperBoundary.y / (invContainerSize * 2.0f), 0.0f), glm::vec3(0.1f, 0.4f, 0.8f) );
+//                p->phase = Phase::Liquid;
+//                fluidParticles.push_back((int)m_particles.size());
+//                m_particles.push_back(p);
+//            }
 
-            m_constraints[FLUID].push_back( new FluidConstraint(m_constraints[FLUID].size(), m_particles, fluidParticles, 1.0f, 1.0f, 0.01f) );
+//            m_constraints[FLUID].push_back( new FluidConstraint(m_constraints[FLUID].size(), m_particles, fluidParticles, 0.5f, 1.0f, 0.01f) );
+
+            AddFluid(numParticles, 5.0f, glm::vec3(0.0f), glm::vec3(0.2f, 0.9f, 0.3f), 0.01f);
 
             for (Particle* p: m_particles) {
                 m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p,
@@ -159,7 +164,7 @@ void ParticleSystem::Update(float dt) {
         p->vel += dt * (p->invMass * p->force);
         glm::vec3 COM(0.0f);
         p->vel *= 0.98f;
-        p->cpos = p->pos + (dt * p->vel);
+        if (!p->fixed) p->cpos = p->pos + (dt * p->vel);
 
         // TODO: (4) mass scaling (only for stiff stacks)
     }
@@ -281,7 +286,7 @@ float map(float X, float A, float B, float C, float D) {
     return (X-A)/(B-A) * (D-C) + C;
 }
 
-void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height, int depth, glm::vec3 color, float mass) {
+void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height, int depth, glm::vec3 color, float mass, bool fixed) {
     auto* rb = new RigidBody((int)m_rigidBodies.size());
 
     glm::vec3 boxSize((float)width / 2.0f + 0.5f,  (float)height / 2.0f + 0.5f, (float)depth / 2.0f + 0.5f);
@@ -301,6 +306,7 @@ void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height
                 p->rigidBodyID = rb->ID;
                 p->radius = step / 2.0f;
                 p->vel = vel;
+                p->fixed = fixed;
 
                 rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
                 m_particles.push_back(p);
@@ -314,7 +320,7 @@ void ParticleSystem::AddCube(glm::vec3 pos, glm::vec3 vel, int width, int height
     m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
 }
 
-void ParticleSystem::AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm::vec3 color, float mass) {
+void ParticleSystem::AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm::vec3 color, float mass, bool fixed) {
     auto* rb = new RigidBody((int)m_rigidBodies.size());
     float step = 1.0f;
 
@@ -332,6 +338,7 @@ void ParticleSystem::AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm:
                 p->rigidBodyID = rb->ID;
                 p->radius = step / 2.0f;
                 p->vel = vel;
+                p->fixed = fixed;
 
                 rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
                 m_particles.push_back(p);
@@ -345,11 +352,12 @@ void ParticleSystem::AddBall(glm::vec3 center, glm::vec3 vel, float radius, glm:
     m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
 }
 
-void ParticleSystem::AddObject(glm::vec3 offset, const std::string& fileToObj, glm::vec3 color, glm::vec3 vel, float mass) {
+void ParticleSystem::AddObject(glm::vec3 offset, const std::string& fileToObj, float mass, bool fixed, glm::vec3 color, glm::vec3 vel) {
     std::vector<RigidBody*> rbs = Generator::RigidBodiesFromOBJ(fileToObj, (int) m_rigidBodies.size(), (int) m_particles.size(), offset, color, vel, mass);
     for (RigidBody* rb : rbs) {
         for (Particle *p: rb->particles) {
             m_particles.push_back(p);
+            p->fixed = fixed;
             m_constraints[STANDARD].push_back(new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f));
         }
         m_rigidBodies.push_back(rb);
@@ -357,7 +365,7 @@ void ParticleSystem::AddObject(glm::vec3 offset, const std::string& fileToObj, g
     }
 }
 
-void ParticleSystem::AddTorus(glm::vec3 center, glm::vec3 vel, float innerRadius, float outerRadius, glm::vec3 color, float mass) {
+void ParticleSystem::AddTorus(glm::vec3 center, glm::vec3 vel, float innerRadius, float outerRadius, glm::vec3 color, float mass, bool fixed) {
     auto* rb = new RigidBody((int)m_rigidBodies.size());
     float step = 1.0f;
 
@@ -375,6 +383,7 @@ void ParticleSystem::AddTorus(glm::vec3 center, glm::vec3 vel, float innerRadius
                 p->rigidBodyID = rb->ID;
                 p->radius = step / 2.0f;
                 p->vel = vel;
+                p->fixed = fixed;
 
                 rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
                 m_particles.push_back(p);
@@ -388,7 +397,7 @@ void ParticleSystem::AddTorus(glm::vec3 center, glm::vec3 vel, float innerRadius
     m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
 }
 
-void ParticleSystem::AddCylinder(glm::vec3 center, glm::vec3 vel, float height, float radius, glm::vec3 color, float mass) {
+void ParticleSystem::AddCylinder(glm::vec3 center, glm::vec3 vel, float height, float radius, glm::vec3 color, float mass, bool fixed) {
     auto* rb = new RigidBody((int)m_rigidBodies.size());
     float step = 1.0f;
 
@@ -406,6 +415,7 @@ void ParticleSystem::AddCylinder(glm::vec3 center, glm::vec3 vel, float height, 
                 p->rigidBodyID = rb->ID;
                 p->radius = step / 2.0f;
                 p->vel = vel;
+                p->fixed = fixed;
 
                 rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
                 m_particles.push_back(p);
@@ -419,7 +429,7 @@ void ParticleSystem::AddCylinder(glm::vec3 center, glm::vec3 vel, float height, 
     m_constraints[SHAPE].push_back( new RigidShapeConstraint(rb, k_shape) );
 }
 
-void ParticleSystem::AddCone(glm::vec3 center, glm::vec3 vel, float angle /*radians*/, float height, glm::vec3 color, float mass) {
+void ParticleSystem::AddCone(glm::vec3 center, glm::vec3 vel, float angle /*radians*/, float height, glm::vec3 color, float mass, bool fixed) {
     auto* rb = new RigidBody((int)m_rigidBodies.size());
     float step = 1.0f;
 
@@ -441,6 +451,7 @@ void ParticleSystem::AddCone(glm::vec3 center, glm::vec3 vel, float angle /*radi
                 p->rigidBodyID = rb->ID;
                 p->radius = step / 2.0f;
                 p->vel = vel;
+                p->fixed = fixed;
 
                 rb->AddVertex(p, d, (int)m_particles.size()); // before pushing to main array
                 m_particles.push_back(p);
@@ -458,16 +469,45 @@ void ParticleSystem::SetGlobalForce(glm::vec3 g) {
     m_globalForce = g;
 }
 
-void ParticleSystem::EmitFluidParticle(int ID, glm::vec3 pos, glm::vec3 vel, glm::vec3 color) {
-    if (ID >= m_constraints[FLUID].size()) {
+void ParticleSystem::EmitFluidParticle(int ID, glm::vec3 pos, glm::vec3 vel) {
+    if (ID >= GetFluidAmount()) {
         return;
     }
 
     auto* fluidConstraint = (FluidConstraint*)m_constraints[FLUID][ID];
-    auto* p = new Particle( pos, color );
+    auto* p = new Particle( pos, fluidConstraint->m_color );
     p->vel = vel;
     p->phase = Phase::Liquid;
 
     fluidConstraint->AddParticle((int)m_particles.size());
     m_particles.push_back(p);
+    m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
 }
+
+void ParticleSystem::UpdateFluidViscosity(int ID, float v) {
+    if (ID >= GetFluidAmount()) {
+        return;
+    }
+
+}
+
+int ParticleSystem::GetFluidAmount() {
+    return (int)m_constraints[FLUID].size();
+}
+
+int ParticleSystem::AddFluid(int numParticles, float spawnRadius, glm::vec3 offset, glm::vec3 color, float viscosity) {
+    std::vector<int> indices;
+    for (int i = 0; i < numParticles; i++) {
+        auto *p = new Particle((RANDOM_COLOR - RANDOM_COLOR) * spawnRadius + offset, color);
+        p->radius = 0.5f;
+        p->phase = Phase::Liquid;
+        indices.push_back((int)m_particles.size());
+        m_particles.push_back(p);
+        m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
+    }
+
+    m_constraints[FLUID].push_back( new FluidConstraint(GetFluidAmount(), m_particles, indices, color, 0.5f, 1.0f, viscosity) );
+
+    return GetFluidAmount() - 1;
+}
+

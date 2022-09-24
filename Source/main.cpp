@@ -40,7 +40,7 @@ int main() {
     ImFont* mainFont = io.Fonts->AddFontFromFileTTF(R"(Assets/Fonts/RandyGG.ttf)", 17.0f);
     IM_ASSERT(mainFont != nullptr);
 
-    ParticleSystem particleSystem(200, ParticleSystemType::Cloth);
+    ParticleSystem particleSystem(200, ParticleSystemType::Pool);
 
     float particleSpawnDebounce = 0.2f;
     float fluidSpawnDebounce = 0.2f;
@@ -98,7 +98,7 @@ int main() {
 
             ImGui::Begin("Simulation parameters", nullptr, ImGuiWindowFlags_NoTitleBar);
 
-            if (ImGui::CollapsingHeader("Options")) {
+//            if (ImGui::CollapsingHeader("Options")) {
                 ImGui::SliderFloat3("Gravity", &gravity[0], -10.0f, 10.0f);
                 if (ImGui::CollapsingHeader("Spawn object")) {
                     ImGui::Combo("Select object", &spawnObjectSelected, spawnObjectLabels, IM_ARRAYSIZE(spawnObjectLabels));
@@ -111,10 +111,7 @@ int main() {
                         particleSystem.AddObject(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, spawnObjectPath, spawnObjectMass, spawnObjectFixed);
                 }
                 if (ImGui::CollapsingHeader("Emit fluid")) {
-                    if (particleSystem.GetFluidAmount() > 0)
-                        ImGui::SliderInt("Choose fluid ID to emit", &emitFluidID, 0, particleSystem.GetFluidAmount() - 1 );
-                    else
-                        ImGui::SliderInt("Choose fluid ID to emit", &emitFluidID, -1, -1 );
+                    ImGui::SliderInt("Choose fluid to emit", &emitFluidID, -1, particleSystem.GetFluidAmount() - 1 );
                 }
                 if (ImGui::CollapsingHeader("Spawn fluid")) {
                     ImGui::ColorEdit3("Fluid color", &spawnFluidColor[0]);
@@ -125,10 +122,10 @@ int main() {
                     if (ImGui::Button("Spawn"))
                         particleSystem.AddFluid(spawnFluidParticleSize, 5.0f, spawnFluidOffset, spawnFluidColor, spawnFluidViscosity);
                 }
-            }
+//            }
 
             if (ImGui::CollapsingHeader("Controls")) {
-                ImGui::Text("Press WASD to move, Space/LShift to ascend/descend.");
+                ImGui::Text("Press WASD to move, Space/LCtrl to ascend/descend.");
                 ImGui::Text("Press E to spawn object.");
                 ImGui::Text("Press F to spawn single particle.");
                 ImGui::Text("Press Q to emit fluid.");

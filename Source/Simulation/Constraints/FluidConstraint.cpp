@@ -12,6 +12,7 @@ FluidConstraint::FluidConstraint(int ID, std::vector<Particle*>& allParticles, c
         m_particleIndices.push_back(i);
         m_allParticles->at(i)->num_constraints++;
         m_allParticles->at(i)->color = m_color;
+        // TODO make partixcle have ID
         m_neighbours.emplace_back(); // empty vector
         m_lambdas.emplace(i, 0.0f);
         m_deltas.emplace_back(0.0f);

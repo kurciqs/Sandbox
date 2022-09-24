@@ -20,10 +20,15 @@ void Camera::UploadViewMatrix(Shader &shader, const char *uniform_name) {
     shader.UploadMat4(uniform_name, m_viewMatrix);
 }
 
+static float lerp(float a, float b, float f) {
+    return a + f * (b - a);
+}
+
 void Camera::Inputs(float dt) {
     // Keyboard
 
     auto mvForce = glm::vec3(0.0f);
+
     glm::vec3 horizontal = {m_orientation.x, 0.0f, m_orientation.z};
     if (Input::isKeyDown(GLFW_KEY_W)) {
         mvForce += (glm::normalize(horizontal) * m_speed);

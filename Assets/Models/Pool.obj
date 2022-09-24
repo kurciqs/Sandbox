@@ -1,6 +1,6 @@
-# Blender v2.93.0 OBJ File: 'Test.blend'
+# Blender v2.93.0 OBJ File: 'Pool.blend'
 # www.blender.org
-mtllib Test.mtl
+mtllib Pool.mtl
 o Cube
 v -7.305315 -0.343931 7.305315
 v -5.710665 0.252305 5.710665

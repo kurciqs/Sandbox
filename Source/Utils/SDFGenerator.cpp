@@ -46,7 +46,7 @@ namespace Generator {
 
     std::vector<RigidBody*> RigidBodiesFromOBJ(const std::string& path, int rigidBodyID, int firstParticleIndex, glm::vec3 offset, glm::vec3 color, glm::vec3 vel, float mass) {
         tinyobj::ObjReaderConfig reader_config;
-        reader_config.mtl_search_path = "Assets/Models/"; // Path to material files
+//        reader_config.mtl_search_path = "Assets/Models/"; // Path to material files
 
         tinyobj::ObjReader reader;
 
@@ -165,7 +165,6 @@ namespace Generator {
                             if (color == glm::vec3(-1.0f)) {
                                 pt->color = dataAtPos.second.diffuse;
                             }
-                            pt->rigidBodyID = rb->ID;
                             pt->vel = vel;
                             rb->AddVertex(pt, d, firstParticleIndex++);
                         }

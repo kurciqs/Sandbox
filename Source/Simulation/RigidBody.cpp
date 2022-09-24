@@ -94,6 +94,7 @@ void RigidBody::RecalculateCOM() {
 }
 
 void RigidBody::AddVertex(Particle* p, SDFData d, int particleIndex) {
+    p->rigidBodyID = ID;
     particles.push_back(p);
     sdfData.insert(std::pair(particleIndex, d));
     // can't add offsets here, COM would be messed up

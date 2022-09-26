@@ -27,7 +27,7 @@
 //#define H9 1e-09f
 
 
-#define EPSILON_RELAX 0.01f
+#define EPSILON_RELAX 1e-6f
 
 #define K_CORR 0.1f
 #define N_CORR 4.0f

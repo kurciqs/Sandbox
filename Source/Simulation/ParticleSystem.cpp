@@ -34,7 +34,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             // add fixed pool
             AddObject(glm::vec3(0.0f, lowerBoundary.y + 0.5f, 0.0f), "Assets/Models/Pool.obj", 100.0f, false, glm::vec3(-1.0f), glm::vec3(0.0f));
 
-            AddFluid(numParticles, 5.0f, glm::vec3(0.0f), glm::vec3(0.5f, 0.9f, 0.3f), 0.01f);
+            AddFluid(numParticles, 5.0f, glm::vec3(0.0f), glm::vec3(0.3f, 0.3f, 0.9f), 0.01f);
         }
             break;
         case ParticleSystemType::Fluid:
@@ -434,7 +434,7 @@ void ParticleSystem::UpdateFluidViscosity(int ID, float v) {
     if (ID >= GetFluidAmount()) {
         return;
     }
-
+    // TODO
 }
 
 int ParticleSystem::GetFluidAmount() {
@@ -452,7 +452,7 @@ int ParticleSystem::AddFluid(int numParticles, float spawnRadius, glm::vec3 offs
         m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
     }
 
-    m_constraints[FLUID].push_back( new FluidConstraint(GetFluidAmount(), m_particles, indices, color, 0.5f, 1.0f, viscosity) );
+    m_constraints[FLUID].push_back( new FluidConstraint(GetFluidAmount(), m_particles, indices, color, 1.0f, 1.0f, viscosity) );
 
     return GetFluidAmount() - 1;
 }

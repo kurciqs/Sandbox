@@ -12,6 +12,7 @@ FluidConstraint::FluidConstraint(int ID, std::vector<Particle*>& allParticles, c
         m_particleIndices.push_back(i);
         m_allParticles->at(i)->num_constraints++;
         m_allParticles->at(i)->color = m_color;
+        m_allParticles->at(i)->fluidID = m_ID;
         // TODO make partixcle have ID
         m_neighbours.emplace_back(); // empty vector
         m_lambdas.emplace(i, 0.0f);
@@ -57,7 +58,8 @@ void FluidConstraint::Project() {
             denom_i += glm::dot(gr, gr) * p_j->invMass;
         }
 
-
+        if (Input::isKeyDown(GLFW_KEY_1))
+            printf("P: %d\n", p_i->phase);
         m_lambdas.insert_or_assign(i, -((density_i / m_density) - 1.0f) / (denom_i + EPSILON_RELAX));
     }
 
@@ -70,10 +72,12 @@ void FluidConstraint::Project() {
         glm::vec3 corr(0.0f);
         for (int j: m_neighbours[k]) {
             Particle *p_j = m_allParticles->at(j);
-            if (p_j->phase == Solid) {
-                continue;
-            }
+//            if (p_j->fluidID != m_ID) {
+//                continue;
+//            }
             float lambda_j = m_lambdas[j];
+            if (Input::isKeyDown(GLFW_KEY_1))
+                printf("%d %d %f\n", p_j->phase, m_lambdas.contains(j), lambda_j);
 
             glm::vec3 diff = p_i->cpos - p_j->cpos;
 
@@ -88,11 +92,13 @@ void FluidConstraint::Project() {
         int i = m_particleIndices[k];
         Particle *p_i = m_allParticles->at(i);
         glm::vec3 delta = m_stiffness * m_deltas[k];
-        if (!p_i->fixed) p_i->cpos += delta / (float) m_neighbours[k].size();
+        if (p_i->fluidID == m_ID)
+            if (!p_i->fixed)
+                p_i->cpos += delta / (float) m_neighbours[k].size();
     }
 
     // viscosity / vorticity
-
+/*
 //    std::unordered_map<int, float> densities;
     for (int k = 0; k < m_particleIndices.size(); k++) {
         int i = m_particleIndices[k];
@@ -118,9 +124,9 @@ void FluidConstraint::Project() {
         glm::vec3 eta(0.0f);
         for (int j: m_neighbours[k]) {
             Particle *p_j = m_allParticles->at(j);
-            if (p_j->phase == Solid) {
-                continue;
-            }
+//            if (p_j->fluidID != m_ID) {
+//                continue;
+//            }
             glm::vec3 diff = p_i->cpos - p_j->cpos;
             eta += spikyGrad(diff) * omegaLength;
         }
@@ -130,7 +136,7 @@ void FluidConstraint::Project() {
         }
         glm::vec3 N = glm::fastNormalize(eta);
         p_i->ApplyForce(VORTICITY_COEF * (glm::cross(N, eta)));
-    }
+    }*/
 }
 
 void FluidConstraint::Draw(Renderer &renderer) {

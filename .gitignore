@@ -1,3 +1,5 @@
 Binaries/**
 /.idea/
 imgui.ini
+Assets/Models/**.blend
+Assets/Models/**.blend1

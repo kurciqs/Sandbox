@@ -13,7 +13,6 @@ FluidConstraint::FluidConstraint(int ID, std::vector<Particle*>& allParticles, c
         m_allParticles->at(i)->num_constraints++;
         m_allParticles->at(i)->color = m_color;
         m_allParticles->at(i)->fluidID = m_ID;
-        // TODO make partixcle have ID
         m_neighbours.emplace_back(); // empty vector
         m_lambdas.emplace(i, 0.0f);
         m_deltas.emplace_back(0.0f);
@@ -27,116 +26,24 @@ FluidConstraint::~FluidConstraint() {
 }
 
 void FluidConstraint::Project() {
-    // find neighbours
-    for (int k = 0; k < m_particleIndices.size(); k++) {
-        m_neighbours[k].clear();
-        int i = m_particleIndices[k];
+    std::unordered_map<int, float> densities;
+    for (int i = 0; i < m_allParticles->size(); i++) {
+        float density = 0.0f;
         Particle *p_i = m_allParticles->at(i);
-        for (int j = 0; j < m_allParticles->size(); j++) {
-            Particle *p_j = m_allParticles->at(j);
-            glm::vec3 diff = p_i->cpos - p_j->cpos;
-            float d2 = glm::dot(diff, diff);
-            if (d2 < H2) {
-                m_neighbours[k].push_back(j);
-            }
+        for (Particle *p_j: *m_allParticles) {
+            density += p_j->mass * W(p_i->cpos - p_j->cpos);
         }
+        densities.insert({i, density});
+
+        printf("%f\n", density);
+        p_i->color = glm::vec3(density) / 40.0f;
     }
 
-    m_lambdas.clear();
-    for (int k = 0; k < m_particleIndices.size(); k++) {
-        int i = m_particleIndices[k];
+    for (int i: m_particleIndices) {
         Particle *p_i = m_allParticles->at(i);
-        float density_i = 0.0f;
-        float denom_i = 0.0f;
-        for (int j: m_neighbours[k]) {
-            Particle *p_j = m_allParticles->at(j);
 
-            glm::vec3 r = p_i->cpos - p_j->cpos;
-            density_i += (p_j->phase == Phase::Solid ? S_SOLID : 1.0f) * p_j->mass * poly6(r);
-
-            glm::vec3 gr = grad(k, j);
-            denom_i += glm::dot(gr, gr) * p_j->invMass;
-        }
-
-        if (Input::isKeyDown(GLFW_KEY_1))
-            printf("P: %d\n", p_i->phase);
-        m_lambdas.insert_or_assign(i, -((density_i / m_density) - 1.0f) / (denom_i + EPSILON_RELAX));
+//        glm::vec3 viscosity = p_i->mass
     }
-
-    for (int k = 0; k < m_particleIndices.size(); k++) {
-        int i = m_particleIndices[k];
-        Particle *p_i = m_allParticles->at(i);
-        float lambda_i = m_lambdas[i];
-
-        const float corrW = poly6(glm::vec3(MAG_Q_CORR, 0.0f, 0.0f) * H);
-        glm::vec3 corr(0.0f);
-        for (int j: m_neighbours[k]) {
-            Particle *p_j = m_allParticles->at(j);
-//            if (p_j->fluidID != m_ID) {
-//                continue;
-//            }
-            float lambda_j = m_lambdas[j];
-            if (Input::isKeyDown(GLFW_KEY_1))
-                printf("%d %d %f\n", p_j->phase, m_lambdas.contains(j), lambda_j);
-
-            glm::vec3 diff = p_i->cpos - p_j->cpos;
-
-            float scorr = -K_CORR * glm::pow(poly6(diff) / corrW, N_CORR);
-            corr += p_j->mass * (lambda_i + lambda_j + scorr) * spikyGrad(diff);
-        }
-
-        m_deltas[k] = p_i->invMass * corr / m_density;
-    }
-
-    for (int k = 0; k < m_particleIndices.size(); k++) {
-        int i = m_particleIndices[k];
-        Particle *p_i = m_allParticles->at(i);
-        glm::vec3 delta = m_stiffness * m_deltas[k];
-        if (p_i->fluidID == m_ID)
-            if (!p_i->fixed)
-                p_i->cpos += delta / (float) m_neighbours[k].size();
-    }
-
-    // viscosity / vorticity
-/*
-//    std::unordered_map<int, float> densities;
-    for (int k = 0; k < m_particleIndices.size(); k++) {
-        int i = m_particleIndices[k];
-        Particle *p_i = m_allParticles->at(i);
-
-        glm::vec3 omega(0.0f);
-        glm::vec3 vnew(0.0f);
-        for (int j: m_neighbours[k]) {
-            Particle *p_j = m_allParticles->at(j);
-
-//            vnew += (p_i->mass / densities[j]) * poly6(p_i->cpos - p_j->cpos) * (p_j->vel - p_i->vel);
-            vnew += poly6(p_i->cpos - p_j->cpos) * (p_j->vel - p_i->vel);
-            omega += glm::cross((p_j->vel - p_i->vel), spikyGrad((p_i->cpos - p_j->cpos)));
-        }
-
-        p_i->viscosity = vnew * m_viscosityMag;
-
-        float omegaLength = glm::fastLength(omega);
-        if (omegaLength == 0.0f) {
-            return;
-        }
-
-        glm::vec3 eta(0.0f);
-        for (int j: m_neighbours[k]) {
-            Particle *p_j = m_allParticles->at(j);
-//            if (p_j->fluidID != m_ID) {
-//                continue;
-//            }
-            glm::vec3 diff = p_i->cpos - p_j->cpos;
-            eta += spikyGrad(diff) * omegaLength;
-        }
-
-        if (eta.x == 0.0f && eta.y == 0.0f && eta.z == 0.0f) {
-            return;
-        }
-        glm::vec3 N = glm::fastNormalize(eta);
-        p_i->ApplyForce(VORTICITY_COEF * (glm::cross(N, eta)));
-    }*/
 }
 
 void FluidConstraint::Draw(Renderer &renderer) {
@@ -148,14 +55,20 @@ void FluidConstraint::Draw(Renderer &renderer) {
     }
 }
 
-float FluidConstraint::poly6(const glm::vec3& r) {
-    float rlen = glm::fastLength(r);
-    if (rlen > H || rlen == 0.0f) {
+float FluidConstraint::W(const glm::vec3& r) {
+    float sigma = 8.0f / (glm::pi<float>() * glm::pow(m_kernelRadius, 3.0f)); // normalization constant
+    float q = (1.0f / m_kernelRadius) * glm::length(r);
+    if (0.0f <= q && q <= 0.5f) {
+        float q2 = q*q;
+        float q3 = q2*q;
+        return sigma * (6.0f * (q3 - q2) + 1.0f);
+    }
+    else if (0.5f < q && q <= 1.0f) {
+        return sigma * 2.0f * glm::pow(1.0f - q, 3.0f);
+    }
+    else {
         return 0.0f;
     }
-
-    float term2 = (H2 - rlen * rlen);
-    return k_Poly6 * (term2 * term2 * term2);
 }
 
 glm::vec3 FluidConstraint::spikyGrad(const glm::vec3 &r) {
@@ -188,7 +101,7 @@ glm::vec3 FluidConstraint::grad(int k, int j) {
 
 void FluidConstraint::AddParticle(int index) {
     m_particleIndices.push_back(index);
-//    m_allParticles->at(index)->num_constraints++; // TODO
+    m_allParticles->at(index)->num_constraints++; // TODO
     m_neighbours.emplace_back(); // empty vector
     m_lambdas.emplace(index, 0.0f);
     m_deltas.emplace_back(0.0f);

@@ -52,7 +52,8 @@ public:
     float m_viscosityMag;
     glm::vec3 m_color;
 private:
-    float poly6(const glm::vec3& r);
+    float m_kernelRadius = 1.0f / glm::sqrt(4.0f);
+    float W(const glm::vec3& r);
     glm::vec3 spikyGrad(const glm::vec3& r);
     glm::vec3 grad(int k, int j);
 

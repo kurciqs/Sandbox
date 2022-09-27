@@ -105,7 +105,7 @@ int main() {
                     ImGui::SliderFloat("Object mass", &spawnObjectMass, 0.1f, 25.0f);
                     ImGui::ColorEdit3("Object color", &spawnObjectColor[0]);
                     ImGui::Checkbox("Object fixed", &spawnObjectFixed);
-                    ImGui::InputText("", spawnObjectPath, IM_ARRAYSIZE(spawnObjectPath));
+//                    ImGui::InputText("", spawnObjectPath, IM_ARRAYSIZE(spawnObjectPath)); TODO fix imgui crash
                     ImGui::SameLine();
                     if (ImGui::Button("Load"))
                         particleSystem.AddObject(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, spawnObjectPath, spawnObjectMass, spawnObjectFixed);

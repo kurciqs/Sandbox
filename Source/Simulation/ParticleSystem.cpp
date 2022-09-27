@@ -113,8 +113,7 @@ void ParticleSystem::Update(float dt) {
         if (!p->fixed) p->ApplyForce(m_globalForce * p->mass);
 
         p->vel += dt * (p->invMass * p->force);
-        glm::vec3 COM(0.0f);
-        p->vel *= 0.98f;
+        p->force = glm::vec3(0.0f);
         if (!p->fixed) p->cpos = p->pos + (dt * p->vel);
 
         // TODO: (4) mass scaling (only for stiff stacks)
@@ -132,7 +131,10 @@ void ParticleSystem::Update(float dt) {
             float dist = glm::fastDistance(p1->cpos, p2->cpos);
             if (dist < p1->radius + p2->radius) {
                 // (8)
-                if ((p1->rigidBodyID == -1 || p2->rigidBodyID == -1) && (p1->phase == Phase::Solid || p2->phase == Phase::Solid)) {
+                if ((p1->phase == Phase::Liquid && p2->phase == Phase::Liquid)) {
+                    continue;
+                }
+                else if ((p1->rigidBodyID == -1 || p2->rigidBodyID == -1)) {
                     m_constraints[CONTACT].push_back( new ContactConstraint(p1, p2, k_contact) );
                 }
                 else if (p1->rigidBodyID != p2->rigidBodyID && p1->phase == Phase::Solid && p2->phase == Phase::Solid) {
@@ -164,7 +166,6 @@ void ParticleSystem::Update(float dt) {
 
     // (22)
     for (Particle* p : m_particles) {
-        p->force = glm::vec3(0.0f);
         p->vel = (p->cpos - p->pos) / dt;
         // TODO: (25, 26)
 
@@ -174,8 +175,9 @@ void ParticleSystem::Update(float dt) {
             p->vel = glm::vec3(0.0f);
             continue;
         }
-        p->vel += p->viscosity;
-        p->viscosity = glm::vec3(0.0f);
+//        p->vel += p->viscosity;
+//        p->viscosity = glm::vec3(0.0f);
+        p->vel *= 0.98f;
         p->pos = p->cpos;
     }
     // (28)

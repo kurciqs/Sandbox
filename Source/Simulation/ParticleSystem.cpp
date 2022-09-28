@@ -53,7 +53,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
                                                                                        lowerBoundary.y,
                                                                                        lowerBoundary.z / invContainerSize),
                                                                              glm::vec3(upperBoundary.x / invContainerSize,
-                                                                                       0.0f,
+                                                                                       upperBoundary.y,
                                                                                        upperBoundary.z / invContainerSize),
                                                                                        1.0f) );
             }

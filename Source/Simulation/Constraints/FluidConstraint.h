@@ -27,7 +27,7 @@
 //#define H9 1e-09f
 
 
-#define EPSILON_RELAX 1e-6f
+#define EPSILON_RELAX 0.001f
 
 #define K_CORR 0.1f
 #define N_CORR 4.0f
@@ -53,9 +53,9 @@ public:
     glm::vec3 m_color;
 private:
     float m_kernelRadius = 1.0f / glm::sqrt(4.0f);
-    float W(const glm::vec3& r);
+    float poly6(const glm::vec3& r);
     glm::vec3 spikyGrad(const glm::vec3& r);
-    glm::vec3 grad(int k, int j);
+    glm::vec3 grad(int ind, int i, int j);
 
     std::vector<std::vector<int>> m_neighbours;
     std::vector<int> m_particleIndices;

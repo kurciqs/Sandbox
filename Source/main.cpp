@@ -18,7 +18,7 @@ int main() {
     }
     Window window(1200, 800, "Sandbox");
     window.MakeContextCurrent();
-    window.SetIcon("Assets/Images/Icon.png");
+    window.SetIcon("Assets/Images/Icon.jpg");
     window.InstallCallbacks();
 
     if (!Renderer::InitGlad()) {

@@ -59,7 +59,7 @@ private:
     glm::vec3 spikyGrad(const glm::vec3& r);
     glm::vec3 ConstraintGradient(int k, int i, int j);
 
-    std::vector<std::vector<int>> m_neighbours;
+    std::unordered_map<int, std::vector<int>> m_neighbours;
     std::vector<int> m_particleIndices;
     std::unordered_map<int, float> m_lambdas;
     std::vector<glm::vec3> m_deltas;

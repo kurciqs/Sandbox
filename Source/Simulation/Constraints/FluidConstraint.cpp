@@ -8,12 +8,13 @@ FluidConstraint::FluidConstraint(int ID, std::vector<Particle*>& allParticles, c
 
     m_color = color;
     m_allParticles = &allParticles;
-    for (int i : fluidPartilces) {
+    for (int i = 0; i < m_allParticles->size(); i++) {
+//    for (int i : fluidPartilces) {
         m_particleIndices.push_back(i);
         m_allParticles->at(i)->num_constraints++;
         m_allParticles->at(i)->color = m_color;
         m_allParticles->at(i)->fluidID = m_ID;
-        m_neighbours.emplace_back(); // empty vector
+        m_neighbours.insert( {i, {}} ); // empty vector
         m_lambdas.emplace(i, 0.0f);
         m_deltas.emplace_back(0.0f);
     }
@@ -56,13 +57,14 @@ void FluidConstraint::Project() {
 
         denom += EPSILON_RELAX;
 
-        m_lambdas[i] = -numerator / denom;
+        m_lambdas.insert_or_assign(i, -numerator / denom);
     }
-
+    // TODO: make non fluid particles behave normally
     for (int k = 0; k < m_particleIndices.size(); k++) {
         int i = m_particleIndices[k];
         Particle *p_i = m_allParticles->at(i);
-
+        if (p_i->fluidID != m_ID)
+            continue;
         const float corr_w = poly6(MAG_Q_CORR * m_kernelRadius * glm::vec3(1.0f, 0.0f, 0.0f));
 
         std::vector<glm::vec3> buffer;
@@ -72,8 +74,8 @@ void FluidConstraint::Project() {
             const float kernel_val = poly6(p_i->cpos - p_j->cpos);
             const float ratio = kernel_val / corr_w;
             const float corr_coeff = -K_CORR * glm::pow(ratio, N_CORR);
-
             const float coeff = p_j->mass * (m_lambdas[i] + m_lambdas[j] + corr_coeff);
+
             buffer.push_back(coeff * spikyGrad(p_i->cpos - p_j->cpos));
         }
 
@@ -152,7 +154,7 @@ glm::vec3 FluidConstraint::ConstraintGradient(int k, int i, int j) {
 void FluidConstraint::AddParticle(int index) {
     m_particleIndices.push_back(index);
     m_allParticles->at(index)->num_constraints++; // TODO
-    m_neighbours.emplace_back(); // empty vector
+    m_neighbours.insert( {index, {}} ); // empty vector
     m_lambdas.emplace(index, 0.0f);
     m_deltas.emplace_back(0.0f);
 }

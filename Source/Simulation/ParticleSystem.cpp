@@ -32,9 +32,9 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             m_constraints.emplace_back();
 
             // add fixed pool
+            AddObject(glm::vec3(0.0f, lowerBoundary.y + 0.5f, 0.0f), "Assets/Models/Pool.obj", 100.0f, false, glm::vec3(-1.0f), glm::vec3(0.0f));
 
             AddFluid(numParticles, 5.0f, glm::vec3(0.0f), glm::vec3(0.3f, 0.3f, 0.9f), 5.0f, 0.01f);
-            AddObject(glm::vec3(0.0f, lowerBoundary.y + 0.5f, 0.0f), "Assets/Models/Pool.obj", 100.0f, false, glm::vec3(-1.0f), glm::vec3(0.0f));
         }
             break;
         case ParticleSystemType::Fluid:

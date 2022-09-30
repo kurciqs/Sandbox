@@ -40,7 +40,7 @@ int main() {
     ImFont* mainFont = io.Fonts->AddFontFromFileTTF(R"(Assets/Fonts/RandyGG.ttf)", 17.0f);
     IM_ASSERT(mainFont != nullptr);
 
-    ParticleSystem particleSystem(400, ParticleSystemType::Fluid);
+    ParticleSystem particleSystem(400, ParticleSystemType::Pool);
 
     float particleSpawnDebounce = 0.2f;
     float fluidSpawnDebounce = 0.2f;
@@ -120,7 +120,7 @@ int main() {
                     ImGui::SliderInt("Fluid particle amount", &spawnFluidParticleSize, 0, 500);
 
                     if (ImGui::Button("Spawn"))
-                        particleSystem.AddFluid(spawnFluidParticleSize, 5.0f, spawnFluidOffset, spawnFluidColor, spawnFluidViscosity);
+                        particleSystem.AddFluid(spawnFluidParticleSize, 5.0f, spawnFluidOffset, spawnFluidColor, 0.2f, spawnFluidViscosity);
                 }
 //            }
 

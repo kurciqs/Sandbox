@@ -32,9 +32,9 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             m_constraints.emplace_back();
 
             // add fixed pool
-            AddObject(glm::vec3(0.0f, lowerBoundary.y + 0.5f, 0.0f), "Assets/Models/Pool.obj", 100.0f, false, glm::vec3(-1.0f), glm::vec3(0.0f));
 
-            AddFluid(numParticles, 5.0f, glm::vec3(0.0f), glm::vec3(0.3f, 0.3f, 0.9f), 0.01f);
+            AddFluid(numParticles, 5.0f, glm::vec3(0.0f), glm::vec3(0.3f, 0.3f, 0.9f), 5.0f, 0.01f);
+            AddObject(glm::vec3(0.0f, lowerBoundary.y + 0.5f, 0.0f), "Assets/Models/Pool.obj", 100.0f, false, glm::vec3(-1.0f), glm::vec3(0.0f));
         }
             break;
         case ParticleSystemType::Fluid:
@@ -45,7 +45,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             m_constraints.emplace_back();
 
             float invContainerSize = 3.25f;
-            AddFluid(numParticles, 5.0f, glm::vec3(0.0f), glm::vec3(0.2f, 0.9f, 0.3f), 0.01f);
+            AddFluid(numParticles, 5.0f, glm::vec3(0.0f), glm::vec3(0.2f, 0.3f, 0.9f), 5.0f, 0.01f);
 
             for (Particle* p: m_particles) {
                 m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p,
@@ -168,7 +168,6 @@ void ParticleSystem::Update(float dt) {
     for (Particle* p : m_particles) {
         p->vel = (p->cpos - p->pos) / dt;
         // TODO: (25, 26)
-
         // sleeping:
         if (glm::fastDistance(p->cpos, p->pos) < PARTICLE_SLEEPING_EPSILON)
         {
@@ -177,7 +176,7 @@ void ParticleSystem::Update(float dt) {
         }
 //        p->vel += p->viscosity;
 //        p->viscosity = glm::vec3(0.0f);
-        p->vel *= 0.98f;
+        p->vel *= 0.99f;
         p->pos = p->cpos;
     }
     // (28)
@@ -443,7 +442,7 @@ int ParticleSystem::GetFluidAmount() {
     return (int)m_constraints[FLUID].size();
 }
 
-int ParticleSystem::AddFluid(int numParticles, float spawnRadius, glm::vec3 offset, glm::vec3 color, float viscosity) {
+int ParticleSystem::AddFluid(int numParticles, float spawnRadius, glm::vec3 offset, glm::vec3 color, float density, float viscosity) {
     std::vector<int> indices;
     for (int i = 0; i < numParticles; i++) {
         auto *p = new Particle((RANDOM_COLOR - RANDOM_COLOR) * spawnRadius + offset, color);
@@ -454,7 +453,7 @@ int ParticleSystem::AddFluid(int numParticles, float spawnRadius, glm::vec3 offs
         m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
     }
 
-    m_constraints[FLUID].push_back( new FluidConstraint(GetFluidAmount(), m_particles, indices, color, 1.0f, 1.0f, viscosity) );
+    m_constraints[FLUID].push_back( new FluidConstraint(GetFluidAmount(), m_particles, indices, color, 1.0f, density, viscosity) );
 
     return GetFluidAmount() - 1;
 }

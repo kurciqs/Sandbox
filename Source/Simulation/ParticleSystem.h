@@ -60,7 +60,7 @@ public:
     void AddCylinder(glm::vec3 center, glm::vec3 vel, float height, float radius, glm::vec3 color, float mass = 1.0f, bool fixed = false);
     void AddCone(glm::vec3 center, glm::vec3 vel, float angle, float height, glm::vec3 color, float mass = 1.0f, bool fixed = false);
     void AddCloth(glm::vec3 center, glm::vec3 vel, float width, float height, float stiffness, bool fixed = true);
-    int AddFluid(int numParticles, float spawnRadius, glm::vec3 offset, glm::vec3 color, float viscosity);
+    int AddFluid(int numParticles, float spawnRadius, glm::vec3 offset, glm::vec3 color, float density, float viscosity);
     void EmitFluidParticle(int ID, glm::vec3 pos, glm::vec3 vel);
     void UpdateFluidViscosity(int ID, float v);
     int GetFluidAmount();

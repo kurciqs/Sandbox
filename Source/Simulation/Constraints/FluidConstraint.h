@@ -16,10 +16,10 @@
 //#define H6 4096.f
 //#define H9 262144.f
 
-#define H 2.0f
-#define H2 4.0f
-#define H6 64.0f
-#define H9 512.0f
+//#define H 2.0f
+//#define H2 4.0f
+//#define H6 64.0f
+//#define H9 512.0f
 
 //#define H 0.1f
 //#define H2 0.01f
@@ -27,18 +27,16 @@
 //#define H9 1e-09f
 
 
-#define EPSILON_RELAX 0.001f
+#define EPSILON_RELAX 1e+05f
 
 #define K_CORR 0.1f
 #define N_CORR 4.0f
-#define MAG_Q_CORR 0.2f
+#define MAG_Q_CORR 0.3f
 
 #define VORTICITY_COEF 0.1f
 
 #define S_SOLID 0.1f
 
-static float k_Poly6 = (315.0f / (64.0f * (float)M_PI * H9));
-static float k_SpikyGrad = (45.0f / ((float)M_PI * H6));
 
 class FluidConstraint : public Constraint {
 public:
@@ -52,10 +50,14 @@ public:
     float m_viscosityMag;
     glm::vec3 m_color;
 private:
-    float m_kernelRadius = 1.0f / glm::sqrt(4.0f);
+    float Density(int i /*global index*/, int k);
+    float Constraint(int i, int k);
+    float m_kernelRadius = 2.0f;
+    float k_Poly6 = (315.0f / (64.0f * (float)M_PI));
+    float k_SpikyGrad = (45.0f / ((float)M_PI));
     float poly6(const glm::vec3& r);
     glm::vec3 spikyGrad(const glm::vec3& r);
-    glm::vec3 grad(int ind, int i, int j);
+    glm::vec3 ConstraintGradient(int k, int i, int j);
 
     std::vector<std::vector<int>> m_neighbours;
     std::vector<int> m_particleIndices;

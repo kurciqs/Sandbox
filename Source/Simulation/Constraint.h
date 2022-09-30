@@ -4,7 +4,7 @@
 #include <vector>
 #include "Particle.h"
 #include "Graphics/Renderer.h"
-#define SOLVER_ITERATIONS 4
+#define SOLVER_ITERATIONS 5
 #include <glm/gtx/fast_square_root.hpp>
 #define EPSILON 0.001f
 

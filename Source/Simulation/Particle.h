@@ -30,7 +30,6 @@ struct Particle {
     int phase;
     int num_constraints;
     int rigidBodyID;
-    int fluidID;
 };
 
 

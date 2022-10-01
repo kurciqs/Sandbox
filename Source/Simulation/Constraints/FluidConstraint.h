@@ -27,7 +27,8 @@
 //#define H9 1e-09f
 
 
-#define EPSILON_RELAX 1e+05f
+
+#define EPSILON_RELAX 1e+05f // for ... reasons
 
 #define K_CORR 0.1f
 #define N_CORR 4.0f
@@ -50,18 +51,22 @@ public:
     float m_viscosityMag;
     glm::vec3 m_color;
 private:
-    float Density(int i /*global index*/, int k);
-    float Constraint(int i, int k);
+    float Density(int i);
+    float Constraint(int i);
     float m_kernelRadius = 2.0f;
+    float m_kernelRadius2 = m_kernelRadius * m_kernelRadius;
+    float m_kernelRadius4 = m_kernelRadius2 * m_kernelRadius2;
+    float m_kernelRadius9 = m_kernelRadius4 * m_kernelRadius4 * m_kernelRadius;
+    float m_kernelRadius6 = m_kernelRadius2 * m_kernelRadius2 * m_kernelRadius2;
     float k_Poly6 = (315.0f / (64.0f * (float)M_PI));
     float k_SpikyGrad = (45.0f / ((float)M_PI));
     float poly6(const glm::vec3& r);
     glm::vec3 spikyGrad(const glm::vec3& r);
-    glm::vec3 ConstraintGradient(int k, int i, int j);
+    glm::vec3 ConstraintGradient(int i, int j);
 
-    std::unordered_map<int, std::vector<int>> m_neighbours;
+    std::vector<std::vector<int>> m_neighbours;
     std::vector<int> m_particleIndices;
-    std::unordered_map<int, float> m_lambdas;
+    std::vector<float> m_lambdas;
     std::vector<glm::vec3> m_deltas;
     std::vector<Particle*>* m_allParticles;
     float m_density;

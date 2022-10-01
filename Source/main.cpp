@@ -40,7 +40,7 @@ int main() {
     ImFont* mainFont = io.Fonts->AddFontFromFileTTF(R"(Assets/Fonts/RandyGG.ttf)", 17.0f);
     IM_ASSERT(mainFont != nullptr);
 
-    ParticleSystem particleSystem(400, ParticleSystemType::Pool);
+    ParticleSystem particleSystem(0, ParticleSystemType::Cloth);
 
     float particleSpawnDebounce = 0.2f;
     float fluidSpawnDebounce = 0.2f;
@@ -57,6 +57,7 @@ int main() {
     glm::vec3 spawnObjectColor = RANDOM_COLOR;
 
     float spawnFluidViscosity = 0.01f;
+    float spawnFluidDensity = 2.0f;
     int spawnFluidParticleSize = 100;
     glm::vec3 spawnFluidOffset(0.0f);
     glm::vec3 spawnFluidColor = RANDOM_COLOR;
@@ -117,10 +118,11 @@ int main() {
                     ImGui::ColorEdit3("Fluid color", &spawnFluidColor[0]);
                     ImGui::SliderFloat3("Fluid offset", &spawnFluidOffset[0], glm::compMin(lowerBoundary), glm::compMin(upperBoundary));
                     ImGui::SliderFloat("Fluid viscosity", &spawnFluidViscosity, 0.0f, 1.25f);
+                    ImGui::SliderFloat("Fluid density", &spawnFluidDensity, 0.1f, 10.0f);
                     ImGui::SliderInt("Fluid particle amount", &spawnFluidParticleSize, 0, 500);
 
                     if (ImGui::Button("Spawn"))
-                        particleSystem.AddFluid(spawnFluidParticleSize, 5.0f, spawnFluidOffset, spawnFluidColor, 0.2f, spawnFluidViscosity);
+                        particleSystem.AddFluid(spawnFluidParticleSize, 5.0f, spawnFluidOffset, spawnFluidColor, spawnFluidDensity, spawnFluidViscosity);
                 }
 //            }
 

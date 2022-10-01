@@ -167,6 +167,7 @@ void ParticleSystem::Update(float dt) {
     // (22)
     for (Particle* p : m_particles) {
         p->vel = (p->cpos - p->pos) / dt;
+        p->vel *= 0.98f;
         // TODO: (25, 26)
         // sleeping:
         if (glm::fastDistance(p->cpos, p->pos) < PARTICLE_SLEEPING_EPSILON)
@@ -174,10 +175,9 @@ void ParticleSystem::Update(float dt) {
             p->vel = glm::vec3(0.0f);
             continue;
         }
-//        p->vel += p->viscosity;
-//        p->viscosity = glm::vec3(0.0f);
-        p->vel *= 0.99f;
         p->pos = p->cpos;
+        p->vel += p->viscosity;
+        p->viscosity = glm::vec3(0.0f);
     }
     // (28)
 
@@ -426,8 +426,9 @@ void ParticleSystem::EmitFluidParticle(int ID, glm::vec3 pos, glm::vec3 vel) {
     p->vel = vel;
     p->phase = Phase::Liquid;
 
-    fluidConstraint->AddParticle((int)m_particles.size());
     m_particles.push_back(p);
+    // after pushing to main array!
+    fluidConstraint->AddParticle((int)m_particles.size() - 1);
     m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
 }
 

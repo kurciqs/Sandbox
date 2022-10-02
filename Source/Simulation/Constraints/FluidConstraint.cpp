@@ -8,19 +8,13 @@ FluidConstraint::FluidConstraint(int ID, std::vector<Particle*>& allParticles, c
 
     m_color = color;
     m_allParticles = &allParticles;
-    for (int i = 0; i < m_allParticles->size(); i++) {
-//        m_neighbours.emplace_back(); // empty vector
-//        m_lambdas.emplace_back(0.0f);
-//        m_deltas.emplace_back(0.0f);
-    }
+
     for (int i : fluidPartilces) {
         m_particleIndices.push_back(i);
         Particle *p_i = m_allParticles->at(i);
         p_i->color = m_color;
         p_i->num_constraints++;
     }
-    printf("C: %d m_neighbours.szie(), %d m_allParticles.size()\n", (int)m_neighbours.size(), (int)m_allParticles->size());
-
 }
 
 FluidConstraint::~FluidConstraint() {
@@ -112,6 +106,8 @@ void FluidConstraint::Project() {
 
         p_i->viscosity = m_viscosityMag * viscosity;
     }
+
+    //TODO: vorticity confinement
 }
 
 void FluidConstraint::Draw(Renderer &renderer) {
@@ -169,10 +165,6 @@ void FluidConstraint::AddParticle(int index) {
     m_particleIndices.push_back(index);
     m_allParticles->at(index)->num_constraints++;
     m_allParticles->at(index)->color = m_color;
-
-//    m_neighbours.emplace_back( ); // empty vector
-//    m_lambdas.emplace_back(0.0f);
-//    m_deltas.emplace_back(0.0f);
 }
 
 float FluidConstraint::Density(int i) {

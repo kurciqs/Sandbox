@@ -19,7 +19,7 @@
 
 #define k_distance 0.1f
 #define k_contact 1.0f
-#define k_shape 1.0f
+#define k_shape 0.1f
 
 #define PARTICLE_SLEEPING_EPSILON 0.001f
 

@@ -40,7 +40,7 @@ int main() {
     ImFont* mainFont = io.Fonts->AddFontFromFileTTF(R"(Assets/Fonts/RandyGG.ttf)", 17.0f);
     IM_ASSERT(mainFont != nullptr);
 
-    ParticleSystem particleSystem(0, ParticleSystemType::Cloth);
+    ParticleSystem particleSystem(100, ParticleSystemType::Pool);
 
     float particleSpawnDebounce = 0.2f;
     float fluidSpawnDebounce = 0.2f;
@@ -108,6 +108,7 @@ int main() {
                     ImGui::Checkbox("Object fixed", &spawnObjectFixed);
 //                    ImGui::InputText("", spawnObjectPath, IM_ARRAYSIZE(spawnObjectPath)); TODO fix imgui crash
                     ImGui::SameLine();
+                    // TODO amke stiffnes for softies
                     if (ImGui::Button("Load"))
                         particleSystem.AddObject(renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, spawnObjectPath, spawnObjectMass, spawnObjectFixed);
                 }
@@ -117,12 +118,15 @@ int main() {
                 if (ImGui::CollapsingHeader("Spawn fluid")) {
                     ImGui::ColorEdit3("Fluid color", &spawnFluidColor[0]);
                     ImGui::SliderFloat3("Fluid offset", &spawnFluidOffset[0], glm::compMin(lowerBoundary), glm::compMin(upperBoundary));
-                    ImGui::SliderFloat("Fluid viscosity", &spawnFluidViscosity, 0.0f, 1.25f);
+                    ImGui::SliderFloat("Fluid viscosity", &spawnFluidViscosity, 0.0f, 1.0f);
                     ImGui::SliderFloat("Fluid density", &spawnFluidDensity, 0.1f, 10.0f);
                     ImGui::SliderInt("Fluid particle amount", &spawnFluidParticleSize, 0, 500);
 
                     if (ImGui::Button("Spawn"))
                         particleSystem.AddFluid(spawnFluidParticleSize, 5.0f, spawnFluidOffset, spawnFluidColor, spawnFluidDensity, spawnFluidViscosity);
+                }
+                if (ImGui::CollapsingHeader("Spawn cloth")) {
+                    // TODO
                 }
 //            }
 

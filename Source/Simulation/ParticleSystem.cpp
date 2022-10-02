@@ -153,7 +153,7 @@ void ParticleSystem::Update(float dt) {
     // (15)
 
 
-    // (16)
+    // (16) TODO make this threaded
     for (int i = 0; i < SOLVER_ITERATIONS; i++) {
         for (const ConstraintGroup& g : m_constraints) {
             for (Constraint* c : g) {
@@ -472,23 +472,24 @@ void ParticleSystem::AddCloth(glm::vec3 center, glm::vec3 vel, float width, floa
 
     for (int i = 0; i < int(width * height); i++) {
         auto* p = new Particle( vertices[i], glm::vec3(0.03f, 0.5f, 0.34f) );
-        p->fixed = ((int)((float)i - height + 1.0f) % (int)height == 0) && fixed;
+        p->fixed = ((int)((float)i - height + 1.0f) % (int)height == 0) && fixed || ((int)((float)i - height) % (int)height == 0) && fixed;
         m_particles.push_back(p);
     }
 
+    float stiff = 1.0f;
     for (int i = 0; i < m_particles.size(); i++) {
         if (i == (int)((width - 1.0f) * height)) {
             continue;
         }
         else if (i % (int)height == 0) {
-            m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i + (int)height], 0.5f, 1.0f));
+            m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i + (int)height], stiff, 1.0f));
         }
         else if (i > (int)((width - 1.0f) * height)) {
-            m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i - 1], 0.5f, 1.0f));
+            m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i - 1], stiff, 1.0f));
         }
         else {
-            m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i + (int)height], 0.5f, 1.0f));
-            m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i - 1], 0.5f, 1.0f));
+            m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i + (int)height], stiff, 1.0f));
+            m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i - 1], stiff, 1.0f));
         }
     }
 }

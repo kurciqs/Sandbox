@@ -423,6 +423,8 @@ void ParticleSystem::EmitFluidParticle(int ID, glm::vec3 pos, glm::vec3 vel) {
 
     auto* fluidConstraint = (FluidConstraint*)m_constraints[FLUID][ID];
     auto* p = new Particle( pos, fluidConstraint->m_color );
+//    printf("Emitting fluid: %d\n", ID);
+
     p->vel = vel;
     p->phase = Phase::Liquid;
 
@@ -453,6 +455,7 @@ int ParticleSystem::AddFluid(int numParticles, float spawnRadius, glm::vec3 offs
         m_particles.push_back(p);
         m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
     }
+//    printf("Creating fluid: %d\n", GetFluidAmount());
 
     m_constraints[FLUID].push_back( new FluidConstraint(GetFluidAmount(), m_particles, indices, color, 1.0f, density, viscosity) );
 

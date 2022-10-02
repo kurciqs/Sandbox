@@ -159,11 +159,12 @@ int main() {
                 runSimulationDebounce = 0.5f;
             }
             if (Input::isKeyDown(GLFW_KEY_Q) && fluidSpawnDebounce < 0.0f) {
-                for (float i = -1.0f; i <= 1.0f; i += 1.0f) {
-                    for (float j = -1.0f; j <= 1.0f; j += 1.0f) {
-                        particleSystem.EmitFluidParticle(emitFluidID, renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f + glm::vec3(i, j, 0.0f), renderer.GetCameraOrientation() * 20.0f);
-                    }
-                }
+//                for (float i = -1.0f; i <= 1.0f; i += 1.0f) {
+//                    for (float j = -1.0f; j <= 1.0f; j += 1.0f) {
+//                        particleSystem.EmitFluidParticle(emitFluidID, renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f + glm::vec3(i, j, 0.0f), renderer.GetCameraOrientation() * 20.0f);
+//                    }
+//                }
+                particleSystem.EmitFluidParticle(emitFluidID, renderer.GetCameraPosition() + renderer.GetCameraOrientation() * 2.0f, renderer.GetCameraOrientation() * 20.0f);
                 fluidSpawnDebounce = 0.05f;
             }
             if (particleSpawnDebounce < 0.0f) {

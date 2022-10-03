@@ -161,7 +161,6 @@ glm::vec3 FluidConstraint::ConstraintGradient(int i, int j) {
 }
 
 void FluidConstraint::AddParticle(int index) {
-    // TODO fix sf
     m_particleIndices.push_back(index);
     m_allParticles->at(index)->num_constraints++;
     m_allParticles->at(index)->color = m_color;

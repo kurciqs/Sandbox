@@ -69,6 +69,7 @@ int main() {
     float spawnClothStiffness = 0.5f;
     float spawnClothWidth = 4.0f;
     float spawnClothHeight = 4.0f;
+    float spawnClothTD = 5.0f;
     glm::bvec4 spawnClothCornersFixed(true);
 
     glm::vec3 gravity(0.0f, -10.0f, 0.0f);
@@ -138,6 +139,7 @@ int main() {
                     ImGui::SliderFloat("Cloth spawnClothStiffness", &spawnClothStiffness, 0.01f, 1.0f);
                     ImGui::SliderFloat("Cloth width", &spawnClothWidth, 0.0f, 10.0f);
                     ImGui::SliderFloat("Cloth height", &spawnClothHeight, 0.0f, 10.0f);
+                    ImGui::SliderFloat("Cloth tear distance", &spawnClothTD, 0.0f, 10.0f);
 
                     ImGui::Checkbox("Fix corner 1", &spawnClothCornersFixed[0]);
                     ImGui::Checkbox("Fix corner 2", &spawnClothCornersFixed[1]);
@@ -145,7 +147,7 @@ int main() {
                     ImGui::Checkbox("Fix corner 4", &spawnClothCornersFixed[3]);
 
                     if (ImGui::Button("Spawn"))
-                        particleSystem.AddCloth(spawnClothCenter, glm::vec3(0.0f), spawnClothWidth, spawnClothHeight, spawnClothStiffness, spawnClothCornersFixed);
+                        particleSystem.AddCloth(spawnClothCenter, glm::vec3(0.0f), spawnClothWidth, spawnClothHeight, spawnClothStiffness, spawnClothCornersFixed, spawnClothTD);
                 }
 //            }
 

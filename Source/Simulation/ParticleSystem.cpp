@@ -66,10 +66,9 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             m_constraints.emplace_back();
             m_constraints.emplace_back();
 
-            float clothWidth = 7.0f;
-            float clothHeight = 9.0f;
 
-            AddCloth(glm::vec3(0.0f), glm::vec3(0.0f), clothWidth, clothHeight, 0.2f, {true, true, false, false});
+            AddCloth(glm::vec3(-10.0f, 0.0f, 0.0f), glm::vec3(0.0f), 10.0f, 15.0f, 0.8f, {true, true, false, false}, 2.5f);
+            AddCloth(glm::vec3(0.0f), glm::vec3(0.0f), 10.0f, 10.0f, 1.0f, {true, true, true, true}, 5.0f);
 
             for (Particle* p: m_particles) {
                 m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );
@@ -125,7 +124,7 @@ void ParticleSystem::Update(float dt) {
     for (int i = 0; i < m_particles.size(); i++) {
         Particle* p1 = m_particles[i];
 
-        // (7) dumb, I know
+        // (7) slow, I know
         for (int j = i + 1; j < m_particles.size(); j++) {
             Particle* p2 = m_particles[j];
             float dist2 = glm::distance2(p1->cpos, p2->cpos);
@@ -455,7 +454,7 @@ int ParticleSystem::AddFluid(int numParticles, float spawnRadius, glm::vec3 offs
     return GetFluidAmount() - 1;
 }
 
-void ParticleSystem::AddCloth(glm::vec3 center, glm::vec3 vel, float width, float height, float stiffness, glm::bvec4 cornersFixed) {
+void ParticleSystem::AddCloth(glm::vec3 center, glm::vec3 vel, float width, float height, float stiffness, glm::bvec4 cornersFixed, float tearDistance) {
     std::vector<glm::vec3> vertices;
     for (float x = -width / 2.0f; x < width / 2.0f; x += 1.0f) {
         for (float y = -height / 2.0f; y < height / 2.0f; y += 1.0f) {
@@ -473,7 +472,7 @@ void ParticleSystem::AddCloth(glm::vec3 center, glm::vec3 vel, float width, floa
         else if (cornersFixed[1] && i == (int)((width - 1.0f) * height)) {
             p->fixed = true;
         }
-        else if (cornersFixed[2] && i == int(width * height)) {
+        else if (cornersFixed[2] && i == int(width * height) - 1) {
             p->fixed = true;
         }
         else if (cornersFixed[3] && i == int(height - 1.0f)) {
@@ -494,14 +493,14 @@ void ParticleSystem::AddCloth(glm::vec3 center, glm::vec3 vel, float width, floa
             continue;
         }
         else if ((i - begin) % (int)height == 0) {
-            m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i + (int)height], stiff, 1.0f));
+            m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i + (int)height], stiffness, 1.0f, tearDistance));
         }
         else if ((i - begin) > (int)((width - 1.0f) * height)) {
-            m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i - 1], stiff, 1.0f));
+            m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i - 1], stiffness, 1.0f, tearDistance));
         }
         else {
-            m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i + (int)height], stiff, 1.0f));
-            m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i - 1], stiff, 1.0f));
+            m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i + (int)height], stiffness, 1.0f, tearDistance));
+            m_constraints[STANDARD].push_back(new DistanceConstraint(m_particles[i], m_particles[i - 1], stiffness, 1.0f, tearDistance));
         }
     }
 }

@@ -109,7 +109,7 @@ int main() {
 
 //            if (ImGui::CollapsingHeader("Options")) {
                 ImGui::SliderFloat3("Gravity", &gravity[0], -10.0f, 10.0f);
-                if (ImGui::CollapsingHeader("Spawn object")) {
+                if (ImGui::CollapsingHeader("Launch object")) {
                     ImGui::Combo("Select object", &spawnObjectSelected, spawnObjectLabels, IM_ARRAYSIZE(spawnObjectLabels));
                     ImGui::SliderFloat("Object mass", &spawnObjectMass, 0.1f, 25.0f);
                     ImGui::SliderFloat("Object stiffness", &spawnObjectStiffness, 0.1f, 1.0f);

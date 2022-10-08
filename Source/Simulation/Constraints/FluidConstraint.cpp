@@ -24,7 +24,6 @@ FluidConstraint::~FluidConstraint() {
 }
 
 void FluidConstraint::Project() {
-    // TODO make neighbours as big as all particles EVERY FRAME
     m_neighbours.clear();
     m_lambdas.clear();
     m_deltas.clear();
@@ -91,6 +90,32 @@ void FluidConstraint::Project() {
         densities.push_back(Density(i));
     }
 
+    for (int i = 0; i < m_allParticles->size(); i++) {
+        Particle* p_i = m_allParticles->at(i);
+        glm::vec3 omega(0.0f);
+
+        const float density_i = densities[i];
+
+        for (int k = 0; k < m_particleIndices.size(); k++) {
+            int j = m_particleIndices[k];
+            Particle* p_j = m_allParticles->at(j);
+            const glm::vec3 diff = p_i->cpos - p_j->cpos;
+            // only if neighbour
+            if (glm::dot(diff, diff) < m_kernelRadius * m_kernelRadius) {
+                const float density_j = densities[j];
+
+                const glm::vec3 gradW = spikyGrad(diff);
+
+                const glm::vec3 v_i = p_i->cpos - p_i->pos;
+                const glm::vec3 v_j = p_j->cpos - p_j->pos;
+                omega -= (p_j->mass / density_i) * glm::cross(v_i - v_j, gradW);
+            }
+        }
+
+    }
+
+
+
     for (int k = 0; k < m_particleIndices.size(); k++) {
         int i = m_particleIndices[k];
         Particle *p_i = m_allParticles->at(i);
@@ -106,6 +131,7 @@ void FluidConstraint::Project() {
 
         p_i->viscosity = m_viscosityMag * viscosity;
     }
+
 
     //TODO: vorticity confinement
 }

@@ -68,7 +68,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
 
 
             AddCloth(glm::vec3(-10.0f, 0.0f, 0.0f), glm::vec3(0.0f), 10.0f, 15.0f, 0.8f, {true, true, false, false}, 2.5f);
-            AddCloth(glm::vec3(0.0f), glm::vec3(0.0f), 10.0f, 10.0f, 1.0f, {true, true, true, true}, 5.0f);
+            AddCloth(glm::vec3(0.0f), glm::vec3(0.0f), 10.0f, 10.0f, 0.8f, {true, true, true, true}, 2.5f);
 
             for (Particle* p: m_particles) {
                 m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p, lowerBoundary, upperBoundary, 1.0f) );

@@ -90,6 +90,7 @@ void FluidConstraint::Project() {
         densities.push_back(Density(i));
     }
 
+    std::vector<glm::vec3> omegas;
     for (int i = 0; i < m_allParticles->size(); i++) {
         Particle* p_i = m_allParticles->at(i);
         glm::vec3 omega(0.0f);
@@ -102,8 +103,6 @@ void FluidConstraint::Project() {
             const glm::vec3 diff = p_i->cpos - p_j->cpos;
             // only if neighbour
             if (glm::dot(diff, diff) < m_kernelRadius * m_kernelRadius) {
-                const float density_j = densities[j];
-
                 const glm::vec3 gradW = spikyGrad(diff);
 
                 const glm::vec3 v_i = p_i->cpos - p_i->pos;
@@ -111,10 +110,33 @@ void FluidConstraint::Project() {
                 omega -= (p_j->mass / density_i) * glm::cross(v_i - v_j, gradW);
             }
         }
-
+        omegas.push_back(omega);
     }
 
+    for (int k = 0; k < m_particleIndices.size(); k++) {
+        int i = m_particleIndices[k];
+        Particle *p_i = m_allParticles->at(i);
 
+        const float density_i = densities[i];
+        glm::vec3 eta_i(0.0f);
+        const glm::vec3 omega_i = omegas[i];
+
+        for (int k2 = 0; k2 < m_particleIndices.size(); k2++) {
+            int j = m_particleIndices[k2];
+            Particle* p_j = m_allParticles->at(j);
+            const glm::vec3 diff = p_i->cpos - p_j->cpos;
+            // only if neighbour
+            if (glm::dot(diff, diff) < m_kernelRadius * m_kernelRadius) {
+                const glm::vec3 gradW = spikyGrad(diff);
+                const float density_j = densities[j];
+                const float normOmega_j = glm::length(omegas[j]);
+
+                eta_i += (p_j->mass / density_i) * normOmega_j * gradW;
+            }
+        }
+
+        p_i->ApplyForce(VORTICITY_COEF * glm::cross(eta_i, omega_i) * p_i->mass);
+    }
 
     for (int k = 0; k < m_particleIndices.size(); k++) {
         int i = m_particleIndices[k];

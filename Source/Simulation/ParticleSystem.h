@@ -12,6 +12,7 @@
 #include "Simulation/Constraints/FluidConstraint.h"
 #include "Graphics/Renderer.h"
 #include "Utils/SDFGenerator.h"
+#include <thread>
 
 #define RANDOM_POS_IN_BOUNDARIES glm::vec3(rand() % int(fabsf(upperBoundary.x)) - rand() % int(fabsf(lowerBoundary.x)), \
                                            rand() % int(fabsf(upperBoundary.y)) - rand() % int(fabsf(lowerBoundary.y)), \

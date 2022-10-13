@@ -45,7 +45,7 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
             m_constraints.emplace_back();
 
             float invContainerSize = 3.25f;
-            AddFluid(numParticles, 5.0f, glm::vec3(0.0f), glm::vec3(0.2f, 0.3f, 0.9f), 5.0f, 0.01f);
+            AddFluid(numParticles, 100.0f, glm::vec3(0.0f), glm::vec3(0.2f, 0.3f, 0.9f), 5.0f, 0.01f);
 
             for (Particle* p: m_particles) {
                 m_constraints[STANDARD].push_back( new BoxBoundaryConstraint(p,
@@ -78,6 +78,43 @@ ParticleSystem::ParticleSystem(int numParticles, ParticleSystemType type)
         default:
             break;
     }
+
+    // STABILIZE
+    for (int i = 0; i < m_particles.size(); i++) {
+        Particle* p1 = m_particles[i];
+
+        for (int j = i + 1; j < m_particles.size(); j++) {
+            Particle* p2 = m_particles[j];
+            float dist2 = glm::distance2(p1->cpos, p2->cpos);
+            if (dist2 < (p1->radius + p2->radius)*(p1->radius + p2->radius)) {
+                // (8)
+                if ((p1->phase == Phase::Liquid && p2->phase == Phase::Liquid)) {
+                    continue;
+                }
+                else if ((p1->rigidBodyID == -1 || p2->rigidBodyID == -1)) {
+                    m_constraints[CONTACT].push_back( new ContactConstraint(p1, p2, k_contact) );
+                }
+                else if (p1->rigidBodyID != p2->rigidBodyID && p1->phase == Phase::Solid && p2->phase == Phase::Solid) {
+                    SDFData d1 = m_rigidBodies[p1->rigidBodyID]->GetSDFData(i);
+                    SDFData d2 = m_rigidBodies[p2->rigidBodyID]->GetSDFData(j);
+                    m_constraints[CONTACT].push_back( new RigidContactConstraint(p1, p2, d1, d2, k_contact) );
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < SOLVER_ITERATIONS; i++) {
+        for (const ConstraintGroup& g : m_constraints) {
+            for (Constraint* c : g) {
+                c->Project(); // NOTE: also the counts aren't implemented careful
+            }
+        }
+    }
+
+    for (Particle* p : m_particles) {
+        p->vel = glm::vec3(0.0f);
+        p->pos = p->cpos;
+    }
 }
 
 void ParticleSystem::Clear() {
@@ -103,6 +140,12 @@ void ParticleSystem::Clear() {
 
 void ParticleSystem::Destroy() {
     Clear();
+}
+
+void solveConstraints(const std::vector<Constraint*>& cs) {
+    for (Constraint* c : cs) {
+        c->Project(); // NOTE: also the counts aren't implemented careful
+    }
 }
 
 void ParticleSystem::Update(float dt) {
@@ -145,11 +188,6 @@ void ParticleSystem::Update(float dt) {
         }
     }
     // (9)
-
-
-    // (10)
-    // TODO: stabilization
-    // (15)
 
 
     // (16) TODO make this threaded

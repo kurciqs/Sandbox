@@ -12,9 +12,9 @@
     make
     ./Sandbox
 
-    There is also a precompiled zip for windows: 
+    
 
-https://kurciqs1.itch.io/sandbox
+There is also a precompiled zip for windows: https://kurciqs1.itch.io/sandbox
 
 ### Visuals
 

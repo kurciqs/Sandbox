@@ -12,6 +12,8 @@
     make
     ./Sandbox
 
+    There is also a precompiled zip for windows: https://kurciqs1.itch.io/sandbox
+
 ### Visuals
 
 ![Stacked Donuts](Assets/Images/Donuts.png "Stacked Donuts")
